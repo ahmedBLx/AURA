@@ -1,4 +1,5 @@
 const productService = require('../services/productService');
+const { uploadToCloudinary } = require('../config/cloudinary');
 
 class ProductController {
   async getProducts(req, res, next) {
@@ -57,13 +58,15 @@ class ProductController {
     try {
       const data = { ...req.body };
 
-      // Set image path if uploaded
+      // Upload primary image to Cloudinary
       if (req.files) {
         if (req.files['img'] && req.files['img'][0]) {
-          data.img = `uploads/products/${req.files['img'][0].filename}`;
+          data.img = await uploadToCloudinary(req.files['img'][0].buffer);
         }
-        if (req.files['images']) {
-          data.images = req.files['images'].map(file => `uploads/products/${file.filename}`);
+        if (req.files['images'] && req.files['images'].length > 0) {
+          data.images = await Promise.all(
+            req.files['images'].map(f => uploadToCloudinary(f.buffer))
+          );
         }
       }
 
@@ -105,14 +108,12 @@ class ProductController {
     try {
       const data = { ...req.body };
 
-      // Set image path if uploaded
-      if (req.files) {
-        if (req.files['img'] && req.files['img'][0]) {
-          data.img = `uploads/products/${req.files['img'][0].filename}`;
-        }
+      // Upload new primary image to Cloudinary if provided
+      if (req.files && req.files['img'] && req.files['img'][0]) {
+        data.img = await uploadToCloudinary(req.files['img'][0].buffer);
       }
 
-      // Handle secondary images update/retention
+      // Handle secondary images: keep existing URLs + upload new files to Cloudinary
       if (data.existingImages !== undefined || (req.files && req.files['images'])) {
         let existingImages = [];
         if (data.existingImages) {
@@ -126,18 +127,12 @@ class ProductController {
             existingImages = data.existingImages;
           }
         }
-        // Clean up urls to relative paths if they contain backend address
-        existingImages = existingImages.map(img => {
-          if (typeof img === 'string') {
-            const match = img.match(/uploads\/products\/.+/);
-            return match ? match[0] : img;
-          }
-          return img;
-        });
 
         let newImages = [];
         if (req.files && req.files['images']) {
-          newImages = req.files['images'].map(file => `uploads/products/${file.filename}`);
+          newImages = await Promise.all(
+            req.files['images'].map(f => uploadToCloudinary(f.buffer))
+          );
         }
         data.images = [...existingImages, ...newImages];
       }
