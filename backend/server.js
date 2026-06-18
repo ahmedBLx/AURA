@@ -74,6 +74,18 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // Apply general rate limiting
 app.use('/api/', apiLimiter);
 
+// Ensure DB is connected before handling any API request.
+// On Vercel (serverless), each cold-start invocation must await the connection.
+// On warm invocations mongoose.connection.readyState === 1 so connectDB() returns instantly.
+app.use('/api/', async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    next(err);
+  }
+});
+
 // Bind API Routes
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/products', productRoutes);
