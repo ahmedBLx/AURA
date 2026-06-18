@@ -98,6 +98,15 @@ app.use('/api/v1/audit-logs', auditLogRoutes);
 app.use('/api/v1/settings', settingRoutes);
 app.use('/api/v1/dashboard', dashboardRoutes);
 
+// Socket.IO is not supported on Vercel serverless — return a clean 503
+// so the client can detect it and fall back to polling instead of spamming 404s.
+app.use('/socket.io', (req, res) => {
+  res.status(503).json({
+    status: 'unavailable',
+    message: 'Real-time (Socket.IO) is not supported in serverless mode. Use REST polling instead.'
+  });
+});
+
 // Catch-all for unrecognized endpoints
 app.use('*', (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));

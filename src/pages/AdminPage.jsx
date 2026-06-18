@@ -163,31 +163,47 @@ const AdminPage = () => {
     }, []);
 
     useEffect(() => {
-        const socket = io(BASE_URL);
+        let pollInterval = null;
+
+        const socket = io(BASE_URL, {
+            reconnection: false,      // don't spam retries if serverless doesn't support it
+            timeout: 5000,
+        });
 
         socket.on('connect', () => {
-            console.log('Admin Socket Connected');
+            console.log('Admin Socket Connected (real-time mode)');
+            // Clear polling if socket connected successfully
+            if (pollInterval) {
+                clearInterval(pollInterval);
+                pollInterval = null;
+            }
+        });
+
+        socket.on('connect_error', () => {
+            // Socket.IO not available (e.g. Vercel serverless) — fall back to polling
+            console.log('Socket.IO unavailable, falling back to order polling every 30s');
+            socket.disconnect();
+            if (!pollInterval) {
+                pollInterval = setInterval(() => {
+                    loadOrders();
+                }, 30000);
+            }
         });
 
         socket.on('newOrder', (data) => {
             console.log('Real-time order received:', data);
             loadOrders();
-            
-            // Set toast data
             setRealtimeToast({
                 orderId: data.orderId,
                 customerName: data.customerName,
                 total: data.total
             });
-
-            // Auto dismiss after 6 seconds
-            setTimeout(() => {
-                setRealtimeToast(null);
-            }, 6000);
+            setTimeout(() => setRealtimeToast(null), 6000);
         });
 
         return () => {
             socket.disconnect();
+            if (pollInterval) clearInterval(pollInterval);
         };
     }, []);
 
