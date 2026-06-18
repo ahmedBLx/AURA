@@ -8,7 +8,7 @@ export const CartProvider = ({ children }) => {
     const [cartCount, setCartCount] = useState(0);
     const [cartSubtotal, setCartSubtotal] = useState(0);
 
-    const API_URL = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5002'}/api/v1`;
+    const API_URL = `${(import.meta.env.VITE_API_BASE_URL || 'http://localhost:5002').replace(/\/$/, '')}/api/v1`;
 
     // Load cart on mount
     const loadCart = () => {
