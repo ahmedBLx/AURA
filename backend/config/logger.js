@@ -2,12 +2,7 @@ const winston = require('winston');
 const path = require('path');
 const fs = require('fs');
 
-const logDir = path.join(__dirname, '../logs');
-
-// Create the log directory if it does not exist
-if (!fs.existsSync(logDir)) {
-  fs.mkdirSync(logDir, { recursive: true });
-}
+const isVercel = !!process.env.VERCEL;
 
 const levels = {
   error: 0,
@@ -34,19 +29,8 @@ const format = winston.format.combine(
   )
 );
 
+// Console transport is always available
 const transports = [
-  // Output error level logs to error.log
-  new winston.transports.File({
-    filename: path.join(logDir, 'error.log'),
-    level: 'error',
-    format: winston.format.combine(winston.format.uncolorize(), format),
-  }),
-  // Output all logs to access.log
-  new winston.transports.File({
-    filename: path.join(logDir, 'access.log'),
-    format: winston.format.combine(winston.format.uncolorize(), format),
-  }),
-  // Output logs to Console in color
   new winston.transports.Console({
     format: winston.format.combine(
       winston.format.colorize({ all: true }),
@@ -54,6 +38,28 @@ const transports = [
     ),
   }),
 ];
+
+// File transports are only added when NOT on Vercel (read-only filesystem)
+if (!isVercel) {
+  const logDir = path.join(__dirname, '../logs');
+  if (!fs.existsSync(logDir)) {
+    fs.mkdirSync(logDir, { recursive: true });
+  }
+
+  transports.push(
+    // Output error level logs to error.log
+    new winston.transports.File({
+      filename: path.join(logDir, 'error.log'),
+      level: 'error',
+      format: winston.format.combine(winston.format.uncolorize(), format),
+    }),
+    // Output all logs to access.log
+    new winston.transports.File({
+      filename: path.join(logDir, 'access.log'),
+      format: winston.format.combine(winston.format.uncolorize(), format),
+    })
+  );
+}
 
 const logger = winston.createLogger({
   level: process.env.NODE_ENV === 'development' ? 'debug' : 'info',
