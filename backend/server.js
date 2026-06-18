@@ -26,24 +26,25 @@ const settingRoutes = require('./routes/settingRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 
 const app = express();
-const server = http.createServer(app);
 
-// Setup Socket.IO
-const io = new Server(server, {
-  cors: {
-    origin: '*',
-    methods: ['GET', 'POST', 'PATCH', 'DELETE']
-  }
-});
-
-app.set('io', io);
-
-io.on('connection', (socket) => {
-  logger.info(`Socket client connected: ${socket.id}`);
-  socket.on('disconnect', () => {
-    logger.info(`Socket client disconnected: ${socket.id}`);
+// Socket.IO is only set up outside Vercel (serverless doesn't support persistent WS)
+let server;
+if (!process.env.VERCEL) {
+  server = http.createServer(app);
+  const io = new Server(server, {
+    cors: {
+      origin: '*',
+      methods: ['GET', 'POST', 'PATCH', 'DELETE']
+    }
   });
-});
+  app.set('io', io);
+  io.on('connection', (socket) => {
+    logger.info(`Socket client connected: ${socket.id}`);
+    socket.on('disconnect', () => {
+      logger.info(`Socket client disconnected: ${socket.id}`);
+    });
+  });
+}
 
 // Set security headers
 app.use(helmet({
@@ -95,13 +96,17 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
-// Start server only after DB connection succeeds
+// Connect to DB then start server (local dev) or just connect (Vercel serverless)
 const startServer = async () => {
   try {
     await connectDB();
-    server.listen(PORT, () => {
-      logger.info(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
-    });
+
+    // Only start HTTP server when NOT running on Vercel
+    if (!process.env.VERCEL) {
+      server.listen(PORT, () => {
+        logger.info(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
+      });
+    }
   } catch (err) {
     logger.error(`Failed to start server: ${err.message}`);
     process.exit(1);
@@ -109,3 +114,6 @@ const startServer = async () => {
 };
 
 startServer();
+
+// Export app for Vercel serverless handler
+module.exports = app;
