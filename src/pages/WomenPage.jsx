@@ -75,7 +75,7 @@ const WomenPage = ({ onOpenAuth }) => {
     useEffect(() => {
         const fetchSettings = async () => {
             try {
-                const res = await fetch('http://localhost:5002/api/v1/settings/public');
+                const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5002'}/api/v1/settings/public`);
                 if (res.ok) {
                     const result = await res.json();
                     const settings = result.data.settings;

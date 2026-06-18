@@ -7,7 +7,7 @@ export const AuthProvider = ({ children }) => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    const API_URL = 'http://localhost:5002/api/v1/auth';
+    const API_URL = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5002'}/api/v1/auth`;
 
     // Helper to get auth header
     const getHeaders = (token) => {

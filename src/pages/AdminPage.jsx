@@ -8,6 +8,7 @@ const AdminPage = () => {
     const { user, users, logout } = useAuth();
     const { products, categories, addProduct, updateProduct, deleteProduct, addCategory, deleteCategory, loadCatalog } = useProducts();
     const navigate = useNavigate();
+    const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5002';
 
     // UI & Layout States
     const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard' | 'products' | 'categories' | 'orders' | 'customers'
@@ -55,7 +56,7 @@ const AdminPage = () => {
     const loadOrders = async () => {
         const token = localStorage.getItem('aura_token');
         try {
-            const res = await fetch('http://localhost:5002/api/v1/orders', {
+            const res = await fetch(`${BASE_URL}/api/v1/orders`, {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
@@ -78,7 +79,7 @@ const AdminPage = () => {
                     items: o.items.map(item => {
                         const prod = item.product;
                         const imgUrl = prod && prod.img 
-                            ? (prod.img.startsWith('http') || prod.img.startsWith('assets') || prod.img.startsWith('data:') ? prod.img : `http://localhost:5002/${prod.img}`)
+                            ? (prod.img.startsWith('http') || prod.img.startsWith('assets') || prod.img.startsWith('data:') ? prod.img : `${BASE_URL}/${prod.img}`)
                             : 'assets/sneaker_white.png';
                         return {
                             id: prod ? (prod._id || prod.id) : item._id,
@@ -110,7 +111,7 @@ const AdminPage = () => {
     const loadSettings = async () => {
         const token = localStorage.getItem('aura_token');
         try {
-            const res = await fetch('http://localhost:5002/api/v1/settings', {
+            const res = await fetch(`${BASE_URL}/api/v1/settings`, {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
@@ -133,7 +134,7 @@ const AdminPage = () => {
         const token = localStorage.getItem('aura_token');
         const newValue = !womenSoon;
         try {
-            const res = await fetch('http://localhost:5002/api/v1/settings', {
+            const res = await fetch(`${BASE_URL}/api/v1/settings`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -162,7 +163,7 @@ const AdminPage = () => {
     }, []);
 
     useEffect(() => {
-        const socket = io('http://localhost:5002');
+        const socket = io(BASE_URL);
 
         socket.on('connect', () => {
             console.log('Admin Socket Connected');
@@ -194,7 +195,7 @@ const AdminPage = () => {
     const handleUpdateOrderStatus = async (orderId, newStatus) => {
         const token = localStorage.getItem('aura_token');
         try {
-            const res = await fetch(`http://localhost:5002/api/v1/orders/${orderId}/status`, {
+            const res = await fetch(`${BASE_URL}/api/v1/orders/${orderId}/status`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -224,7 +225,7 @@ const AdminPage = () => {
         if (window.confirm(`Are you sure you want to delete order ${orderId}?`)) {
             const token = localStorage.getItem('aura_token');
             try {
-                const res = await fetch(`http://localhost:5002/api/v1/orders/${orderId}`, {
+                const res = await fetch(`${BASE_URL}/api/v1/orders/${orderId}`, {
                     method: 'DELETE',
                     headers: {
                         'Authorization': `Bearer ${token}`
@@ -252,7 +253,7 @@ const AdminPage = () => {
     const handleClearCompletedOrders = async () => {
         const token = localStorage.getItem('aura_token');
         try {
-            const res = await fetch('http://localhost:5002/api/v1/orders/completed', {
+            const res = await fetch(`${BASE_URL}/api/v1/orders/completed`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -590,8 +591,8 @@ const AdminPage = () => {
         } else {
             // Strip API url prefixes to store clean relative path
             let relativeImg = prodImage;
-            if (relativeImg.startsWith('http://localhost:5002/')) {
-                relativeImg = relativeImg.replace('http://localhost:5002/', '');
+            if (relativeImg.startsWith(`${BASE_URL}/`)) {
+                relativeImg = relativeImg.replace(`${BASE_URL}/`, '');
             } else if (relativeImg.startsWith('http://localhost:5000/')) {
                 relativeImg = relativeImg.replace('http://localhost:5000/', '');
             }
@@ -603,8 +604,8 @@ const AdminPage = () => {
         prodImages.forEach(img => {
             if (img.file === null) {
                 let relativeUrl = img.url;
-                if (relativeUrl.startsWith('http://localhost:5002/')) {
-                    relativeUrl = relativeUrl.replace('http://localhost:5002/', '');
+                if (relativeUrl.startsWith(`${BASE_URL}/`)) {
+                    relativeUrl = relativeUrl.replace(`${BASE_URL}/`, '');
                 } else if (relativeUrl.startsWith('http://localhost:5000/')) {
                     relativeUrl = relativeUrl.replace('http://localhost:5000/', '');
                 }

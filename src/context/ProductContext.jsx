@@ -7,7 +7,8 @@ export const ProductProvider = ({ children }) => {
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    const API_URL = 'http://localhost:5002/api/v1';
+    const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5002';
+    const API_URL = `${BASE_URL}/api/v1`;
 
     // Helper to get auth header
     const getHeaders = () => {
@@ -22,11 +23,11 @@ export const ProductProvider = ({ children }) => {
     const mapProduct = (p) => {
         const imgUrl = p.img && (p.img.startsWith('http') || p.img.startsWith('assets') || p.img.startsWith('data:'))
             ? p.img 
-            : `http://localhost:5002/${p.img}`;
+            : `${BASE_URL}/${p.img}`;
         const imagesList = p.images && p.images.length > 0
             ? p.images.map(img => img && (img.startsWith('http') || img.startsWith('assets') || img.startsWith('data:'))
                 ? img
-                : `http://localhost:5002/${img}`)
+                : `${BASE_URL}/${img}`)
             : [imgUrl];
         return {
             id: p._id || p.id,
