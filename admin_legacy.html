@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AURA - Control Panel</title>
+    <!-- Modern Typography: Montserrat (Logo/Headings), Outfit (UI/Body) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=4">
+</head>
+<body class="dark-admin">
+
+    <!-- DYNAMIC IRIDESCENT BACKGROUND CONTAINER -->
+    <div class="iridescent-bg-container">
+        <svg class="iridescent-bg-svg" viewBox="0 0 1440 900" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="iridescent-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#00f0ff">
+                        <animate attributeName="stop-color" 
+                                 values="#00f0ff; #ff007f; #a044ff; #00f0ff" 
+                                 dur="12s" repeatCount="indefinite" />
+                    </stop>
+                    <stop offset="35%" stop-color="#ff007f">
+                        <animate attributeName="stop-color" 
+                                 values="#ff007f; #a044ff; #00f0ff; #ff007f" 
+                                 dur="12s" repeatCount="indefinite" />
+                    </stop>
+                    <stop offset="70%" stop-color="#a044ff">
+                        <animate attributeName="stop-color" 
+                                 values="#a044ff; #00f0ff; #ff007f; #a044ff" 
+                                 dur="12s" repeatCount="indefinite" />
+                    </stop>
+                    <stop offset="100%" stop-color="#00f0ff">
+                        <animate attributeName="stop-color" 
+                                 values="#00f0ff; #ff007f; #a044ff; #00f0ff" 
+                                 dur="12s" repeatCount="indefinite" />
+                    </stop>
+                </linearGradient>
+            </defs>
+            <g stroke="url(#iridescent-grad)" stroke-width="1.6" fill="none" opacity="0.45">
+                <!-- Ribbon 1 -->
+                <g class="ribbon-group ribbon-group-1">
+                    <path d="M -100 100 C 300 150, 500 500, 900 450 S 1200 750, 1600 800" />
+                    <path d="M -100 115 C 300 165, 500 515, 900 465 S 1200 765, 1600 815" />
+                    <path d="M -100 130 C 300 180, 500 530, 900 480 S 1200 780, 1600 830" />
+                    <path d="M -100 145 C 300 195, 500 545, 900 495 S 1200 795, 1600 845" />
+                    <path d="M -100 160 C 300 210, 500 560, 900 510 S 1200 810, 1600 860" />
+                    <path d="M -100 175 C 300 225, 500 575, 900 525 S 1200 825, 1600 875" />
+                </g>
+                <!-- Ribbon 2 -->
+                <g class="ribbon-group ribbon-group-2">
+                    <path d="M -100 800 C 400 650, 600 350, 1000 450 S 1200 150, 1600 100" />
+                    <path d="M -100 815 C 400 665, 600 365, 1000 465 S 1200 165, 1600 115" />
+                    <path d="M -100 830 C 400 680, 600 380, 1000 480 S 1200 180, 1600 130" />
+                    <path d="M -100 845 C 400 695, 600 395, 1000 495 S 1200 195, 1600 145" />
+                    <path d="M -100 860 C 400 710, 600 410, 1000 510 S 1200 210, 1600 160" />
+                    <path d="M -100 875 C 400 725, 600 425, 1000 525 S 1200 225, 1600 175" />
+                </g>
+                <!-- Ribbon 3 -->
+                <g class="ribbon-group ribbon-group-3">
+                    <path d="M 100 450 C 300 200, 1100 200, 1300 450 S 300 700, 100 450" />
+                    <path d="M 108 450 C 308 205, 1092 205, 1292 450 S 308 695, 108 450" />
+                    <path d="M 116 450 C 316 210, 1084 210, 1284 450 S 316 690, 116 450" />
+                    <path d="M 124 450 C 326 215, 1076 215, 1276 450 S 326 685, 124 450" />
+                    <path d="M 132 450 C 336 220, 1068 220, 1268 450 S 336 680, 132 450" />
+                    <path d="M 140 450 C 346 225, 1060 225, 1260 450 S 346 675, 140 450" />
+                </g>
+            </g>
+        </svg>
+    </div>
+
+    <!-- HEADER / NAVBAR -->
+    <header class="main-header">
+        <div class="header-container">
+            <!-- Brand Logo -->
+            <a href="index.html" class="brand-logo" id="logo">
+                <svg class="brand-logo-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="50" cy="36" r="26" stroke="#C5A880" stroke-width="7" fill="rgba(197, 168, 128, 0.15)" />
+                    <circle cx="50" cy="64" r="26" stroke="#FFFFFF" stroke-width="7" fill="rgba(255, 255, 255, 0.15)" />
+                </svg>
+                <span>AURA</span>
+            </a>
+
+            <!-- Right Actions -->
+            <div class="header-actions">
+                <span class="admin-badge">ADMIN CONTROL PANEL</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- ADMIN VIEW CONTAINER -->
+    <div class="admin-view-container">
+        <div class="admin-container">
+            <!-- Admin Dashboard Header -->
+            <div class="admin-dashboard-header">
+                <div>
+                    <h2>AURA CONTROL PANEL</h2>
+                    <p class="admin-subtitle">Sneaker Catalog & Store Analytics</p>
+                </div>
+                <div class="admin-user-info">
+                    <span class="admin-name" id="admin-display-name">Admin: Alex</span>
+                    <button class="admin-logout-btn" id="admin-logout">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                        <span>LOGOUT</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dashboard Analytics Grid -->
+            <div class="admin-stats-grid">
+                <!-- Stat Card 1 -->
+                <div class="admin-stat-card">
+                    <div class="stat-icon-box sales-icon">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="1" x2="12" y2="23"></line>
+                            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Total Store Sales</span>
+                        <h3 class="stat-value">$24,890</h3>
+                        <span class="stat-trend trend-up">+14.2% this week</span>
+                    </div>
+                    <!-- Small Sparkline SVG Chart -->
+                    <div class="sparkline-container">
+                        <svg viewBox="0 0 120 40" class="sparkline-svg">
+                            <path d="M 0 35 Q 20 15, 40 25 T 80 5 T 120 12" fill="none" stroke="url(#gradient-pink-purple-blue-admin)" stroke-width="2"/>
+                            <defs>
+                                <linearGradient id="gradient-pink-purple-blue-admin" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" stop-color="#FF5E97" />
+                                    <stop offset="50%" stop-color="#A044FF" />
+                                    <stop offset="100%" stop-color="#00D2FF" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Stat Card 2 -->
+                <div class="admin-stat-card">
+                    <div class="stat-icon-box orders-icon">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="9" cy="21" r="1"></circle>
+                            <circle cx="20" cy="21" r="1"></circle>
+                            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Successful Orders</span>
+                        <h3 class="stat-value" id="admin-orders-count">131</h3>
+                        <span class="stat-trend trend-up">+8.3% this week</span>
+                    </div>
+                    <div class="sparkline-container">
+                        <svg viewBox="0 0 120 40" class="sparkline-svg">
+                            <path d="M 0 30 Q 20 35, 40 15 T 80 22 T 120 8" fill="none" stroke="url(#gradient-pink-purple-blue-admin)" stroke-width="2"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Stat Card 3 -->
+                <div class="admin-stat-card">
+                    <div class="stat-icon-box products-icon">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Catalog Items</span>
+                        <h3 class="stat-value" id="admin-items-count">3 items</h3>
+                        <span class="stat-trend">Live in customer grid</span>
+                    </div>
+                    <div class="sparkline-container">
+                        <svg viewBox="0 0 120 40" class="sparkline-svg">
+                            <path d="M 0 20 Q 30 20, 60 10 T 120 10" fill="none" stroke="url(#gradient-pink-purple-blue-admin)" stroke-width="2"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Management Section Grid -->
+            <div class="admin-management-grid">
+                <!-- Add / Edit Sneaker Form Container -->
+                <div class="admin-card product-form-card">
+                    <h3 class="admin-card-title" id="form-action-title">ADD NEW SNEAKER</h3>
+                    
+                    <form id="admin-product-form" class="admin-form">
+                        <input type="hidden" id="edit-product-id" value="">
+                        
+                        <div class="form-group">
+                            <label for="prod-name">Sneaker Name</label>
+                            <input type="text" id="prod-name" required placeholder="e.g. AURA RETRO (WHITE)">
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group flex-1">
+                                <label for="prod-price">Price ($)</label>
+                                <input type="number" id="prod-price" required placeholder="e.g. 220">
+                            </div>
+                            <div class="form-group flex-1">
+                                <label for="prod-image">Select Product Image</label>
+                                <select id="prod-image" required>
+                                    <option value="assets/sneaker_mustard.png">Nomad (Mustard)</option>
+                                    <option value="assets/sneaker_charcoal.png">Eclipse (Charcoal)</option>
+                                    <option value="assets/sneaker_coral.png">Horizon (Coral)</option>
+                                    <option value="assets/sneaker_white.png">Retro (White)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="prod-desc">Description</label>
+                            <textarea id="prod-desc" required rows="3" placeholder="Features, materials, lightweight design details..."></textarea>
+                        </div>
+
+                        <div class="form-actions-row">
+                            <button type="submit" class="admin-submit-btn" id="prod-submit-btn">ADD SNEAKER</button>
+                            <button type="button" class="admin-cancel-btn hidden" id="prod-cancel-btn">CANCEL EDIT</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Sneaker Inventory Table Card -->
+                <div class="admin-card inventory-table-card">
+                    <h3 class="admin-card-title">SNEAKER INVENTORY</h3>
+                    <div class="table-scroll-container">
+                        <table class="inventory-table">
+                            <thead>
+                                <tr>
+                                    <th>Image</th>
+                                    <th>Name</th>
+                                    <th>Price</th>
+                                    <th>Description</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-inventory-rows">
+                                <!-- Dynamic rows loaded via Javascript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT -->
+    <script src="app.js"></script>
+</body>
+</html>

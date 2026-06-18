@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AURA - Exclusive Shop</title>
+    <!-- Modern Typography: Montserrat (Logo/Headings), Outfit (UI/Body) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=4">
+</head>
+<body class="dark-shop">
+
+    <!-- DYNAMIC IRIDESCENT BACKGROUND CONTAINER -->
+    <div class="iridescent-bg-container">
+        <svg class="iridescent-bg-svg" viewBox="0 0 1440 900" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="iridescent-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#00f0ff">
+                        <animate attributeName="stop-color" 
+                                 values="#00f0ff; #ff007f; #a044ff; #00f0ff" 
+                                 dur="12s" repeatCount="indefinite" />
+                    </stop>
+                    <stop offset="35%" stop-color="#ff007f">
+                        <animate attributeName="stop-color" 
+                                 values="#ff007f; #a044ff; #00f0ff; #ff007f" 
+                                 dur="12s" repeatCount="indefinite" />
+                    </stop>
+                    <stop offset="70%" stop-color="#a044ff">
+                        <animate attributeName="stop-color" 
+                                 values="#a044ff; #00f0ff; #ff007f; #a044ff" 
+                                 dur="12s" repeatCount="indefinite" />
+                    </stop>
+                    <stop offset="100%" stop-color="#00f0ff">
+                        <animate attributeName="stop-color" 
+                                 values="#00f0ff; #ff007f; #a044ff; #00f0ff" 
+                                 dur="12s" repeatCount="indefinite" />
+                    </stop>
+                </linearGradient>
+            </defs>
+            <g stroke="url(#iridescent-grad)" stroke-width="1.6" fill="none" opacity="0.45">
+                <!-- Ribbon 1 -->
+                <g class="ribbon-group ribbon-group-1">
+                    <path d="M -100 100 C 300 150, 500 500, 900 450 S 1200 750, 1600 800" />
+                    <path d="M -100 115 C 300 165, 500 515, 900 465 S 1200 765, 1600 815" />
+                    <path d="M -100 130 C 300 180, 500 530, 900 480 S 1200 780, 1600 830" />
+                    <path d="M -100 145 C 300 195, 500 545, 900 495 S 1200 795, 1600 845" />
+                    <path d="M -100 160 C 300 210, 500 560, 900 510 S 1200 810, 1600 860" />
+                    <path d="M -100 175 C 300 225, 500 575, 900 525 S 1200 825, 1600 875" />
+                </g>
+                <!-- Ribbon 2 -->
+                <g class="ribbon-group ribbon-group-2">
+                    <path d="M -100 800 C 400 650, 600 350, 1000 450 S 1200 150, 1600 100" />
+                    <path d="M -100 815 C 400 665, 600 365, 1000 465 S 1200 165, 1600 115" />
+                    <path d="M -100 830 C 400 680, 600 380, 1000 480 S 1200 180, 1600 130" />
+                    <path d="M -100 845 C 400 695, 600 395, 1000 495 S 1200 195, 1600 145" />
+                    <path d="M -100 860 C 400 710, 600 410, 1000 510 S 1200 210, 1600 160" />
+                    <path d="M -100 875 C 400 725, 600 425, 1000 525 S 1200 225, 1600 175" />
+                </g>
+                <!-- Ribbon 3 -->
+                <g class="ribbon-group ribbon-group-3">
+                    <path d="M 100 450 C 300 200, 1100 200, 1300 450 S 300 700, 100 450" />
+                    <path d="M 108 450 C 308 205, 1092 205, 1292 450 S 308 695, 108 450" />
+                    <path d="M 116 450 C 316 210, 1084 210, 1284 450 S 316 690, 116 450" />
+                    <path d="M 124 450 C 326 215, 1076 215, 1276 450 S 326 685, 124 450" />
+                    <path d="M 132 450 C 336 220, 1068 220, 1268 450 S 336 680, 132 450" />
+                    <path d="M 140 450 C 346 225, 1060 225, 1260 450 S 346 675, 140 450" />
+                </g>
+            </g>
+        </svg>
+    </div>
+
+    <!-- HEADER / NAVBAR -->
+    <header class="main-header">
+        <div class="header-container">
+            <!-- Brand Logo -->
+            <a href="index.html" class="brand-logo" id="logo">
+                <svg class="brand-logo-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="50" cy="36" r="26" stroke="#C5A880" stroke-width="7" fill="rgba(197, 168, 128, 0.15)" />
+                    <circle cx="50" cy="64" r="26" stroke="#FFFFFF" stroke-width="7" fill="rgba(255, 255, 255, 0.15)" />
+                </svg>
+                <span>AURA</span>
+            </a>
+
+            <nav class="center-nav">
+                <a href="#" class="nav-link">Men</a>
+                <span class="nav-separator">|</span>
+                <a href="#" class="nav-link">Women</a>
+                <span class="nav-separator">|</span>
+                <a href="#" class="nav-link">Offers</a>
+            </nav>
+
+            <!-- Right Side Icons & Actions -->
+            <div class="header-actions">
+                <button class="icon-btn" aria-label="Search" id="search-btn">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                </button>
+                
+                <button class="icon-btn" aria-label="Wishlist">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                    </svg>
+                </button>
+
+                <button class="login-btn" id="header-login-btn">
+                    <svg class="icon user-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    <span>Login</span>
+                </button>
+
+                <button class="icon-btn cart-btn" aria-label="Shopping Bag">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <path d="M16 10a4 4 0 0 1-8 0"></path>
+                    </svg>
+                    <span class="cart-badge">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- SEARCH OVERLAY -->
+    <div class="search-overlay" id="search-overlay">
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="Search AURA sneakers, collections, drops..." id="search-input">
+            <button class="close-search-btn" id="close-search">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <main>
+        <!-- BREADCRUMB -->
+        <nav class="breadcrumb-container" aria-label="Breadcrumb">
+            <div class="breadcrumb-inner">
+                <a href="#" class="breadcrumb-item">Home</a>
+                <span class="breadcrumb-slash">/</span>
+                <a href="#" class="breadcrumb-item">Shop</a>
+                <span class="breadcrumb-slash">/</span>
+                <span class="breadcrumb-item active" aria-current="page">Sneaker Collection</span>
+            </div>
+        </nav>
+
+        <!-- DISCOVER SECTION -->
+        <section class="discover-section" id="discover-section">
+            <div class="discover-container">
+                <div class="discover-left">
+                    <h2 class="discover-title">Catalog</h2>
+                    
+                    <!-- Filter Toggle Switch -->
+                    <div class="toggle-container">
+                        <button class="toggle-switch" aria-label="Toggle filters" id="filter-toggle">
+                            <span class="toggle-knob"></span>
+                        </button>
+                        <span class="filter-count">FILTER (4 products)</span>
+                    </div>
+                </div>
+                <div class="discover-right">
+                    <!-- View layouts buttons -->
+                    <div class="view-controls">
+                        <button class="control-btn active" id="grid-view-btn" aria-label="Grid View">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="14" width="7" height="7"></rect>
+                                <rect x="3" y="14" width="7" height="7"></rect>
+                            </svg>
+                        </button>
+                        <button class="control-btn" id="list-view-btn" aria-label="List View">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="8" y1="6" x2="21" y2="6"></line>
+                                <line x1="8" y1="12" x2="21" y2="12"></line>
+                                <line x1="8" y1="18" x2="21" y2="18"></line>
+                                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dynamic Filter Tray -->
+            <div class="filter-tray" id="filter-tray">
+                <div class="filter-group">
+                    <span class="filter-group-title">Filter by Collection</span>
+                    <div class="filter-checkboxes">
+                        <label class="filter-checkbox-label">
+                            <input type="checkbox" class="collection-filter" value="nomad">
+                            <span class="filter-checkbox-custom"></span>
+                            Nomad Series
+                        </label>
+                        <label class="filter-checkbox-label">
+                            <input type="checkbox" class="collection-filter" value="eclipse">
+                            <span class="filter-checkbox-custom"></span>
+                            Eclipse Series
+                        </label>
+                        <label class="filter-checkbox-label">
+                            <input type="checkbox" class="collection-filter" value="horizon">
+                            <span class="filter-checkbox-custom"></span>
+                            Horizon Series
+                        </label>
+                        <label class="filter-checkbox-label">
+                            <input type="checkbox" class="collection-filter" value="retro">
+                            <span class="filter-checkbox-custom"></span>
+                            Retro Series
+                        </label>
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <span class="filter-group-title">Filter by Price</span>
+                    <div class="filter-checkboxes">
+                        <label class="filter-checkbox-label">
+                            <input type="checkbox" class="price-filter" value="under-200">
+                            <span class="filter-checkbox-custom"></span>
+                            Under $200
+                        </label>
+                        <label class="filter-checkbox-label">
+                            <input type="checkbox" class="price-filter" value="over-200">
+                            <span class="filter-checkbox-custom"></span>
+                            $200 and Over
+                        </label>
+                    </div>
+                </div>
+
+                <div class="filter-group search-filter-group">
+                    <span class="filter-group-title">Active Search Query</span>
+                    <div class="search-indicator-box">
+                        <input type="text" id="inline-search" placeholder="Type to filter..." class="inline-search-input">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PRODUCT GRID -->
+        <section class="products-section">
+            <div class="product-grid" id="product-grid">
+                <!-- Dynamic cards rendered by JavaScript -->
+            </div>
+        </section>
+    </main>
+
+    <!-- FOOTER SECTION -->
+    <footer class="main-footer">
+        <div class="footer-container">
+            <div class="footer-brand-col">
+                <a href="#" class="brand-logo footer-logo">
+                    <svg class="brand-logo-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="50" cy="36" r="26" stroke="#C5A880" stroke-width="7" fill="rgba(197, 168, 128, 0.15)" />
+                        <circle cx="50" cy="64" r="26" stroke="#FFFFFF" stroke-width="7" fill="rgba(255, 255, 255, 0.15)" />
+                    </svg>
+                    <span>AURA</span>
+                </a>
+                <p class="footer-tagline">Dare To Dream</p>
+                <p class="footer-desc">Premium sneaker and lifestyle design. Crafted for the creators, explorers, and dreamers.</p>
+            </div>
+            
+            <div class="footer-links-col">
+                <h4>Collections</h4>
+                <ul>
+                    <li><a href="#">AURA Nomad</a></li>
+                    <li><a href="#">AURA Eclipse</a></li>
+                    <li><a href="#">AURA Horizon</a></li>
+                    <li><a href="#">AURA Retro</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-links-col">
+                <h4>Support</h4>
+                <ul>
+                    <li><a href="#">Live Support</a></li>
+                    <li><a href="#">Shipping Details</a></li>
+                    <li><a href="#">Returns & Exchanges</a></li>
+                    <li><a href="#">Sneaker Care Guide</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-links-col">
+                <h4>Join the Club</h4>
+                <p class="newsletter-text">Subscribe to receive early drops and priority access.</p>
+                <div class="newsletter-form">
+                    <input type="email" placeholder="Your email address" class="newsletter-input">
+                    <button class="newsletter-btn">JOIN</button>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 AURA. All rights reserved. Designed for young adults and sneaker enthusiasts.</p>
+        </div>
+    </footer>
+
+    <!-- QUICK VIEW MODAL -->
+    <div class="modal-backdrop" id="quick-view-modal">
+        <div class="modal-content">
+            <button class="modal-close-btn" id="close-modal">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            <div class="modal-body">
+                <div class="modal-image-col">
+                    <img src="" alt="Product Preview" id="modal-product-img">
+                </div>
+                <div class="modal-info-col">
+                    <span class="modal-brand-tag">AURA PREMIUM FOOTWEAR</span>
+                    <h2 id="modal-product-name">Nomad Sneaker</h2>
+                    <div class="modal-price" id="modal-product-price">$190</div>
+                    <p class="modal-desc">Engineered for comfort and designed for city explorers. Featuring light-weight construction, breathable premium fabrics, and responsive sole support.</p>
+                    
+                    <div class="size-selector">
+                        <span class="selector-label">Select Size</span>
+                        <div class="sizes-grid">
+                            <button class="size-btn">US 7</button>
+                            <button class="size-btn">US 8</button>
+                            <button class="size-btn active">US 9</button>
+                            <button class="size-btn">US 10</button>
+                            <button class="size-btn">US 11</button>
+                        </div>
+                    </div>
+
+                    <button class="add-to-cart-btn" id="modal-add-to-cart">ADD TO BAG</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SHOPPING CART SIDEBAR DRAWER -->
+    <div class="cart-backdrop" id="cart-sidebar-backdrop">
+        <div class="cart-sidebar" id="cart-sidebar">
+            <div class="cart-sidebar-header">
+                <h3>YOUR BAG</h3>
+                <button class="close-cart-btn" id="close-cart" aria-label="Close Shopping Bag">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Cart Items Container -->
+            <div class="cart-items-list" id="cart-items-container">
+                <div class="cart-empty-state" id="cart-empty">
+                    <svg class="icon empty-bag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <path d="M16 10a4 4 0 0 1-8 0"></path>
+                    </svg>
+                    <p>Your shopping bag is empty.</p>
+                    <button class="cart-shop-now-btn" id="cart-shop-now">SHOP NOW</button>
+                </div>
+            </div>
+
+            <!-- Cart Summary & Actions -->
+            <div class="cart-footer" id="cart-footer">
+                <div class="cart-summary-row">
+                    <span>Subtotal</span>
+                    <span id="cart-subtotal-val">$0.00</span>
+                </div>
+                <div class="cart-summary-row shipping-row">
+                    <span>Shipping</span>
+                    <span class="shipping-free">FREE</span>
+                </div>
+                <div class="cart-divider"></div>
+                <div class="cart-summary-row total-row">
+                    <span>Total</span>
+                    <span id="cart-total-val">$0.00</span>
+                </div>
+                <button class="checkout-submit-btn" id="checkout-btn">PROCEED TO CHECKOUT</button>
+            </div>
+
+            <!-- Checkout Success State inside Drawer -->
+            <div class="checkout-success-overlay" id="checkout-success">
+                <div class="success-checkmark-wrapper">
+                    <svg class="checkmark-svg" viewBox="0 0 52 52">
+                        <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
+                        <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                    </svg>
+                </div>
+                <h3>Order Confirmed!</h3>
+                <p>Thank you for shopping at AURA. Your premium pair will be delivered in 2-4 business days.</p>
+                <button class="checkout-done-btn" id="checkout-done">CONTINUE SHOPPING</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FLOATING LIVE CHAT -->
+    <div class="floating-chat-container">
+        <button class="chat-toggle-btn" id="chat-toggle">
+            <svg class="chat-icon icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span>LIVE CHAT</span>
+        </button>
+
+        <div class="chat-widget" id="chat-widget">
+            <div class="chat-header">
+                <div class="chat-brand">
+                    <span class="chat-logo">AR</span>
+                    <div>
+                        <h4>Aura Assistant</h4>
+                        <span class="chat-status">Online</span>
+                    </div>
+                </div>
+                <button class="chat-close" id="chat-close" aria-label="Close Chat">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="chat-messages" id="chat-messages">
+                <div class="message bot-message">
+                    <p>Hello! Welcome to AURA Support. How can we help you step into style today?</p>
+                    <span class="message-time">10:00 PM</span>
+                </div>
+            </div>
+
+            <form class="chat-input-area" id="chat-form">
+                <input type="text" placeholder="Type your message..." class="chat-input" id="chat-input">
+                <button type="submit" class="chat-send" aria-label="Send">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- SCRIPT -->
+    <script src="app.js"></script>
+</body>
+</html>
