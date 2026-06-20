@@ -4924,11 +4924,15 @@ html.light-theme .product-grid.list-layout .product-name {
     .hero-ctas {
         flex-direction: column;
         gap: 12px;
+        align-items: center;
     }
 
     .hero-btn {
-        width: 100%;
-        padding: 12px 30px !important;
+        width: auto !important;
+        min-width: 180px;
+        max-width: 220px;
+        padding: 11px 28px !important;
+        font-size: 14px !important;
     }
     
     .breadcrumb-container {
@@ -5254,11 +5258,13 @@ html.light-theme .product-grid.list-layout .product-name {
 @media (max-width: 768px) {
     .shop-now-dropdown-container {
         width: 100%;
+        display: flex;
+        justify-content: center;
     }
     .shop-now-dropdown {
-        width: 100%;
-        left: 0;
-        transform: none;
+        width: 280px !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
         animation: slideDownDropdownMobile 0.2s ease forwards;
     }
 }

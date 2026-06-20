@@ -472,14 +472,23 @@ const LandingPage = ({ onOpenAuth }) => {
                     <div className="hero-loyalty-banner" aria-label="Loyalty Rewards Program">
                         <div className="loyalty-marquee-container">
                             <div className="loyalty-marquee-track">
-                                <div className="loyalty-marquee-group" dir="rtl">
+                                <div className="loyalty-marquee-group">
                                     <span className="loyalty-marquee-item">
                                         <span className="loyalty-icon">🎁</span>
                                         <span>اكسب 1000 نقطة مع كل 1000 جنيه شراء</span>
                                     </span>
                                     <span className="loyalty-sep">•</span>
                                     <span className="loyalty-marquee-item">
-                                        <span>استخدم 1000 نقطة وخد خصم 100 جنيه على طلبك الجاي</span>
+                                        <span className="loyalty-icon">🎁</span>
+                                        <span>Earn 1000 pts for every 1000 EGP purchase</span>
+                                    </span>
+                                    <span className="loyalty-sep">•</span>
+                                    <span className="loyalty-marquee-item">
+                                        <span>استخدم 1000 نقطة وخصم 100 جنيه على طلبك الجاي</span>
+                                    </span>
+                                    <span className="loyalty-sep">•</span>
+                                    <span className="loyalty-marquee-item">
+                                        <span>Get 100 EGP off your next order with 1000 pts</span>
                                     </span>
                                     <span className="loyalty-sep">•</span>
                                     <span className="loyalty-marquee-item">
@@ -487,18 +496,35 @@ const LandingPage = ({ onOpenAuth }) => {
                                     </span>
                                     <span className="loyalty-sep">•</span>
                                     <span className="loyalty-marquee-item">
+                                        <span>Min redemption is 1000 points</span>
+                                    </span>
+                                    <span className="loyalty-sep">•</span>
+                                    <span className="loyalty-marquee-item">
                                         <span>نقاطك بتتسجل تلقائيًا برقم موبايلك</span>
+                                    </span>
+                                    <span className="loyalty-sep">•</span>
+                                    <span className="loyalty-marquee-item">
+                                        <span>Points are saved automatically with your phone number</span>
                                     </span>
                                     <span className="loyalty-sep">•</span>
                                 </div>
-                                <div className="loyalty-marquee-group" aria-hidden="true" dir="rtl">
+                                <div className="loyalty-marquee-group" aria-hidden="true">
                                     <span className="loyalty-marquee-item">
                                         <span className="loyalty-icon">🎁</span>
                                         <span>اكسب 1000 نقطة مع كل 1000 جنيه شراء</span>
                                     </span>
                                     <span className="loyalty-sep">•</span>
                                     <span className="loyalty-marquee-item">
-                                        <span>استخدم 1000 نقطة وخد خصم 100 جنيه على طلبك الجاي</span>
+                                        <span className="loyalty-icon">🎁</span>
+                                        <span>Earn 1000 pts for every 1000 EGP purchase</span>
+                                    </span>
+                                    <span className="loyalty-sep">•</span>
+                                    <span className="loyalty-marquee-item">
+                                        <span>استخدم 1000 نقطة وخصم 100 جنيه على طلبك الجاي</span>
+                                    </span>
+                                    <span className="loyalty-sep">•</span>
+                                    <span className="loyalty-marquee-item">
+                                        <span>Get 100 EGP off your next order with 1000 pts</span>
                                     </span>
                                     <span className="loyalty-sep">•</span>
                                     <span className="loyalty-marquee-item">
@@ -506,7 +532,15 @@ const LandingPage = ({ onOpenAuth }) => {
                                     </span>
                                     <span className="loyalty-sep">•</span>
                                     <span className="loyalty-marquee-item">
+                                        <span>Min redemption is 1000 points</span>
+                                    </span>
+                                    <span className="loyalty-sep">•</span>
+                                    <span className="loyalty-marquee-item">
                                         <span>نقاطك بتتسجل تلقائيًا برقم موبايلك</span>
+                                    </span>
+                                    <span className="loyalty-sep">•</span>
+                                    <span className="loyalty-marquee-item">
+                                        <span>Points are saved automatically with your phone number</span>
                                     </span>
                                     <span className="loyalty-sep">•</span>
                                 </div>

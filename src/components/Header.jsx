@@ -40,27 +40,8 @@ const Header = ({ onOpenAuth }) => {
         <header className="main-header">
             <div className="header-container">
                 {/* Left Side Content: Empty layout spacer */}
+                {/* Left Side Content: Theme Toggle Button */}
                 <div className="header-left">
-                </div>
-
-                {/* Center Brand Logo (Perfectly balanced) */}
-                <Link to={isAdmin ? '/admin' : '/'} className="brand-logo" id="logo">
-                    <svg className="brand-logo-svg" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        {/* Shorter center-to-center distance to bring circles closer together */}
-                        <circle cx="60" cy="39" r="22" stroke="#FFFFFF" strokeWidth="5" fill="rgba(255, 255, 255, 0.05)" />
-                        <circle cx="60" cy="49" r="22" stroke="#FFFFFF" strokeWidth="5" fill="rgba(255, 255, 255, 0.05)" />
-                        {/* Visually balanced and consistent letters spacing (A-U-R-A) */}
-                        <path d="M 12 105 L 21 85 L 30 105" stroke="#FFFFFF" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
-                        <path d="M 38 85 L 38 95 C 38 105 56 105 56 95 L 56 85" stroke="#FFFFFF" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
-                        <path d="M 64 85 H 73 C 82 85 82 95 73 95 L 82 105" stroke="#FFFFFF" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
-                        <path d="M 90 105 L 99 85 L 108 105" stroke="#FFFFFF" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
-                        <text x="111" y="87" fill="#FFFFFF" fontSize="7.5" fontFamily="var(--font-heading)" fontWeight="bold" opacity="0.8">®</text>
-                    </svg>
-                </Link>
-
-                {/* Right Side Actions: Theme, Simplified Account, Cart */}
-                <div className="header-right">
-                    {/* Theme Toggle Button */}
                     <button 
                         className="icon-btn theme-toggle-btn"
                         id="theme-toggle-btn"
@@ -86,7 +67,25 @@ const Header = ({ onOpenAuth }) => {
                             </svg>
                         )}
                     </button>
+                </div>
 
+                {/* Center Brand Logo (Perfectly balanced) */}
+                <Link to={isAdmin ? '/admin' : '/'} className="brand-logo" id="logo">
+                    <svg className="brand-logo-svg" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        {/* Shorter center-to-center distance to bring circles closer together */}
+                        <circle cx="60" cy="39" r="22" stroke="#FFFFFF" strokeWidth="5" fill="rgba(255, 255, 255, 0.05)" />
+                        <circle cx="60" cy="49" r="22" stroke="#FFFFFF" strokeWidth="5" fill="rgba(255, 255, 255, 0.05)" />
+                        {/* Visually balanced and consistent letters spacing (A-U-R-A) */}
+                        <path d="M 12 105 L 21 85 L 30 105" stroke="#FFFFFF" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M 38 85 L 38 95 C 38 105 56 105 56 95 L 56 85" stroke="#FFFFFF" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M 64 85 H 73 C 82 85 82 95 73 95 L 82 105" stroke="#FFFFFF" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M 90 105 L 99 85 L 108 105" stroke="#FFFFFF" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+                        <text x="111" y="87" fill="#FFFFFF" fontSize="7.5" fontFamily="var(--font-heading)" fontWeight="bold" opacity="0.8">®</text>
+                    </svg>
+                </Link>
+
+                {/* Right Side Actions: Simplified Account, Cart */}
+                <div className="header-right">
                     {/* Simplified Account Icon */}
                     <button 
                         className={`icon-btn account-btn ${user ? 'logged-in' : ''}`} 
