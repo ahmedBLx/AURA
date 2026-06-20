@@ -8,10 +8,9 @@ import SocialMedia from '../components/SocialMedia';
 const SubCategoryProductCarousel = ({ category, products, layout, favorites, toggleFavorite, handleQuickView }) => {
     const carouselRef = useRef(null);
     const [currentSlide, setCurrentSlide] = useState(0);
-    const [isUserInteracting, setIsUserInteracting] = useState(false);
+    const [isPaused, setIsPaused] = useState(false);
     const [scrollProgress, setScrollProgress] = useState(0);
     const [visibleRatio, setVisibleRatio] = useState(0.2);
-    const autoScrollTimerRef = useRef(null);
     const resumeTimerRef = useRef(null);
 
     const totalSlides = products.length;
@@ -23,45 +22,32 @@ const SubCategoryProductCarousel = ({ category, products, layout, favorites, tog
         if (!card) return;
         const cardWidth = card.offsetWidth + 24; // width + gap
         container.scrollTo({ left: cardWidth * index, behavior: 'smooth' });
-        setCurrentSlide(index);
     }, [totalSlides]);
-
-    const goToNextSlide = useCallback(() => {
-        const next = (currentSlide + 1) % totalSlides;
-        scrollToSlide(next);
-    }, [currentSlide, totalSlides, scrollToSlide]);
 
     // Auto-scroll every 3 seconds
     useEffect(() => {
-        if (totalSlides <= 1 || isUserInteracting) return;
+        if (totalSlides <= 1 || isPaused) return;
 
-        autoScrollTimerRef.current = setInterval(() => {
-            goToNextSlide();
+        const timer = setInterval(() => {
+            setCurrentSlide((prevSlide) => {
+                const nextSlide = (prevSlide + 1) % totalSlides;
+                scrollToSlide(nextSlide);
+                return nextSlide;
+            });
         }, 3000);
 
-        return () => {
-            if (autoScrollTimerRef.current) clearInterval(autoScrollTimerRef.current);
-        };
-    }, [totalSlides, isUserInteracting, goToNextSlide]);
+        return () => clearInterval(timer);
+    }, [totalSlides, isPaused, scrollToSlide]);
 
     const handleScrollStart = useCallback(() => {
-        setIsUserInteracting(true);
-        if (autoScrollTimerRef.current) clearInterval(autoScrollTimerRef.current);
+        setIsPaused(true);
         if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
     }, []);
 
     const handleScrollEnd = useCallback(() => {
-        if (!carouselRef.current) return;
-        const container = carouselRef.current;
-        const card = container.querySelector('.product-card');
-        if (!card) return;
-        const cardWidth = card.offsetWidth + 24; // width + gap
-        const newIndex = Math.round(container.scrollLeft / cardWidth);
-        setCurrentSlide(newIndex);
-
         if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
         resumeTimerRef.current = setTimeout(() => {
-            setIsUserInteracting(false);
+            setIsPaused(false);
         }, 5000);
     }, []);
 
@@ -72,7 +58,13 @@ const SubCategoryProductCarousel = ({ category, products, layout, favorites, tog
             setScrollProgress(container.scrollLeft / maxScroll);
             setVisibleRatio(container.clientWidth / container.scrollWidth);
         }
-        handleScrollEnd();
+        
+        const card = container.querySelector('.product-card');
+        if (card) {
+            const cardWidth = card.offsetWidth + 24;
+            const newIndex = Math.round(container.scrollLeft / cardWidth);
+            setCurrentSlide(newIndex);
+        }
     };
 
     useEffect(() => {
@@ -85,19 +77,19 @@ const SubCategoryProductCarousel = ({ category, products, layout, favorites, tog
     }, [products]);
 
     const handleNext = () => {
-        handleScrollStart();
         const next = (currentSlide + 1) % totalSlides;
         scrollToSlide(next);
-        if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
-        resumeTimerRef.current = setTimeout(() => setIsUserInteracting(false), 5000);
+        setCurrentSlide(next);
+        setIsPaused(true);
+        handleScrollEnd();
     };
 
     const handlePrev = () => {
-        handleScrollStart();
         const prev = (currentSlide - 1 + totalSlides) % totalSlides;
         scrollToSlide(prev);
-        if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
-        resumeTimerRef.current = setTimeout(() => setIsUserInteracting(false), 5000);
+        setCurrentSlide(prev);
+        setIsPaused(true);
+        handleScrollEnd();
     };
 
     // Drag-to-scroll and mouse wheel horizontal scroll bindings
@@ -304,6 +296,7 @@ const SubCategoryProductCarousel = ({ category, products, layout, favorites, tog
                     className={`category-carousel-track ${layout === 'list' ? 'list-layout' : ''}`}
                     ref={carouselRef}
                     onTouchStart={handleScrollStart}
+                    onTouchEnd={handleScrollEnd}
                     onMouseDown={handleScrollStart}
                     onScroll={handleScroll}
                     style={{
@@ -615,35 +608,6 @@ const WomenPage = ({ onOpenAuth }) => {
                         </div>
 
                         <div className="discover-right">
-                            {/* View control layout selectors */}
-                            <div className="view-controls">
-                                <button 
-                                    className={`control-btn ${layout === 'grid' ? 'active' : ''}`}
-                                    onClick={() => setLayout('grid')}
-                                    aria-label="Grid Layout"
-                                >
-                                    <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                        <rect x="3" y="3" width="7" height="7"></rect>
-                                        <rect x="14" y="3" width="7" height="7"></rect>
-                                        <rect x="14" y="14" width="7" height="7"></rect>
-                                        <rect x="3" y="14" width="7" height="7"></rect>
-                                    </svg>
-                                </button>
-                                <button 
-                                    className={`control-btn ${layout === 'list' ? 'active' : ''}`}
-                                    onClick={() => setLayout('list')}
-                                    aria-label="List Layout"
-                                >
-                                    <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                        <line x1="8" y1="6" x2="21" y2="6"></line>
-                                        <line x1="8" y1="12" x2="21" y2="12"></line>
-                                        <line x1="8" y1="18" x2="21" y2="18"></line>
-                                        <line x1="3" y1="6" x2="3.01" y2="6"></line>
-                                        <line x1="3" y1="12" x2="3.01" y2="12"></line>
-                                        <line x1="3" y1="18" x2="3.01" y2="18"></line>
-                                    </svg>
-                                </button>
-                            </div>
 
                             {/* Inline Expanding Search */}
                             <div className={`toolbar-search-wrapper ${isSearchOverlayActive ? 'expanded' : ''}`}>
