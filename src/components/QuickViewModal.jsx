@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useCart } from '../context/CartContext';
 
 const QuickViewModal = ({ product, isOpen, onClose }) => {
@@ -6,6 +6,7 @@ const QuickViewModal = ({ product, isOpen, onClose }) => {
     const [selectedSize, setSelectedSize] = useState('42');
     const [addedStatus, setAddedStatus] = useState(false);
     const [activeImg, setActiveImg] = useState('');
+    const openTimeRef = useRef(0);
 
     const productSizes = (product && product.sizes && product.sizes.length > 0)
         ? product.sizes
@@ -28,6 +29,7 @@ const QuickViewModal = ({ product, isOpen, onClose }) => {
             setSelectedSize('42');
             setActiveImg('');
         } else if (product) {
+            openTimeRef.current = Date.now();
             const sizes = (product.sizes && product.sizes.length > 0)
                 ? product.sizes
                 : ['38', '39', '40', '41', '42', '43', '44', '45', '46', '47'];
@@ -35,6 +37,7 @@ const QuickViewModal = ({ product, isOpen, onClose }) => {
             setActiveImg(product.img);
         }
     }, [isOpen, product]);
+
 
     if (!isOpen || !product) return null;
 
@@ -52,7 +55,14 @@ const QuickViewModal = ({ product, isOpen, onClose }) => {
     };
 
     return (
-        <div className="modal-backdrop active" onClick={(e) => e.target.classList.contains('modal-backdrop') && onClose()}>
+        <div 
+            className="modal-backdrop active" 
+            onClick={(e) => {
+                if (Date.now() - openTimeRef.current > 400 && e.target.classList.contains('modal-backdrop')) {
+                    onClose();
+                }
+            }}
+        >
             <div className="modal-content">
                 <button className="modal-close-btn" onClick={onClose} aria-label="Close modal">
                     <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

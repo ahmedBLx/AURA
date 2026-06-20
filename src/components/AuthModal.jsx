@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 const AuthModal = ({ isOpen, onClose }) => {
     const { login, signup } = useAuth();
     const navigate = useNavigate();
+    const openTimeRef = useRef(0);
 
     const [activeTab, setActiveTab] = useState('login'); // 'login' | 'signup'
     const [successMessage, setSuccessMessage] = useState('');
@@ -29,8 +30,11 @@ const AuthModal = ({ isOpen, onClose }) => {
     useEffect(() => {
         if (!isOpen) {
             resetForms();
+        } else {
+            openTimeRef.current = Date.now();
         }
     }, [isOpen]);
+
 
     const resetForms = () => {
         setActiveTab('login');
@@ -146,7 +150,14 @@ const AuthModal = ({ isOpen, onClose }) => {
     if (!isOpen) return null;
 
     return (
-        <div className="auth-backdrop active" onClick={(e) => e.target.classList.contains('auth-backdrop') && onClose()}>
+        <div 
+            className="auth-backdrop active" 
+            onClick={(e) => {
+                if (Date.now() - openTimeRef.current > 400 && e.target.classList.contains('auth-backdrop')) {
+                    onClose();
+                }
+            }}
+        >
             <div className="auth-modal-wrapper">
                 <div className="auth-modal-content">
                     <button className="auth-close-btn" onClick={onClose} aria-label="Close authentication modal">
