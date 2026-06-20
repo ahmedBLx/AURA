@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 
 const SocialMedia = () => {
     const [isOpen, setIsOpen] = useState(false);
-    const [whatsappOpen, setWhatsappOpen] = useState(false);
     const containerRef = useRef(null);
 
     // Close when clicking outside
@@ -10,7 +9,6 @@ const SocialMedia = () => {
         const handleClickOutside = (event) => {
             if (containerRef.current && !containerRef.current.contains(event.target)) {
                 setIsOpen(false);
-                setWhatsappOpen(false);
             }
         };
 
@@ -25,7 +23,6 @@ const SocialMedia = () => {
         const handleKeyDown = (event) => {
             if (event.key === 'Escape') {
                 setIsOpen(false);
-                setWhatsappOpen(false);
             }
         };
         document.addEventListener('keydown', handleKeyDown);
@@ -38,10 +35,7 @@ const SocialMedia = () => {
             <button 
                 className={`social-toggle-btn ${isOpen ? 'active' : ''}`}
                 id="social-toggle"
-                onClick={() => {
-                    setIsOpen(!isOpen);
-                    if (isOpen) setWhatsappOpen(false);
-                }}
+                onClick={() => setIsOpen(!isOpen)}
                 aria-haspopup="true"
                 aria-expanded={isOpen}
                 aria-label="Toggle Social Media Links"
@@ -58,7 +52,7 @@ const SocialMedia = () => {
             </button>
 
             {/* Social Media Panel */}
-            <div className={`social-panel ${isOpen ? 'active' : ''} ${whatsappOpen ? 'whatsapp-expanded' : ''}`} id="social-panel">
+            <div className={`social-panel ${isOpen ? 'active' : ''}`} id="social-panel">
                 <div className="social-panel-header">
                     <h4>Connect with Us</h4>
                 </div>
@@ -115,70 +109,51 @@ const SocialMedia = () => {
                         </svg>
                     </a>
 
-                    {/* WhatsApp Accordion */}
-                    <div className={`social-option-whatsapp-group ${whatsappOpen ? 'open' : ''}`}>
-                        <button 
-                            className="social-option-item whatsapp-trigger"
-                            onClick={() => setWhatsappOpen(!whatsappOpen)}
-                            aria-expanded={whatsappOpen}
-                        >
-                            <div className="whatsapp-trigger-left">
-                                <svg className="icon whatsapp-icon" viewBox="0 0 24 24" fill="none" stroke="#25D366" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-                                </svg>
-                                <span>WhatsApp</span>
-                            </div>
-                            <svg className={`chevron-icon ${whatsappOpen ? 'rotated' : ''}`} width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" strokeWidth="1.8">
-                                <polyline points="1 1 5 5 9 1" strokeLinecap="round" strokeLinejoin="round"/>
+                    {/* WhatsApp */}
+                    <a 
+                        href="https://wa.me/201031200858" 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="social-option-item whatsapp-item"
+                    >
+                        <div className="social-option-left">
+                            <svg className="icon whatsapp-icon" viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                                <defs>
+                                    <linearGradient id="whatsapp-glow" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stopColor="#25D366" />
+                                        <stop offset="100%" stopColor="#128C7E" />
+                                    </linearGradient>
+                                </defs>
+                                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" stroke="url(#whatsapp-glow)"></path>
                             </svg>
-                        </button>
-
-                        {/* WhatsApp Contact Numbers Submenu */}
-                        <div className={`whatsapp-submenu ${whatsappOpen ? 'show' : ''}`}>
-                            <a 
-                                href="https://wa.me/201208471151" 
-                                target="_blank" 
-                                rel="noopener noreferrer" 
-                                className="whatsapp-number-item"
-                            >
-                                <span className="number-label">Customer Support 1</span>
-                                <span className="number-value">
-                                    <svg className="icon whatsapp-number-icon" viewBox="0 0 24 24" fill="none" stroke="#25D366" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '13px', height: '13px', marginRight: '6px' }}>
-                                        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-                                    </svg>
-                                    +20 12 08471151
-                                </span>
-                            </a>
-                            <a 
-                                href="https://wa.me/201010817058" 
-                                target="_blank" 
-                                rel="noopener noreferrer" 
-                                className="whatsapp-number-item"
-                            >
-                                <span className="number-label">Customer Support 2</span>
-                                <span className="number-value">
-                                    <svg className="icon whatsapp-number-icon" viewBox="0 0 24 24" fill="none" stroke="#25D366" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '13px', height: '13px', marginRight: '6px' }}>
-                                        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-                                    </svg>
-                                    +20 10 10817058
-                                </span>
-                            </a>
-                            <a 
-                                href="https://wa.me/201008598805" 
-                                target="_blank" 
-                                rel="noopener noreferrer" 
-                                className="whatsapp-number-item"
-                            >
-                                <span className="number-label">Sales & Orders</span>
-                                <span className="number-value">
-                                    <svg className="icon whatsapp-number-icon" viewBox="0 0 24 24" fill="none" stroke="#25D366" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '13px', height: '13px', marginRight: '6px' }}>
-                                        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-                                    </svg>
-                                    +20 10 08598805
-                                </span>
-                            </a>
+                            <span>WhatsApp</span>
                         </div>
-                    </div>
+                        <svg className="arrow-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </a>
+
+                    {/* Phone */}
+                    <a 
+                        href="tel:+201208471151" 
+                        className="social-option-item phone-item"
+                    >
+                        <div className="social-option-left">
+                            <svg className="icon phone-icon" viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                                <defs>
+                                    <linearGradient id="phone-glow" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stopColor="#3B82F6" />
+                                        <stop offset="100%" stopColor="#06B6D4" />
+                                    </linearGradient>
+                                </defs>
+                                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" stroke="url(#phone-glow)"></path>
+                            </svg>
+                            <span>Phone</span>
+                        </div>
+                        <svg className="arrow-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </a>
                 </div>
             </div>
         </div>

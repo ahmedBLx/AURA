@@ -1555,6 +1555,26 @@ button {
     background-color: rgba(255, 255, 255, 0.05);
 }
 
+.social-option-item.instagram-item:hover {
+    background-color: rgba(238, 42, 123, 0.08);
+    color: #ee2a7b;
+}
+
+.social-option-item.tiktok-item:hover {
+    background-color: rgba(0, 242, 254, 0.08);
+    color: #00f2fe;
+}
+
+.social-option-item.whatsapp-item:hover {
+    background-color: rgba(37, 211, 102, 0.08);
+    color: #25D366;
+}
+
+.social-option-item.phone-item:hover {
+    background-color: rgba(59, 130, 246, 0.08);
+    color: #3B82F6;
+}
+
 .social-option-item .whatsapp-trigger-left {
     display: flex;
     align-items: center;
@@ -1678,6 +1698,26 @@ html.light-theme .social-option-item {
 html.light-theme .social-option-item:hover {
     color: #111827;
     background-color: rgba(0, 0, 0, 0.04);
+}
+
+html.light-theme .social-option-item.instagram-item:hover {
+    background-color: rgba(238, 42, 123, 0.06);
+    color: #d62976;
+}
+
+html.light-theme .social-option-item.tiktok-item:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+    color: #000000;
+}
+
+html.light-theme .social-option-item.whatsapp-item:hover {
+    background-color: rgba(37, 211, 102, 0.06);
+    color: #059669;
+}
+
+html.light-theme .social-option-item.phone-item:hover {
+    background-color: rgba(59, 130, 246, 0.06);
+    color: #2563EB;
 }
 
 html.light-theme .social-option-whatsapp-group.open {
@@ -6403,7 +6443,7 @@ html.light-theme .search-results-badge {
     pointer-events: none;
     padding: 0;
     border: 1px solid transparent;
-    border-radius: 8px;
+    border-radius: var(--border-radius-pill, 24px);
     background-color: rgba(255, 255, 255, 0.05);
     color: #FFFFFF;
     font-family: var(--font-body);
@@ -6413,12 +6453,35 @@ html.light-theme .search-results-badge {
 }
 
 .toolbar-search-wrapper.expanded .toolbar-search-input {
-    width: 180px;
+    width: 220px;
     opacity: 1;
     pointer-events: auto;
-    padding: 8px 12px;
+    padding: 8px 42px 8px 16px;
     border-color: rgba(255, 255, 255, 0.15);
-    margin-right: 8px;
+}
+
+/* Position search button inside the input field */
+.toolbar-search-wrapper .search-btn {
+    background-color: transparent !important;
+    border: none !important;
+    width: 38px;
+    height: 38px;
+    position: absolute;
+    right: 0;
+    color: rgba(255, 255, 255, 0.6) !important;
+    z-index: 2;
+    transition: var(--transition-smooth);
+    border-radius: 50%;
+}
+
+.toolbar-search-wrapper .search-btn:hover {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    color: var(--color-gold) !important;
+}
+
+.toolbar-search-wrapper.expanded .search-btn {
+    right: 3px;
+    color: var(--color-gold) !important;
 }
 
 /* Light theme overrides */
@@ -6430,6 +6493,19 @@ html.light-theme .toolbar-search-input {
 html.light-theme .toolbar-search-wrapper.expanded .toolbar-search-input {
     border-color: rgba(17, 24, 39, 0.12);
 }
+
+html.light-theme .toolbar-search-wrapper .search-btn {
+    color: rgba(17, 24, 39, 0.6) !important;
+}
+
+html.light-theme .toolbar-search-wrapper .search-btn:hover {
+    background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+html.light-theme .toolbar-search-wrapper.expanded .search-btn {
+    color: #111827 !important;
+}
+
 
 @media (max-width: 480px) {
     .toolbar-search-wrapper.expanded .toolbar-search-input {
