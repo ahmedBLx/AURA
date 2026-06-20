@@ -553,7 +553,7 @@ const LandingPage = ({ onOpenAuth }) => {
             {/* ============================================
                 PRODUCT CAROUSELS FOR ENABLED SUB-CATEGORIES
                 ============================================ */}
-            {homepageCategories.map(cat => {
+            {homepageCategories.filter(cat => cat.parentName === 'Special Collection').map(cat => {
                 const catProducts = products.filter(p => p.categories && p.categories.includes(cat.name));
                 if (catProducts.length === 0) return null;
                 return (
