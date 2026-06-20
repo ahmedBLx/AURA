@@ -116,36 +116,28 @@ const LoginPage = () => {
         <main className="login-page-container" style={{ minHeight: '85vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 20px', position: 'relative' }}>
             <style>{`
                 .login-card {
-                    --border-color: rgba(255, 255, 255, 0.08);
+                    --border-color: rgba(197, 168, 128, 0.2);
                     --input-bg: rgba(255, 255, 255, 0.03);
                     --input-border: rgba(255, 255, 255, 0.1);
                     --input-bg-focus: rgba(255, 255, 255, 0.06);
                     --text-color: #FFFFFF;
                     --placeholder-color: rgba(255, 255, 255, 0.4);
-                    background-color: rgba(10, 10, 10, 0.85);
-                    backdrop-filter: none; /* Removed blur to prevent iOS Safari crashes */
+                    background-color: rgba(10, 10, 10, 0.9);
+                    backdrop-filter: none;
                     -webkit-backdrop-filter: none;
                     border: 1px solid var(--border-color);
-                    border-radius: var(--border-radius-lg);
+                    border-radius: 20px;
                     padding: 40px;
                     max-width: 460px;
                     width: 100%;
-                    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+                    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 40px rgba(197, 168, 128, 0.02);
                     position: relative;
                     color: var(--text-color);
+                    transition: border-color 0.3s ease, box-shadow 0.3s ease;
                 }
-                .login-card::before {
-                    content: '';
-                    position: absolute;
-                    top: -1.5px;
-                    left: -1.5px;
-                    right: -1.5px;
-                    bottom: -1.5px;
-                    background: linear-gradient(90deg, #FF5E97, #A044FF, #00D2FF, #FF5E97);
-                    background-size: 300% 100%;
-                    border-radius: var(--border-radius-lg);
-                    z-index: -1;
-                    animation: borderGlow 6s linear infinite;
+                .login-card:hover {
+                    border-color: rgba(197, 168, 128, 0.35);
+                    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.85), 0 0 50px rgba(197, 168, 128, 0.04);
                 }
                 .portal-title {
                     font-family: var(--font-heading);
