@@ -421,7 +421,7 @@ const SubCategoryProductCarousel = ({ category, products, layout, favorites, tog
     );
 };
 
-const OffersPage = ({ onOpenAuth }) => {
+const OffersPage = () => {
     const { products, categories } = useProducts();
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);

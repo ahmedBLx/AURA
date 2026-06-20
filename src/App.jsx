@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ProductProvider } from './context/ProductContext';
@@ -8,13 +8,13 @@ import { ThemeProvider, useTheme } from './context/ThemeContext';
 // Components
 import Header from './components/Header';
 import Footer from './components/Footer';
-import AuthModal from './components/AuthModal';
 import CartDrawer from './components/CartDrawer';
 import GlobalBackground from './components/GlobalBackground';
 
 // Pages
 import LandingPage from './pages/LandingPage';
 import ShopPage from './pages/ShopPage';
+import LoginPage from './pages/LoginPage';
 import AdminPage from './pages/AdminPage';
 import MenPage from './pages/MenPage';
 import WomenPage from './pages/WomenPage';
@@ -25,7 +25,7 @@ import OffersPage from './pages/OffersPage';
 const AdminRoute = ({ children }) => {
     const { user } = useAuth();
     if (!user || user.role !== 'admin') {
-        return <Navigate to="/" replace />;
+        return <Navigate to="/login" replace />;
     }
     return children;
 };
@@ -34,10 +34,11 @@ const AdminRoute = ({ children }) => {
 const AppLayout = () => {
     const { user } = useAuth();
     const location = useLocation();
-    const [authModalOpen, setAuthModalOpen] = useState(false);
     const { theme } = useTheme();
 
     const isAdminPage = location.pathname.toLowerCase() === '/admin';
+    const isLoginPage = location.pathname.toLowerCase() === '/login';
+    const isDashboardOrAuth = isAdminPage || isLoginPage;
 
     // Sync body class names dynamically on route change and theme change
     useEffect(() => {
@@ -47,12 +48,14 @@ const AppLayout = () => {
             document.body.className = `${prefix}-shop`;
         } else if (path === '/admin') {
             document.body.className = `${prefix}-admin`;
+        } else if (path === '/login') {
+            document.body.className = `${prefix}-landing`; // Keep similar landing background styling for login page
         } else {
             document.body.className = `${prefix}-landing`;
         }
     }, [location.pathname, theme]);
 
-    // Auto-redirect admins to /admin if they land on /
+    // Auto-redirect admins to /admin if they land on / or /login
     if (user && user.role === 'admin' && !isAdminPage) {
         return <Navigate to="/admin" replace />;
     }
@@ -63,19 +66,22 @@ const AppLayout = () => {
             <GlobalBackground />
 
             {/* Render header for customer and landing pages, hide for admin dashboard */}
-            {!isAdminPage && <Header onOpenAuth={() => setAuthModalOpen(true)} />}
+            {!isAdminPage && <Header />}
             
             <Routes>
                 {/* Public Landing Route */}
-                <Route path="/" element={<LandingPage onOpenAuth={() => setAuthModalOpen(true)} />} />
+                <Route path="/" element={<LandingPage />} />
                 
                 {/* Category & Offers Routes */}
-                <Route path="/men" element={<MenPage onOpenAuth={() => setAuthModalOpen(true)} />} />
-                <Route path="/women" element={<WomenPage onOpenAuth={() => setAuthModalOpen(true)} />} />
-                <Route path="/offers" element={<OffersPage onOpenAuth={() => setAuthModalOpen(true)} />} />
+                <Route path="/men" element={<MenPage />} />
+                <Route path="/women" element={<WomenPage />} />
+                <Route path="/offers" element={<OffersPage />} />
                 
                 {/* Public Customer Shop Route */}
                 <Route path="/shop" element={<ShopPage />} />
+
+                {/* Standalone Login Route */}
+                <Route path="/login" element={<LoginPage />} />
                 
                 {/* Protected Admin Dashboard Route */}
                 <Route 
@@ -93,9 +99,6 @@ const AppLayout = () => {
             
             {/* Render footer except for admin dashboard */}
             {!isAdminPage && <Footer />}
-
-            {/* Auth Modal Overlay */}
-            <AuthModal isOpen={authModalOpen} onClose={() => setAuthModalOpen(false)} />
 
             {/* Cart Drawer Overlay */}
             <CartDrawer />

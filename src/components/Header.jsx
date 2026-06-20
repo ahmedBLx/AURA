@@ -4,7 +4,7 @@ import { useCart } from '../context/CartContext';
 import { useTheme } from '../context/ThemeContext';
 import { useNavigate, Link } from 'react-router-dom';
 
-const Header = ({ onOpenAuth }) => {
+const Header = () => {
     const { user } = useAuth();
     const { cartCount, setCartOpen } = useCart();
     const { theme, toggleTheme } = useTheme();
@@ -14,7 +14,7 @@ const Header = ({ onOpenAuth }) => {
         if (user) {
             navigate('/admin');
         } else {
-            onOpenAuth();
+            navigate('/login');
         }
     };
 

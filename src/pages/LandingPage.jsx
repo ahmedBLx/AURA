@@ -356,7 +356,7 @@ const SubCategoryProductCarousel = ({ category, products, navigate, handleQuickV
     );
 };
 
-const LandingPage = ({ onOpenAuth }) => {
+const LandingPage = () => {
     const { user } = useAuth();
     const { products, homepageCategories } = useProducts();
     const navigate = useNavigate();

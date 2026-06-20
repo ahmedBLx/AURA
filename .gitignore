@@ -30,3 +30,7 @@ backend/uploads/
 *.njsproj
 *.sln
 *.sw?
+
+# Subagent files
+.agents/
+backend/inspect_db.js
