@@ -48,7 +48,7 @@ class ReviewService {
     }
 
     // Authorization check: User can delete their own review, or Admin can delete any
-    if (review.user.toString() !== userId && userRole !== 'admin') {
+    if (review.user.toString() !== userId.toString() && userRole !== 'admin') {
       throw new AppError('You are not authorized to delete this review', 403);
     }
 

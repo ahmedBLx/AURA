@@ -54,26 +54,43 @@ button {
 }
 
 /* ==========================================
-   HEADER / NAVBAR (~80px Height)
+   HEADER / NAVBAR (~115px Mobile, ~125px Desktop Height)
    ========================================== */
 .main-header {
-    height: 80px;
-    background-color: var(--color-primary);
+    height: 115px; /* taller on mobile to support double-row layout */
+    background-color: #000000 !important; /* solid pure black */
     color: #FFFFFF;
     position: sticky;
     top: 0;
     z-index: 100;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    transition: height 0.3s ease;
 }
 
 .header-container {
     max-width: 1440px;
-    height: 100%;
+    height: 75px; /* top row containing spacer, centered logo, actions */
     margin: 0 auto;
     padding: 0 40px;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    position: relative;
+}
+
+.header-left {
+    flex: 1 1 0%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.header-right {
+    flex: 1 1 0%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
 }
 
 /* Brand Logo */
@@ -87,27 +104,140 @@ button {
     letter-spacing: 0.15em;
     color: #FFFFFF;
     transition: var(--transition-smooth);
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+}
+
+/* Bottom Navigation Row centered under the Brand Logo */
+.header-nav-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 40px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    margin-top: 0;
+    width: 100%;
+}
+
+.desktop-nav-centered {
+    display: flex;
+    align-items: center;
+    gap: 24px; /* compact layout spacing for mobile */
+}
+
+.desktop-nav-centered .nav-link {
+    font-size: 12.5px; /* readable on mobile */
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(255, 255, 255, 0.85);
+    padding: 6px 4px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    transition: var(--transition-smooth);
+}
+
+.desktop-nav-centered .nav-link::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: 2px;
+    left: 4px;
+    background-color: var(--color-gold);
+    transition: var(--transition-smooth);
+}
+
+.desktop-nav-centered .nav-link:hover {
+    color: var(--color-gold);
+}
+
+.desktop-nav-centered .nav-link:hover::after {
+    width: calc(100% - 8px);
+}
+
+/* Home link icon layout styling */
+.desktop-nav-centered .nav-home-link {
+    padding: 6px;
+}
+
+.desktop-nav-centered .nav-home-link::after {
+    display: none;
+}
+
+.desktop-nav-centered .nav-home-link:hover {
+    color: var(--color-gold);
+    transform: scale(1.08);
+}
+
+/* Desktop screen sizing rules */
+@media (min-width: 1025px) {
+    .main-header {
+        height: 130px; /* slightly taller on desktop */
+    }
+    
+    .header-container {
+        height: 85px;
+    }
+    
+    .header-nav-row {
+        height: 45px;
+    }
+    
+    .desktop-nav-centered {
+        gap: 40px; /* spacious gold standard spacing for desktop */
+    }
+    
+    .desktop-nav-centered .nav-link {
+        font-size: 13px;
+        letter-spacing: 0.12em;
+        padding: 8px 4px;
+    }
+}
+
+/* Extra small mobile adjustments */
+@media (max-width: 480px) {
+    .header-container {
+        padding: 0 16px;
+    }
+    .desktop-nav-centered {
+        gap: 16px; /* tight fit on extremely narrow mobile devices */
+    }
+    .desktop-nav-centered .nav-link {
+        font-size: 11.5px;
+        letter-spacing: 0.05em;
+    }
 }
 
 .brand-logo-svg {
-    height: 85px;
-    width: 85px;
+    height: 68px; /* mobile logo size */
+    width: 68px;
     display: inline-block;
     overflow: visible;
-}
-
-/* SVG Logo Circles mimicking neon lightbulb flicker */
-.brand-logo-svg circle {
     transition: var(--transition-smooth);
-    animation: neonCircleGlow 9s infinite ease-in-out;
+    animation: logoBehindGlow 9s infinite ease-in-out;
 }
 
-.brand-logo-svg circle:nth-child(1) {
-    animation-delay: 0s;
+@media (min-width: 1025px) {
+    .brand-logo-svg {
+        height: 82px; /* desktop logo size */
+        width: 82px;
+    }
 }
 
-.brand-logo-svg circle:nth-child(2) {
-    animation-delay: -3s; /* Delay offset to create a beautiful blending gradient between circles */
+/* Solid white elements for default logo outline */
+.brand-logo-svg circle,
+.brand-logo-svg path {
+    stroke: #FFFFFF !important;
+    transition: var(--transition-smooth);
+}
+
+.brand-logo-svg circle {
+    fill: rgba(255, 255, 255, 0.04) !important;
 }
 
 /* Logo registered trademark text alignment */
@@ -127,14 +257,24 @@ button {
 }
 
 /* Hover effect: Force logo fully ON and glowing Gold */
+.brand-logo:hover .brand-logo-svg,
+.sidebar-logo:hover .brand-logo-svg {
+    animation: none;
+    filter: drop-shadow(0 0 5px var(--color-gold)) 
+            drop-shadow(0 0 15px rgba(197, 168, 128, 0.6))
+            drop-shadow(0 0 30px rgba(197, 168, 128, 0.3));
+}
+
+.brand-logo:hover .brand-logo-svg circle,
+.brand-logo:hover .brand-logo-svg path,
+.sidebar-logo:hover .brand-logo-svg circle,
+.sidebar-logo:hover .brand-logo-svg path {
+    stroke: var(--color-gold) !important;
+}
+
 .brand-logo:hover .brand-logo-svg circle,
 .sidebar-logo:hover .brand-logo-svg circle {
-    animation: none;
-    opacity: 1 !important;
-    stroke: var(--color-gold) !important;
-    fill: rgba(197, 168, 128, 0.1) !important;
-    filter: drop-shadow(0 0 4px var(--color-gold)) 
-            drop-shadow(0 0 12px var(--color-gold));
+    fill: rgba(197, 168, 128, 0.08) !important;
 }
 
 .brand-logo:hover span,
@@ -149,65 +289,43 @@ button {
         0 0 40px rgba(197, 168, 128, 0.6);
 }
 
-@keyframes neonCircleGlow {
-    /* Neon Blue */
+@keyframes logoBehindGlow {
+    /* Pulsing White - Diffuse cloud of light */
     0%, 100% {
-        stroke: #00f0ff !important;
-        fill: rgba(0, 240, 255, 0.04) !important;
-        filter: drop-shadow(0 0 3px #00f0ff) 
-                drop-shadow(0 0 8px #00f0ff) 
-                drop-shadow(0 0 15px rgba(0, 240, 255, 0.3));
+        filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8)) 
+                drop-shadow(0 0 22px rgba(255, 255, 255, 0.5))
+                drop-shadow(0 0 45px rgba(255, 255, 255, 0.25));
     }
-    /* Neon Pink */
-    33% {
-        stroke: #ff007f !important;
-        fill: rgba(255, 0, 127, 0.04) !important;
-        filter: drop-shadow(0 0 3px #ff007f) 
-                drop-shadow(0 0 8px #ff007f) 
-                drop-shadow(0 0 15px rgba(255, 0, 127, 0.3));
-    }
-    /* Neon Purple */
-    66% {
-        stroke: #a044ff !important;
-        fill: rgba(160, 68, 255, 0.04) !important;
-        filter: drop-shadow(0 0 3px #a044ff) 
-                drop-shadow(0 0 8px #a044ff) 
-                drop-shadow(0 0 15px rgba(160, 68, 255, 0.3));
+    50% {
+        filter: drop-shadow(0 0 14px rgba(255, 255, 255, 0.95)) 
+                drop-shadow(0 0 28px rgba(255, 255, 255, 0.65))
+                drop-shadow(0 0 55px rgba(255, 255, 255, 0.35));
     }
 }
 
 @keyframes neonTextGlow {
-    /* Blue Glow */
+    /* Pulsing White Glow */
     0%, 100% {
         color: #ffffff;
         text-shadow: 
-            0 0 4px #00f0ff,
-            0 0 10px #00f0ff,
-            0 0 20px rgba(0, 240, 255, 0.4);
+            0 0 4px rgba(255, 255, 255, 0.8),
+            0 0 10px rgba(255, 255, 255, 0.5),
+            0 0 20px rgba(255, 255, 255, 0.25);
     }
-    /* Pink Glow */
-    33% {
+    50% {
         color: #ffffff;
         text-shadow: 
-            0 0 4px #ff007f,
-            0 0 10px #ff007f,
-            0 0 20px rgba(255, 0, 127, 0.4);
-    }
-    /* Purple Glow */
-    66% {
-        color: #ffffff;
-        text-shadow: 
-            0 0 4px #a044ff,
-            0 0 10px #a044ff,
-            0 0 20px rgba(160, 68, 255, 0.4);
+            0 0 6px rgba(255, 255, 255, 0.95),
+            0 0 14px rgba(255, 255, 255, 0.65),
+            0 0 28px rgba(255, 255, 255, 0.35);
     }
 }
 
-/* Center Navigation */
-.center-nav {
+/* Desktop Navigation */
+.desktop-nav {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 32px;
 }
 
 .nav-link {
@@ -218,6 +336,8 @@ button {
     transition: var(--transition-smooth);
     padding: 8px 4px;
     position: relative;
+    display: flex;
+    align-items: center;
 }
 
 .nav-link::after {
@@ -245,89 +365,126 @@ button {
     user-select: none;
 }
 
-/* Right Side Actions */
-.header-actions {
-    display: flex;
-    align-items: center;
-    gap: 24px;
+/* Nav Dropdown Container */
+.nav-dropdown-container {
+    position: relative;
 }
 
-.icon-btn {
-    color: rgba(255, 255, 255, 0.9);
+/* Dropdown Trigger Button */
+.dropdown-trigger {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Chevron Rotation */
+.dropdown-chevron {
+    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.dropdown-chevron.open,
+.nav-dropdown-container:hover .dropdown-chevron {
+    transform: rotate(180deg);
+}
+
+/* Dropdown Menu - Sleek Luxury Design */
+.dropdown-menu {
+    position: absolute;
+    top: calc(100% + 12px);
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    width: 210px;
+    background-color: rgba(10, 10, 10, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 8px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    z-index: 1000;
+}
+
+/* Dropdown Menu Show State */
+.dropdown-menu.show,
+.nav-dropdown-container:hover .dropdown-menu {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* Dropdown Items styling */
+.dropdown-item {
+    display: block;
+    padding: 12px 16px;
+    font-size: 14px;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.75);
+    border-radius: 8px;
+    transition: var(--transition-smooth);
+    text-align: left;
+    letter-spacing: 0.05em;
+}
+
+.dropdown-item:hover {
+    color: #FFFFFF;
+    background-color: rgba(255, 255, 255, 0.06);
+    padding-left: 20px;
+    box-shadow: inset 2px 0 0 var(--color-gold);
+}
+
+/* Account, Cart & Theme Action Buttons */
+.account-btn, .cart-btn, .theme-toggle-btn {
+    position: relative;
+    padding: 8px;
+    margin: 0;
+    width: 38px;
+    height: 38px;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: var(--transition-smooth);
-}
-
-.icon-btn:hover {
-    color: var(--color-gold);
-    transform: scale(1.08);
-}
-
-.icon {
-    width: 20px;
-    height: 20px;
-}
-
-/* Login Button */
-.login-btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 18px;
-    border: 1px solid rgba(255, 255, 255, 0.35);
-    border-radius: var(--border-radius-pill);
-    color: #FFFFFF;
-    font-weight: 400;
-    font-size: 14px;
-    letter-spacing: 0.05em;
-    transition: var(--transition-smooth);
-}
-
-.login-btn:hover {
-    border-color: var(--color-gold);
-    background-color: rgba(255, 255, 255, 0.08);
-    color: var(--color-gold);
-}
-
-.user-icon {
-    width: 16px;
-    height: 16px;
-}
-
-/* About Link */
-.about-link {
-    font-size: 13px;
-    font-weight: 500;
-    letter-spacing: 0.1em;
+    border-radius: 50%;
     color: rgba(255, 255, 255, 0.9);
     transition: var(--transition-smooth);
+    background: transparent;
+    border: none;
+    cursor: pointer;
 }
 
-.about-link:hover {
+.account-btn:hover, .cart-btn:hover, .theme-toggle-btn:hover {
     color: var(--color-gold);
+    background-color: rgba(255, 255, 255, 0.08);
+    transform: scale(1.05);
 }
 
-/* Cart Button */
-.cart-btn {
-    position: relative;
+.account-btn .icon, .cart-btn .icon, .theme-toggle-btn .icon {
+    width: 19px;
+    height: 19px;
+    stroke-width: 1.8px;
+    transition: var(--transition-smooth);
 }
 
 .cart-badge {
     position: absolute;
-    top: -6px;
-    right: -8px;
+    top: -2px;
+    right: -2px;
     background-color: var(--color-gold);
     color: var(--color-primary);
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 700;
-    width: 16px;
-    height: 16px;
+    width: 15px;
+    height: 15px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
 }
 
 /* ==========================================
@@ -407,7 +564,7 @@ button {
     overflow: hidden;
 }
 
-/* Darkening linear gradient overlay to make text pop */
+/* Removed darkening overlay to make image natural */
 .hero-section::before {
     content: '';
     position: absolute;
@@ -415,7 +572,7 @@ button {
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.3) 50%, rgba(0, 0, 0, 0.1) 100%);
+    background: none;
     z-index: 1;
 }
 
@@ -453,6 +610,7 @@ button {
     position: relative;
     z-index: 4;
     max-width: 600px;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5); /* shadow to maintain text readability */
 }
 
 .hero-heading {
@@ -1258,18 +1416,20 @@ button {
 }
 
 /* ==========================================
-   FLOATING LIVE CHAT
+/* ==========================================
+   FLOATING SOCIAL MEDIA MENU
    ========================================== */
-.floating-chat-container {
+.floating-social-container {
     position: fixed;
     bottom: 30px;
     right: 30px;
+    left: auto;
     z-index: 95;
     font-family: var(--font-body);
 }
 
-/* Chat Button */
-.chat-toggle-btn {
+/* Social Toggle Button */
+.social-toggle-btn {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -1286,9 +1446,10 @@ button {
     position: relative;
     z-index: 1;
     overflow: visible;
+    cursor: pointer;
 }
 
-.chat-toggle-btn::before {
+.social-toggle-btn::before {
     content: '';
     position: absolute;
     top: -1.5px;
@@ -1302,161 +1463,247 @@ button {
     animation: borderGlow 6s linear infinite;
 }
 
-.chat-toggle-btn:hover {
+.social-toggle-btn:hover {
     background-color: var(--color-primary-light);
     transform: translateY(-3px);
     box-shadow: 0 15px 30px rgba(0, 0, 0, 0.45);
 }
 
-.chat-toggle-btn .chat-icon {
+.social-toggle-btn.active {
+    transform: scale(0.95);
+}
+
+.social-toggle-btn .social-icon {
     width: 18px;
     height: 18px;
 }
 
-/* Chat Widget Box */
-.chat-widget {
+/* Social Options Panel */
+.social-panel {
     position: absolute;
-    bottom: 75px;
+    bottom: 70px;
     right: 0;
-    width: 360px;
-    height: 480px;
-    background-color: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(12px);
+    left: auto;
+    width: 320px;
+    background-color: rgba(10, 10, 10, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 16px;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-    border: 1px solid rgba(0, 0, 0, 0.15);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
     display: flex;
     flex-direction: column;
     overflow: hidden;
     opacity: 0;
     transform: translateY(20px) scale(0.95);
     pointer-events: none;
-    transition: var(--transition-smooth);
+    transform-origin: bottom right;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    z-index: 100;
 }
 
-.chat-widget.active {
+.social-panel.active {
     opacity: 1;
     transform: translateY(0) scale(1);
     pointer-events: auto;
 }
 
-/* Chat Header */
-.chat-header {
-    background-color: var(--color-primary);
-    color: #FFFFFF;
-    padding: 16px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.social-panel-header {
+    background-color: rgba(255, 255, 255, 0.02);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 18px 24px;
 }
 
-.chat-brand {
+.social-panel-header h4 {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    color: #FFFFFF;
+    text-transform: uppercase;
+}
+
+.social-options {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+/* Individual list items */
+.social-option-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 18px;
+    color: rgba(255, 255, 255, 0.8);
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 400;
+    transition: var(--transition-smooth);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    text-decoration: none;
+}
+
+.social-option-item:hover {
+    color: #FFFFFF;
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.social-option-item .whatsapp-trigger-left {
     display: flex;
     align-items: center;
     gap: 12px;
 }
 
-.chat-logo {
-    width: 32px;
-    height: 32px;
-    background-color: var(--color-gold);
-    color: var(--color-primary);
-    font-weight: 700;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
+/* Chevron and icon styles */
+.social-option-item .icon {
+    width: 18px;
+    height: 18px;
+    stroke-width: 1.8px;
 }
 
-.chat-brand h4 {
-    font-size: 14px;
-    font-weight: 500;
+.social-option-item .chevron-icon {
+    transition: transform 0.3s ease;
+    color: rgba(255, 255, 255, 0.4);
 }
 
-.chat-status {
-    font-size: 11px;
-    color: #A7F3D0;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-
-.chat-status::before {
-    content: '';
-    display: inline-block;
-    width: 6px;
-    height: 6px;
-    background-color: #34D399;
-    border-radius: 50%;
-}
-
-.chat-close {
-    color: #FFFFFF;
-    opacity: 0.8;
-    transition: var(--transition-smooth);
-}
-
-.chat-close:hover {
-    opacity: 1;
+.social-option-item .chevron-icon.rotated {
+    transform: rotate(180deg);
     color: var(--color-gold);
 }
 
-/* Chat messages list */
-.chat-messages {
-    flex: 1;
-    padding: 20px;
-    overflow-y: auto;
+/* WhatsApp block */
+.social-option-whatsapp-group {
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    background-color: rgba(243, 244, 246, 0.6);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: background-color 0.3s ease;
 }
 
-.message {
-    max-width: 80%;
-    padding: 12px 16px;
-    border-radius: 12px;
-    font-size: 13px;
-    line-height: 1.4;
-    position: relative;
+.social-option-whatsapp-group.open {
+    background-color: rgba(255, 255, 255, 0.02);
 }
 
-.bot-message {
-    background-color: #FFFFFF;
-    color: var(--color-text-dark);
-    align-self: flex-start;
-    border-bottom-left-radius: 2px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-}
-
-.user-message {
-    background-color: var(--color-primary);
-    color: #FFFFFF;
-    align-self: flex-end;
-    border-bottom-right-radius: 2px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-}
-
-.message-time {
-    font-size: 9px;
-    color: var(--color-text-muted);
-    display: block;
-    margin-top: 4px;
-    text-align: right;
-}
-
-.user-message .message-time {
-    color: rgba(255, 255, 255, 0.6);
-}
-
-/* Chat form input */
-.chat-input-area {
-    padding: 12px 16px;
-    background-color: #FFFFFF;
-    border-top: 1px solid rgba(0, 0, 0, 0.05);
+.social-option-whatsapp-group .whatsapp-trigger {
     display: flex;
-    gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* Submenu layout */
+.whatsapp-submenu {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height 0.35s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s ease, padding 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 0 12px;
+}
+
+.whatsapp-submenu.show {
+    max-height: 250px;
+    opacity: 1;
+    padding: 6px 12px 12px 12px;
+}
+
+.whatsapp-number-item {
+    display: flex;
+    flex-direction: column;
+    padding: 10px 14px;
+    border-radius: 8px;
+    transition: var(--transition-smooth);
+    background-color: rgba(255, 255, 255, 0.01);
+    border: 1px solid rgba(255, 255, 255, 0.02);
+    text-decoration: none;
+}
+
+.whatsapp-number-item:hover {
+    background-color: rgba(37, 211, 102, 0.08); /* subtle WhatsApp green tint */
+    border-color: rgba(37, 211, 102, 0.2);
+    transform: translateX(4px);
+}
+
+.whatsapp-number-item .number-label {
+    font-size: 10px;
+    color: var(--color-text-muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 2px;
+}
+
+.whatsapp-number-item .number-value {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.95);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.whatsapp-number-item:hover .number-value {
+    color: #25D366; /* WhatsApp brand green color on hover */
+}
+
+/* Light Theme overrides for Social Media Panel */
+html.light-theme .social-panel {
+    background-color: rgba(255, 255, 255, 0.98);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+html.light-theme .social-panel-header {
+    background-color: rgba(0, 0, 0, 0.01);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+html.light-theme .social-panel-header h4 {
+    color: #111827;
+}
+
+html.light-theme .social-option-item {
+    color: #374151;
+}
+
+html.light-theme .social-option-item:hover {
+    color: #111827;
+    background-color: rgba(0, 0, 0, 0.04);
+}
+
+html.light-theme .social-option-whatsapp-group.open {
+    background-color: rgba(0, 0, 0, 0.01);
+}
+
+html.light-theme .whatsapp-number-item {
+    background-color: rgba(0, 0, 0, 0.005);
+    border: 1px solid rgba(0, 0, 0, 0.01);
+}
+
+html.light-theme .whatsapp-number-item .number-value {
+    color: #111827;
+}
+
+html.light-theme .whatsapp-number-item .number-label {
+    color: #6B7280;
+}
+
+html.light-theme .whatsapp-number-item:hover {
+    background-color: rgba(37, 211, 102, 0.06);
+    border-color: rgba(37, 211, 102, 0.15);
+}
+
+html.light-theme .whatsapp-number-item:hover .number-value {
+    color: #059669; /* Slightly darker green for light mode readability */
 }
 
 .chat-input {
@@ -1529,7 +1776,7 @@ button {
         padding: 0 20px;
     }
 
-    .center-nav {
+    .desktop-nav {
         display: none;
         /* Mobile menu hidden */
     }
@@ -1592,35 +1839,73 @@ button {
     max-width: 1440px;
     margin: 0 auto;
     display: grid;
-    grid-template-columns: 2fr 1.2fr 1.2fr 2fr;
+    grid-template-columns: 3fr 1fr 1fr 2fr;
     gap: 40px;
     margin-bottom: 40px;
 }
 
 .footer-brand-col {
     display: flex;
-    flex-direction: column;
-    gap: 16px;
+    flex-direction: row;
+    align-items: center;
+    gap: 24px;
 }
 
 .footer-logo {
     font-size: 20px;
+    position: relative !important;
+    left: auto !important;
+    transform: none !important;
+    display: inline-block !important;
 }
 
-.footer-tagline {
-    font-family: var(--font-heading);
-    font-size: 13px;
-    color: var(--color-gold);
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    margin-top: -8px;
+.footer-brand-content {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
 }
 
-.footer-desc {
-    font-size: 13px;
-    color: var(--color-text-muted);
+.footer-about-text {
+    font-size: 13.5px;
+    color: var(--color-text-muted, #9CA3AF);
     line-height: 1.6;
-    max-width: 300px;
+    margin: 0;
+    max-width: 380px;
+}
+
+.footer-location-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    font-family: var(--font-heading), sans-serif;
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--color-gold, #C5A880);
+    border: 1px solid var(--color-gold, #C5A880);
+    border-radius: var(--border-radius-pill, 50px);
+    background: transparent;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    margin-top: 4px;
+}
+
+.footer-location-btn:hover {
+    background-color: var(--color-gold, #C5A880);
+    color: #111827;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(197, 168, 128, 0.2);
+}
+
+.footer-location-btn:active {
+    transform: translateY(0);
+}
+
+.location-icon {
+    font-size: 13px;
 }
 
 .footer-links-col h4 {
@@ -3823,12 +4108,12 @@ body.dark-landing .specials-section {
     }
 }
 
-/* Smooth fade out overlay on hero background to integrate with lines */
+/* Natural landing page hero background image */
 body.dark-landing .hero-section {
-    background: linear-gradient(90deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.35) 50%, rgba(0, 0, 0, 0.8) 100%), url('assets/hero_banner_new.png');
+    background: url('assets/hero_banner_new.png');
     background-size: cover;
     background-position: center 60%;
-    background-blend-mode: multiply;
+    background-blend-mode: normal;
 }
 
 /* Remove old hero iridescent vector overlay since we have the full screen background */
@@ -3865,56 +4150,8 @@ body[class^="light-"] .badge-new {
     border: 1px solid rgba(17, 24, 39, 0.12) !important;
 }
 
-/* Header in Light Theme */
-body[class^="light-"] .main-header {
-    background-color: rgba(255, 255, 255, 0.8) !important;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    color: #111827 !important;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02) !important;
-}
-body[class^="light-"] .brand-logo {
-    color: #111827 !important;
-}
-body[class^="light-"] .brand-logo span {
-    color: #111827 !important;
-    text-shadow: 0 0 10px rgba(0, 0, 0, 0.05) !important;
-    animation: none !important;
-}
-body[class^="light-"] .brand-logo:hover span {
-    color: var(--color-gold) !important;
-}
-body[class^="light-"] .nav-link {
-    color: rgba(17, 24, 39, 0.8) !important;
-}
-body[class^="light-"] .nav-link:hover {
-    color: #111827 !important;
-}
-body[class^="light-"] .nav-separator {
-    color: rgba(0, 0, 0, 0.15) !important;
-}
-body[class^="light-"] .login-btn {
-    color: #111827 !important;
-    border-color: rgba(0, 0, 0, 0.18) !important;
-}
-body[class^="light-"] .login-btn:hover {
-    border-color: var(--color-gold) !important;
-    background-color: rgba(0, 0, 0, 0.04) !important;
-    color: var(--color-gold) !important;
-}
-body[class^="light-"] .about-link {
-    color: rgba(17, 24, 39, 0.8) !important;
-}
-body[class^="light-"] .about-link:hover {
-    color: var(--color-gold) !important;
-}
-body[class^="light-"] .icon-btn {
-    color: #111827 !important;
-}
-body[class^="light-"] .icon-btn:hover {
-    color: var(--color-gold) !important;
-}
+/* Header in Light Theme — KEEP NAVBAR BLACK */
+/* Navbar stays black in all modes, no light overrides needed */
 
 /* Landing Page Hero and Body */
 body.light-landing {
@@ -3922,22 +4159,24 @@ body.light-landing {
     color: #111827 !important;
 }
 body.light-landing .hero-section {
-    background: linear-gradient(90deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.45) 50%, rgba(255, 255, 255, 0.85) 100%), url('assets/hero_banner_new.png') !important;
+    background: url('assets/hero_banner_new.png') !important;
     background-size: cover !important;
     background-position: center 60% !important;
-    color: #111827 !important;
+    background-blend-mode: normal !important;
+    color: #FFFFFF !important;
+}
+body.light-landing .hero-iridescent-overlay {
+    display: none !important;
 }
 body.light-landing .hero-subtitle {
-    color: rgba(17, 24, 39, 0.85) !important;
+    color: rgba(255, 255, 255, 0.85) !important;
 }
 body.light-landing .hero-btn {
-    background-color: #FFFFFF !important;
-    color: #111827 !important;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
+    background-color: #000000 !important;
+    color: #FFFFFF !important;
 }
 body.light-landing .hero-btn:hover {
-    background-color: #F3F4F6 !important;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+    background-color: var(--color-primary-light) !important;
 }
 
 /* Specials Section */
@@ -4284,37 +4523,7 @@ body.light-admin .admin-textarea:focus {
     border-color: var(--color-gold) !important;
 }
 
-/* Footer in Light Theme */
-body[class^="light-"] .main-footer {
-    background-color: #FFFFFF !important;
-    color: #111827 !important;
-    border-top: 1px solid rgba(0, 0, 0, 0.08) !important;
-}
-body[class^="light-"] .footer-desc {
-    color: #4B5563 !important;
-}
-body[class^="light-"] .footer-links-col h4 {
-    color: #111827 !important;
-}
-body[class^="light-"] .footer-links-col ul a {
-    color: #4B5563 !important;
-}
-body[class^="light-"] .footer-links-col ul a:hover {
-    color: var(--color-gold) !important;
-}
-body[class^="light-"] .footer-newsletter-input {
-    background-color: #F3F4F6 !important;
-    border: 1px solid rgba(0, 0, 0, 0.08) !important;
-    color: #111827 !important;
-}
-body[class^="light-"] .footer-newsletter-btn {
-    background-color: #111827 !important;
-    color: #FFFFFF !important;
-}
-body[class^="light-"] .footer-bottom {
-    border-top: 1px solid rgba(0, 0, 0, 0.05) !important;
-    color: #4B5563 !important;
-}
+/* Footer stays dark in all modes — no light overrides needed */
 
 /* ==========================================
    DARK THEME OVERRIDES & GLASSMORPHISM FOR CATALOGS
@@ -4550,6 +4759,66 @@ html.light-theme .product-grid.list-layout .product-name {
     margin: 8px 0;
 }
 
+/* Mobile Collection Dropdown Container */
+.mobile-dropdown-container {
+    width: 100%;
+}
+
+.mobile-dropdown-trigger {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: none;
+    border: none;
+    text-align: left;
+    padding: 0;
+    cursor: pointer;
+}
+
+.mobile-dropdown-trigger .dropdown-chevron {
+    transition: transform 0.3s ease;
+}
+
+.mobile-dropdown-trigger .dropdown-chevron.open {
+    transform: rotate(180deg);
+}
+
+/* Mobile Submenu Styling */
+.mobile-submenu {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s ease;
+    opacity: 0;
+    padding-left: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 0;
+}
+
+.mobile-submenu.show {
+    max-height: 200px;
+    opacity: 1;
+    margin-top: 16px;
+}
+
+.mobile-submenu-link {
+    font-family: var(--font-body);
+    font-size: 15px;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.6);
+    transition: var(--transition-smooth);
+    letter-spacing: 0.05em;
+    display: block;
+    text-transform: none;
+}
+
+.mobile-submenu-link:hover {
+    color: var(--color-gold);
+    padding-left: 4px;
+}
+
 .mobile-nav-backdrop {
     position: fixed;
     top: 80px;
@@ -4585,7 +4854,7 @@ html.light-theme .product-grid.list-layout .product-name {
     }
     
     /* Hide desktop Navigation Links */
-    .center-nav {
+    .desktop-nav {
         display: none !important;
     }
     
@@ -5059,5 +5328,1087 @@ html.light-theme .product-grid.list-layout .product-name {
             0 0 40px rgba(255, 255, 255, 0.4),
             0 0 60px rgba(255, 255, 255, 0.2);
         opacity: 1;
+    }
+}
+
+/* ==========================================
+   CATEGORY CAROUSEL — HOMEPAGE COLLECTIONS
+   ========================================== */
+.category-carousel-section {
+    padding: 60px 40px 50px;
+    position: relative;
+    overflow: hidden;
+}
+
+.category-carousel-header {
+    text-align: center;
+    margin-bottom: 36px;
+}
+
+.category-carousel-eyebrow {
+    font-family: var(--font-heading);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    color: var(--color-gold);
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.category-carousel-title {
+    font-family: var(--font-heading);
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: #FFFFFF;
+    margin: 0;
+}
+
+.category-carousel-wrapper {
+    position: relative;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.category-carousel-track {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    gap: 0;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE */
+}
+
+.category-carousel-track::-webkit-scrollbar {
+    display: none; /* Chrome, Safari */
+}
+
+.category-carousel-card {
+    flex: 0 0 100%;
+    scroll-snap-align: start;
+    position: relative;
+    height: 380px;
+    border-radius: 20px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.category-carousel-card:hover {
+    transform: scale(0.99);
+}
+
+.carousel-card-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+}
+
+.carousel-card-bg-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(0.5) saturate(1.2);
+    transition: transform 0.6s ease, filter 0.4s ease;
+}
+
+.category-carousel-card:hover .carousel-card-bg-img {
+    transform: scale(1.06);
+    filter: brightness(0.45) saturate(1.3);
+}
+
+.carousel-card-gradient {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        135deg,
+        rgba(0, 0, 0, 0.7) 0%,
+        rgba(0, 0, 0, 0.3) 40%,
+        rgba(197, 168, 128, 0.1) 100%
+    );
+    z-index: 1;
+}
+
+.carousel-card-content {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 40px;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.carousel-card-parent {
+    font-family: var(--font-body);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--color-gold);
+    opacity: 0.8;
+}
+
+.carousel-card-name {
+    font-family: var(--font-heading);
+    font-size: 40px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: #FFFFFF;
+    margin: 0;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+}
+
+.carousel-card-count {
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.7);
+    margin-top: 2px;
+}
+
+.carousel-card-cta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 12px;
+    font-family: var(--font-heading);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-gold);
+    transition: gap 0.3s ease;
+}
+
+.category-carousel-card:hover .carousel-card-cta {
+    gap: 10px;
+}
+
+.carousel-card-cta svg {
+    transition: transform 0.3s ease;
+}
+
+.category-carousel-card:hover .carousel-card-cta svg {
+    transform: translateX(4px);
+}
+
+/* Navigation Dots */
+.category-carousel-dots {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 28px;
+}
+
+.carousel-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: none;
+    background-color: rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 0;
+}
+
+.carousel-dot:hover {
+    background-color: rgba(255, 255, 255, 0.4);
+    transform: scale(1.2);
+}
+
+.carousel-dot.active {
+    background-color: var(--color-gold);
+    transform: scale(1.3);
+    box-shadow: 0 0 8px rgba(197, 168, 128, 0.5);
+}
+
+/* Light theme overrides for carousel */
+html.light-theme .category-carousel-title {
+    color: #111827 !important;
+}
+
+html.light-theme .carousel-card-name {
+    color: #FFFFFF !important;
+}
+
+html.light-theme .carousel-dot {
+    background-color: rgba(0, 0, 0, 0.15);
+}
+
+html.light-theme .carousel-dot:hover {
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+html.light-theme .carousel-dot.active {
+    background-color: var(--color-gold);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .category-carousel-section {
+        padding: 40px 16px 36px;
+    }
+
+    .category-carousel-title {
+        font-size: 28px !important;
+    }
+
+    .category-carousel-card {
+        height: 300px;
+        border-radius: 16px;
+    }
+
+    .carousel-card-content {
+        padding: 28px;
+    }
+
+    .carousel-card-name {
+        font-size: 28px;
+    }
+
+    .carousel-card-count {
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .category-carousel-card {
+        height: 260px;
+    }
+
+    .carousel-card-content {
+        padding: 24px;
+    }
+
+    .carousel-card-name {
+        font-size: 24px;
+    }
+}
+
+/* ==========================================================================
+   GLOBAL PREMIUM PRODUCT SNEAKER CARD DESIGN & CAROUSEL UTILITIES
+   ========================================================================== */
+
+/* Item Card Base Glassmorphic Layout */
+.product-card.item-card {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0) 100%) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.07) !important;
+    border-radius: 20px !important;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25) !important;
+}
+
+/* Hover States for Cards in Grid/Carousel */
+.product-card.item-card:hover {
+    transform: translateY(-10px) !important;
+    border-color: rgba(197, 168, 128, 0.4) !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45), 0 0 25px rgba(197, 168, 128, 0.12) !important;
+}
+
+/* Card Image Box with Sneaker Glow Background */
+.product-card.item-card .card-image-box {
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0) 70%) !important;
+    border-radius: 20px 20px 0 0;
+    transition: background 0.4s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    height: 280px !important; /* Square image box to maximize image space */
+}
+
+.product-card.item-card:hover .card-image-box {
+    background: radial-gradient(circle, rgba(197, 168, 128, 0.08) 0%, rgba(255, 255, 255, 0) 70%) !important;
+}
+
+/* Product Sneaker Image animations */
+.product-card.item-card .product-img {
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    filter: drop-shadow(0 12px 20px rgba(0,0,0,0.25));
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    object-fit: contain !important;
+    padding: 6px !important; /* Extremely tight padding to maximize sneaker visual presence */
+}
+
+.product-card.item-card:hover .product-img {
+    transform: scale(1.08) translateY(-4px) rotate(-1.5deg) !important;
+    filter: drop-shadow(0 18px 28px rgba(0,0,0,0.4));
+}
+
+/* Hide favorite button options globally across all cards and layouts */
+.favorite-action-btn {
+    display: none !important;
+}
+
+/* List view overrides - avoid vertical translation, slide right instead */
+.product-grid.list-layout .product-card.item-card:hover {
+    transform: translateX(8px) !important;
+}
+
+.product-grid.list-layout .product-card.item-card:hover .product-img {
+    transform: scale(1.05) rotate(0deg) !important;
+}
+
+/* Light theme overrides for Premium Cards */
+html.light-theme .product-card.item-card,
+body.light-landing .product-card.item-card,
+body.light-shop .product-card.item-card {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0.5) 100%) !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04) !important;
+    color: #111827 !important;
+}
+
+html.light-theme .product-card.item-card:hover,
+body.light-landing .product-card.item-card:hover,
+body.light-shop .product-card.item-card:hover {
+    background: #FFFFFF !important;
+    border-color: rgba(197, 168, 128, 0.5) !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08), 0 0 25px rgba(197, 168, 128, 0.08) !important;
+}
+
+html.light-theme .product-card.item-card .card-image-box,
+body.light-landing .product-card.item-card .card-image-box,
+body.light-shop .product-card.item-card .card-image-box {
+    background: radial-gradient(circle, rgba(0, 0, 0, 0.02) 0%, rgba(0, 0, 0, 0) 70%) !important;
+}
+
+html.light-theme .product-card.item-card:hover .card-image-box,
+body.light-landing .product-card.item-card:hover .card-image-box,
+body.light-shop .product-card.item-card:hover .card-image-box {
+    background: radial-gradient(circle, rgba(197, 168, 128, 0.08) 0%, rgba(0, 0, 0, 0) 70%) !important;
+}
+
+html.light-theme .product-card.item-card .product-img,
+body.light-landing .product-card.item-card .product-img,
+body.light-shop .product-card.item-card .product-img {
+    filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.12));
+}
+
+html.light-theme .product-card.item-card:hover .product-img,
+body.light-landing .product-card.item-card:hover .product-img,
+body.light-shop .product-card.item-card:hover .product-img {
+    filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.2));
+}
+
+html.light-theme .product-card.item-card .product-name,
+body.light-landing .product-card.item-card .product-name,
+body.light-shop .product-card.item-card .product-name {
+    color: #111827 !important;
+}
+
+/* Category Carousel Scroll Usability Utilities */
+.category-carousel-track {
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.category-carousel-track.active-dragging {
+    cursor: grabbing;
+    scroll-snap-type: none !important;
+}
+
+.category-carousel-track.active-dragging * {
+    pointer-events: none !important;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+/* Category Large Horizontal Frame Container */
+.category-frame-container {
+    padding: 14px 0 !important;
+    margin-bottom: 40px;
+    position: relative;
+    overflow: hidden;
+    max-width: 1440px;
+    margin-left: auto;
+    margin-right: auto;
+    z-index: 1;
+}
+
+/* Tighten spacing inside category carousel track to keep borders close */
+.category-carousel-track {
+    padding: 8px 4px !important;
+}
+
+/* Category Title Glow Effect */
+.glowing-category-title {
+    text-shadow: 0 0 8px rgba(197, 168, 128, 0.6), 
+                 0 0 15px rgba(197, 168, 128, 0.4);
+    animation: category-glow-pulse 2.5s infinite alternate ease-in-out;
+}
+
+@keyframes category-glow-pulse {
+    0% {
+        text-shadow: 0 0 4px rgba(197, 168, 128, 0.4), 
+                     0 0 8px rgba(197, 168, 128, 0.2);
+    }
+    100% {
+        text-shadow: 0 0 12px rgba(197, 168, 128, 0.8), 
+                     0 0 24px rgba(197, 168, 128, 0.6),
+                     0 0 35px rgba(197, 168, 128, 0.4);
+    }
+}
+
+/* ==========================================
+   THEME TOGGLE BUTTON
+   ========================================== */
+.theme-toggle-btn {
+    position: relative;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    overflow: hidden;
+}
+
+.theme-toggle-btn:hover {
+    background: rgba(197, 168, 128, 0.15);
+    border-color: var(--color-gold);
+    transform: scale(1.1);
+    box-shadow: 0 0 15px rgba(197, 168, 128, 0.25);
+}
+
+.theme-toggle-btn .theme-icon {
+    width: 18px;
+    height: 18px;
+    transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.theme-toggle-btn:hover .theme-icon {
+    color: var(--color-gold);
+    transform: rotate(30deg);
+}
+
+/* Toggle button stays in dark header style — no light override needed */
+
+/* ==========================================
+   LIGHT MODE — SHIMMERING GLOSSY BLACK TEXT
+   Text on white backgrounds gets a premium
+   shimmering dark effect
+   ========================================== */
+
+/* Hero heading stays white — no shimmer needed (hero image stays dark) */
+
+/* Specials section title shimmer in light mode */
+body.light-landing .specials-title {
+    color: #111827 !important;
+    background: linear-gradient(
+        135deg,
+        #111827 0%,
+        #374151 25%,
+        #0f0f0f 50%,
+        #4b5563 75%,
+        #111827 100%
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer-text 4s linear infinite !important;
+    text-shadow: none !important;
+}
+
+/* Category title shimmer in light mode */
+html.light-theme .category-carousel-title {
+    background: linear-gradient(
+        135deg,
+        #111827 0%,
+        #374151 25%,
+        #0f0f0f 50%,
+        #4b5563 75%,
+        #111827 100%
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer-text 4s linear infinite;
+}
+
+/* Discover section title shimmer */
+body.light-shop .discover-title,
+body.light-landing .discover-title {
+    background: linear-gradient(
+        135deg,
+        #111827 0%,
+        #374151 25%,
+        #0f0f0f 50%,
+        #4b5563 75%,
+        #111827 100%
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer-text 4s linear infinite;
+}
+
+/* Brand logo stays white/neon in navbar — no light override (navbar is always black) */
+
+@keyframes shimmer-text {
+    0% {
+        background-position: 0% center;
+    }
+    100% {
+        background-position: 200% center;
+    }
+}
+
+/* SVG Logo stays white/neon in navbar — no light override (navbar is always black) */
+
+/* Light mode: mobile menu drawer adjustment */
+html.light-theme .mobile-nav-drawer {
+    background-color: rgba(255, 255, 255, 0.95) !important;
+    border-right: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+html.light-theme .mobile-nav-link {
+    color: rgba(17, 24, 39, 0.8) !important;
+}
+
+html.light-theme .mobile-nav-link:hover {
+    color: var(--color-gold) !important;
+}
+
+html.light-theme .mobile-nav-divider {
+    background-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Mobile menu toggle bars stay white (navbar is black) */
+
+/* Light mode: section title animations override (disable neon, use shimmer) */
+body.light-landing .specials-side-title {
+    background: linear-gradient(
+        135deg,
+        #111827 0%,
+        #374151 30%,
+        #0f0f0f 50%,
+        #374151 70%,
+        #111827 100%
+    ) !important;
+    background-size: 200% auto !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+    animation: shimmer-text 4s linear infinite !important;
+    text-shadow: none !important;
+    opacity: 0.9 !important;
+}
+
+/* Neon glow text titles in light mode → shimmering dark */
+html.light-theme .specials-title,
+html.light-theme .men-title,
+html.light-theme .offers-title {
+    color: #111827 !important;
+    background: linear-gradient(
+        135deg,
+        #111827 0%,
+        #374151 25%,
+        #0f0f0f 50%,
+        #4b5563 75%,
+        #111827 100%
+    ) !important;
+    background-size: 200% auto !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+    animation: shimmer-text 4s linear infinite !important;
+    text-shadow: none !important;
+}
+
+/* Category title glow → shimmer override in light mode */
+html.light-theme .glowing-category-title {
+    color: #111827 !important;
+    background: linear-gradient(
+        90deg,
+        #111827 0%,
+        #c5a880 30%,
+        #111827 60%,
+        #c5a880 90%,
+        #111827 100%
+    ) !important;
+    background-size: 200% auto !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+    animation: shimmer-text 3s linear infinite !important;
+    text-shadow: none !important;
+}
+
+/* Ensure search overlay works in light mode */
+html.light-theme .search-overlay {
+    background-color: #FFFFFF !important;
+}
+
+html.light-theme .search-input {
+    color: #111827 !important;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.1) !important;
+}
+
+html.light-theme .search-input::placeholder {
+    color: rgba(0, 0, 0, 0.4) !important;
+}
+
+html.light-theme .search-input:focus {
+    border-color: var(--color-gold) !important;
+}
+
+html.light-theme .close-search-btn {
+    color: #111827 !important;
+}
+
+/* Cart footer area in light mode */
+html.light-theme .cart-footer {
+    background-color: #F9FAFB !important;
+    border-top: 1px solid rgba(0, 0, 0, 0.06) !important;
+}
+
+html.light-theme .cart-summary-row {
+    color: #4B5563 !important;
+}
+
+html.light-theme .total-row {
+    color: #111827 !important;
+}
+
+html.light-theme .cart-divider {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+}
+
+html.light-theme .close-cart-btn {
+    color: rgba(0, 0, 0, 0.4) !important;
+}
+
+html.light-theme .close-cart-btn:hover {
+    color: var(--color-gold) !important;
+}
+
+html.light-theme .cart-sidebar-header h3 {
+    color: #111827 !important;
+}
+
+/* Checkout success overlay in light mode */
+html.light-theme .checkout-success-overlay {
+    background-color: #FFFFFF !important;
+}
+
+html.light-theme .checkout-success-overlay h3 {
+    color: #111827 !important;
+}
+
+html.light-theme .checkout-success-overlay p {
+    color: #4B5563 !important;
+}
+
+/* Empty cart state in light mode */
+html.light-theme .empty-bag-icon {
+    color: rgba(0, 0, 0, 0.15) !important;
+}
+
+html.light-theme .cart-empty-state p {
+    color: #4B5563 !important;
+}
+
+/* No results state in light mode */
+html.light-theme .catalog-no-results h3 {
+    color: #111827 !important;
+}
+
+html.light-theme .no-results-icon {
+    color: rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Locked catalog in light mode adjustments */
+html.light-theme .locked-glass-card p {
+    color: #4B5563 !important;
+}
+
+html.light-theme .lock-icon-wrapper {
+    background-color: rgba(197, 168, 128, 0.08) !important;
+    border: 1px solid rgba(197, 168, 128, 0.15) !important;
+}
+
+/* ==========================================
+   PREMIUM LOYALTY REWARDS BANNER
+   ========================================== */
+.hero-loyalty-banner {
+    position: relative;
+    margin-top: 24px;
+    height: 48px;
+    width: 100%;
+    max-width: 580px;
+    background: rgba(10, 10, 10, 0.45);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--border-radius-lg, 20px);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25);
+    user-select: none;
+}
+
+/* Edge fades using mask image */
+.loyalty-marquee-container {
+    display: flex;
+    overflow: hidden;
+    width: 100%;
+    mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+}
+
+.loyalty-marquee-track {
+    display: flex;
+    width: max-content;
+    animation: loyalty-marquee-scroll 25s linear infinite;
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+.hero-loyalty-banner:hover .loyalty-marquee-track {
+    animation-play-state: paused;
+}
+
+.loyalty-marquee-group {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    white-space: nowrap;
+}
+
+.loyalty-marquee-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 12px;
+    color: #FFFFFF;
+    font-family: var(--font-body), sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+}
+
+.loyalty-icon {
+    font-size: 14px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.loyalty-sep {
+    color: var(--color-gold, #C5A880);
+    font-weight: bold;
+    opacity: 0.85;
+    margin: 0 16px;
+    font-size: 14px;
+}
+
+/* Premium subtle shimmer sweep effect */
+.hero-loyalty-banner::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -150%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.06) 50%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    transform: skewX(-20deg);
+    animation: loyalty-banner-shimmer 7s infinite ease-in-out;
+    pointer-events: none;
+}
+
+@keyframes loyalty-marquee-scroll {
+    0% {
+        transform: translate3d(0, 0, 0);
+    }
+    100% {
+        transform: translate3d(-50%, 0, 0);
+    }
+}
+
+@keyframes loyalty-banner-shimmer {
+    0% {
+        left: -150%;
+    }
+    25% {
+        left: 150%;
+    }
+    100% {
+        left: 150%;
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .hero-loyalty-banner {
+        height: 42px;
+        margin-top: 18px;
+        max-width: 100%;
+        border-radius: 12px;
+    }
+    .loyalty-marquee-item {
+        font-size: 11.5px;
+        gap: 6px;
+        padding: 0 8px;
+    }
+    .loyalty-sep {
+        margin: 0 10px;
+        font-size: 11px;
+    }
+}
+
+/* ==========================================
+   ABOUT / BRAND STATEMENT SECTION
+   ========================================== */
+.about-section {
+    padding: 120px 40px;
+    background-color: var(--color-primary, #000000);
+    color: #FFFFFF;
+    text-align: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.about-container {
+    max-width: 850px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 48px;
+    z-index: 2;
+}
+
+.about-text {
+    font-family: var(--font-body), sans-serif;
+    font-size: 26px;
+    font-weight: 300;
+    line-height: 1.7;
+    letter-spacing: 0.03em;
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0;
+    text-wrap: balance;
+}
+
+.about-location-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px 32px;
+    font-family: var(--font-heading), sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--color-gold, #C5A880);
+    border: 1px solid var(--color-gold, #C5A880);
+    border-radius: var(--border-radius-pill, 50px);
+    background: transparent;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    text-decoration: none;
+}
+
+.about-location-link:hover {
+    background-color: var(--color-gold, #C5A880);
+    color: #000000;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(197, 168, 128, 0.25);
+}
+
+.about-location-link:active {
+    transform: translateY(-1px);
+}
+
+.about-location-icon {
+    font-size: 16px;
+    transition: transform 0.3s ease;
+}
+
+.about-location-link:hover .about-location-icon {
+    transform: scale(1.2);
+}
+
+/* Light Theme overrides */
+html.light-theme .about-section {
+    background-color: #FFFFFF;
+    color: var(--color-text-dark, #111827);
+    border-top: 1px solid rgba(17, 24, 39, 0.08);
+}
+
+html.light-theme .about-text {
+    color: var(--color-text-dark, #111827);
+}
+
+html.light-theme .about-location-link {
+    color: var(--color-gold, #C5A880);
+    border-color: var(--color-gold, #C5A880);
+}
+
+html.light-theme .about-location-link:hover {
+    background-color: var(--color-gold, #C5A880);
+    color: #FFFFFF;
+    box-shadow: 0 10px 25px rgba(197, 168, 128, 0.2);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .about-section {
+        padding: 80px 24px;
+    }
+    .about-container {
+        gap: 36px;
+    }
+    .about-text {
+        font-size: 20px;
+        line-height: 1.6;
+    }
+    .about-location-link {
+        padding: 13px 26px;
+        font-size: 11px;
+        letter-spacing: 0.15em;
+    }
+}
+
+/* ==========================================
+   LOYALTY PROGRAM STYLING
+   ========================================== */
+.loyalty-message-text {
+    color: #FFFFFF !important;
+}
+
+html.light-theme .loyalty-message-text {
+    color: #111827 !important;
+}
+
+/* ==========================================
+   SEARCH INTERACTION REFINEMENTS
+   ========================================== */
+.search-results-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 8px 16px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+    font-family: var(--font-body);
+    font-size: 13.5px;
+    color: rgba(255, 255, 255, 0.9);
+    width: fit-content;
+}
+
+html.light-theme .search-results-badge {
+    background-color: rgba(17, 24, 39, 0.04);
+    border-color: rgba(17, 24, 39, 0.08);
+    color: #111827;
+}
+
+.clear-search-badge-btn {
+    background: none;
+    border: none;
+    color: var(--color-gold);
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px;
+    transition: var(--transition-smooth);
+}
+
+.clear-search-badge-btn:hover {
+    color: var(--color-gold-hover);
+    transform: scale(1.2);
+}
+
+.search-submit-btn {
+    color: #FFFFFF;
+    transition: var(--transition-smooth);
+    margin-left: auto;
+    margin-right: 12px;
+}
+
+.search-submit-btn:hover {
+    color: var(--color-gold) !important;
+    transform: scale(1.1);
+}
+
+/* ==========================================
+   INLINE EXPANDING TOOLBAR SEARCH
+   ========================================== */
+.toolbar-search-wrapper {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.toolbar-search-input {
+    width: 0;
+    opacity: 0;
+    pointer-events: none;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0.05);
+    color: #FFFFFF;
+    font-family: var(--font-body);
+    font-size: 13.5px;
+    outline: none;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.toolbar-search-wrapper.expanded .toolbar-search-input {
+    width: 180px;
+    opacity: 1;
+    pointer-events: auto;
+    padding: 8px 12px;
+    border-color: rgba(255, 255, 255, 0.15);
+    margin-right: 8px;
+}
+
+/* Light theme overrides */
+html.light-theme .toolbar-search-input {
+    background-color: rgba(17, 24, 39, 0.04);
+    color: #111827;
+}
+
+html.light-theme .toolbar-search-wrapper.expanded .toolbar-search-input {
+    border-color: rgba(17, 24, 39, 0.12);
+}
+
+@media (max-width: 480px) {
+    .toolbar-search-wrapper.expanded .toolbar-search-input {
+        width: 130px;
     }
 }

@@ -29,6 +29,9 @@ const protect = async (req, res, next) => {
     req.user = currentAdmin;
     next();
   } catch (err) {
+    if (err.name === 'JsonWebTokenError' || err.name === 'TokenExpiredError') {
+      return next(new AppError('Invalid or expired token. Please log in again.', 401));
+    }
     next(err);
   }
 };

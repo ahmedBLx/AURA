@@ -10,18 +10,27 @@ const validateCreateOrder = [
     .notEmpty()
     .withMessage('Phone number is required'),
   body('customerAlternativePhone')
+    .if((value, { req }) => req.body.orderType === 'Store Reservation')
+    .trim()
+    .notEmpty()
+    .withMessage('Second phone number is required'),
+  body('customerAlternativePhone')
+    .if((value, { req }) => req.body.orderType !== 'Store Reservation')
     .optional({ checkFalsy: true })
     .trim()
     .isString(),
   body('customerAddress')
+    .if((value, { req }) => req.body.orderType !== 'Store Reservation')
     .trim()
     .notEmpty()
     .withMessage('Shipping address is required'),
   body('customerGovernorate')
+    .if((value, { req }) => req.body.orderType !== 'Store Reservation')
     .trim()
     .notEmpty()
     .withMessage('Governorate is required'),
   body('customerCity')
+    .if((value, { req }) => req.body.orderType !== 'Store Reservation')
     .trim()
     .notEmpty()
     .withMessage('City is required'),
@@ -30,10 +39,11 @@ const validateCreateOrder = [
     .trim()
     .isString(),
   body('paymentMethod')
+    .if((value, { req }) => req.body.orderType !== 'Store Reservation')
     .notEmpty()
     .withMessage('Payment method is required')
-    .isIn(['Cash on Delivery', 'Visa / Credit Card'])
-    .withMessage('Payment method must be Cash on Delivery or Visa / Credit Card'),
+    .isIn(['Cash on Delivery', 'Online Payment'])
+    .withMessage('Payment method must be Cash on Delivery or Online Payment'),
   body('items')
     .isArray({ min: 1 })
     .withMessage('Order must contain at least one item'),

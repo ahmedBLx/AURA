@@ -8,6 +8,7 @@ const router = express.Router();
 
 // Public Checkout Route
 router.post('/', validateCreateOrder, validate, orderController.createOrder);
+router.post('/create', validateCreateOrder, validate, orderController.createOrderWithLoyalty);
 
 // Admin-only operations
 router.get('/', protect, restrictTo('admin'), orderController.getOrders);

@@ -43,7 +43,7 @@ const AppLayout = () => {
     useEffect(() => {
         const path = location.pathname.toLowerCase();
         const prefix = theme === 'light' ? 'light' : 'dark';
-        if (path === '/shop') {
+        if (path === '/shop' || path === '/men' || path === '/women' || path === '/offers') {
             document.body.className = `${prefix}-shop`;
         } else if (path === '/admin') {
             document.body.className = `${prefix}-admin`;

@@ -28,6 +28,15 @@ const parseFormDataArrays = (req, res, next) => {
 
 // Public routes
 router.get('/', productController.getProducts);
+
+// Admin-only upload signature (placed before /:id to prevent route clash)
+router.get(
+  '/upload-signature',
+  protect,
+  restrictTo('admin'),
+  productController.getUploadSignature
+);
+
 router.get('/:id', productController.getProductById);
 
 // Admin-only routes

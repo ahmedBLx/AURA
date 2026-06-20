@@ -13,16 +13,44 @@ class CategoryController {
     }
   }
 
+  async getHomepageCategories(req, res, next) {
+    try {
+      const categories = await categoryService.getHomepageCategories();
+      res.status(200).json({
+        status: 'success',
+        data: { categories },
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
   async createCategory(req, res, next) {
     try {
-      const { name, parentId } = req.body;
+      const { name, parentId, showOnHomepage } = req.body;
       const category = await categoryService.createCategory({
         name,
         parentId,
+        showOnHomepage,
         adminUserId: req.user._id,
       });
 
       res.status(201).json({
+        status: 'success',
+        data: { category },
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async updateCategory(req, res, next) {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      const category = await categoryService.updateCategory(id, updates, req.user._id);
+
+      res.status(200).json({
         status: 'success',
         data: { category },
       });

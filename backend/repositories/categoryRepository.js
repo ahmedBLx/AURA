@@ -13,6 +13,21 @@ class CategoryRepository extends BaseRepository {
   async findSubcategories(parentId) {
     return this.model.find({ parent: parentId });
   }
+
+  async findAllPopulated(filter = {}, sort = { name: 1 }) {
+    return this.model.find(filter).populate('parent', 'name').sort(sort);
+  }
+
+  async findHomepageCategories() {
+    return this.model
+      .find({ showOnHomepage: true, parent: { $ne: null } })
+      .populate('parent', 'name')
+      .sort({ name: 1 });
+  }
+
+  async updateById(id, data) {
+    return this.model.findByIdAndUpdate(id, data, { new: true, runValidators: true });
+  }
 }
 
 module.exports = new CategoryRepository();

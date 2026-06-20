@@ -6,15 +6,22 @@ import { io } from 'socket.io-client';
 
 const AdminPage = () => {
     const { user, users, logout } = useAuth();
-    const { products, categories, addProduct, updateProduct, deleteProduct, addCategory, deleteCategory, loadCatalog } = useProducts();
+    const { products, categories, categoryNames, mainCategories, getSubcategories, homepageCategories, addProduct, updateProduct, deleteProduct, addCategory, updateCategory, deleteCategory, loadCatalog } = useProducts();
     const navigate = useNavigate();
     const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5002';
 
     // UI & Layout States
-    const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard' | 'products' | 'categories' | 'orders' | 'customers'
+    const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard' | 'products' | 'categories' | 'orders' | 'customers' | 'loyalty'
     const theme = 'dark';
     const [orders, setOrders] = useState([]);
     const [realtimeToast, setRealtimeToast] = useState(null);
+
+    // Loyalty and dashboard metrics states
+    const [dashboardMetrics, setDashboardMetrics] = useState(null);
+    const [loyaltyCustomers, setLoyaltyCustomers] = useState([]);
+    const [loyaltySearch, setLoyaltySearch] = useState('');
+    const [loyaltySort, setLoyaltySort] = useState('spent-desc');
+    const [isFetchingLoyalty, setIsFetchingLoyalty] = useState(false);
     
     // Search, Filter, Sort States
     const [prodSearch, setProdSearch] = useState('');
@@ -44,13 +51,31 @@ const AdminPage = () => {
     const [selectedSizes, setSelectedSizes] = useState(['39', '40', '41', '42', '43', '44', '45']);
     const [womenSoon, setWomenSoon] = useState(true);
 
+    // Shipping form states
+    const [shippingRates, setShippingRates] = useState([]);
+    const [newGovName, setNewGovName] = useState('');
+    const [newGovCost, setNewGovCost] = useState('');
+    const [editingGovIndex, setEditingGovIndex] = useState(null);
+
     // Categories Form State
     const [newCatName, setNewCatName] = useState('');
+    const [newCatParentId, setNewCatParentId] = useState('');
+    const [newCatShowOnHomepage, setNewCatShowOnHomepage] = useState(false);
+
+    // Store Reservations Tab State
+    const [activeReservationStatusTab, setActiveReservationStatusTab] = useState('Pending');
+    const [resSearch, setResSearch] = useState('');
+
+    // Two-step product category picker state (modified to support multiple main categories via multi-step wizard)
+    const [wizardStep, setWizardStep] = useState(1);
+    const [wizardMainCats, setWizardMainCats] = useState([]);
+    const [wizardSubCats, setWizardSubCats] = useState({});
 
     // Modal Details States
     const [selectedOrderDetails, setSelectedOrderDetails] = useState(null);
     const [productToDelete, setProductToDelete] = useState(null); // stores product object to confirm deletion
     const [isProductModalOpen, setIsProductModalOpen] = useState(false); // controls the Add/Edit Product Modal
+    const [isSaving, setIsSaving] = useState(false);
 
     // Load orders
     const loadOrders = async () => {
@@ -73,9 +98,10 @@ const AdminPage = () => {
                     alternativePhone: o.customerAlternativePhone || '',
                     governorate: o.customerGovernorate,
                     city: o.customerCity,
-                    address: `${o.customerAddress}, ${o.customerCity}, ${o.customerGovernorate}`,
+                    address: o.orderType === 'Store Reservation' ? 'N/A (Store Reservation)' : `${o.customerAddress}, ${o.customerCity}, ${o.customerGovernorate}`,
                     notes: o.notes,
                     paymentMethod: o.paymentMethod,
+                    orderType: o.orderType || 'Delivery',
                     items: o.items.map(item => {
                         const prod = item.product;
                         const imgUrl = prod && prod.img 
@@ -91,11 +117,20 @@ const AdminPage = () => {
                         };
                     }),
                     total: o.total,
+                    shippingCost: o.shippingCost || 0,
                     status: o.status
                 }));
                 setOrders(mappedOrders);
                 localStorage.setItem('aura_orders', JSON.stringify(mappedOrders));
                 return;
+            } else {
+                if (res.status === 401 || res.status === 403) {
+                    localStorage.removeItem('aura_token');
+                    localStorage.removeItem('aura_orders');
+                    setOrders([]);
+                    return;
+                }
+                throw new Error(`API returned status ${res.status}`);
             }
         } catch (err) {
             console.error('Failed to load orders from API:', err);
@@ -123,6 +158,10 @@ const AdminPage = () => {
                 const ws = settings.find(s => s.key === 'women_soon');
                 if (ws) {
                     setWomenSoon(ws.value === true || ws.value === 'true');
+                }
+                const sr = settings.find(s => s.key === 'shipping_rates');
+                if (sr && Array.isArray(sr.value)) {
+                    setShippingRates(sr.value);
                 }
             }
         } catch (err) {
@@ -157,10 +196,137 @@ const AdminPage = () => {
         }
     };
 
+    const handleSaveShippingRates = async (updatedRates) => {
+        const token = localStorage.getItem('aura_token');
+        try {
+            const res = await fetch(`${BASE_URL}/api/v1/settings`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    key: 'shipping_rates',
+                    value: updatedRates,
+                    description: 'Shipping rates for governorates'
+                })
+            });
+            if (res.ok) {
+                setShippingRates(updatedRates);
+                return true;
+            } else {
+                alert('Failed to save shipping rates');
+                return false;
+            }
+        } catch (err) {
+            console.error('Error saving shipping rates:', err);
+            alert('Error connecting to the server');
+            return false;
+        }
+    };
+
+    const handleAddOrEditRate = async (e) => {
+        e.preventDefault();
+        if (!newGovName.trim() || !newGovCost) return;
+        
+        let updated;
+        if (editingGovIndex !== null) {
+            updated = [...shippingRates];
+            updated[editingGovIndex] = {
+                governorate: newGovName.trim(),
+                cost: Number(newGovCost)
+            };
+        } else {
+            if (shippingRates.some(r => r.governorate.toLowerCase() === newGovName.trim().toLowerCase())) {
+                alert('Governorate already exists!');
+                return;
+            }
+            updated = [
+                ...shippingRates,
+                { governorate: newGovName.trim(), cost: Number(newGovCost) }
+            ];
+        }
+
+        const success = await handleSaveShippingRates(updated);
+        if (success) {
+            setNewGovName('');
+            setNewGovCost('');
+            setEditingGovIndex(null);
+        }
+    };
+
+    const handleDeleteRate = async (indexToDelete) => {
+        if (!window.confirm('Are you sure you want to delete this shipping destination?')) return;
+        const updated = shippingRates.filter((_, idx) => idx !== indexToDelete);
+        await handleSaveShippingRates(updated);
+    };
+
+    const startEditRate = (index) => {
+        const rate = shippingRates[index];
+        setNewGovName(rate.governorate);
+        setNewGovCost(rate.cost);
+        setEditingGovIndex(index);
+    };
+
+    const loadDashboardMetrics = async () => {
+        const token = localStorage.getItem('aura_token');
+        try {
+            const res = await fetch(`${BASE_URL}/api/v1/dashboard/metrics`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            if (res.ok) {
+                const result = await res.json();
+                setDashboardMetrics(result.data.metrics);
+            }
+        } catch (err) {
+            console.error('Failed to load dashboard metrics:', err);
+        }
+    };
+
+    const loadLoyaltyCustomers = async (searchVal = loyaltySearch, sortVal = loyaltySort) => {
+        const token = localStorage.getItem('aura_token');
+        setIsFetchingLoyalty(true);
+        try {
+            const res = await fetch(`${BASE_URL}/api/v1/customers?search=${encodeURIComponent(searchVal)}&sort=${sortVal}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            if (res.ok) {
+                const result = await res.json();
+                setLoyaltyCustomers(result.data.customers || []);
+            }
+        } catch (err) {
+            console.error('Failed to load loyalty customers:', err);
+        } finally {
+            setIsFetchingLoyalty(false);
+        }
+    };
+
     useEffect(() => {
         loadOrders();
         loadSettings();
+        loadDashboardMetrics();
     }, []);
+
+    useEffect(() => {
+        if (activeTab === 'loyalty') {
+            loadLoyaltyCustomers(loyaltySearch, loyaltySort);
+        }
+    }, [activeTab, loyaltySort]);
+
+    useEffect(() => {
+        if (activeTab === 'loyalty') {
+            const delayDebounceFn = setTimeout(() => {
+                loadLoyaltyCustomers(loyaltySearch, loyaltySort);
+            }, 300);
+            return () => clearTimeout(delayDebounceFn);
+        }
+    }, [loyaltySearch]);
 
     useEffect(() => {
         let pollInterval = null;
@@ -186,6 +352,7 @@ const AdminPage = () => {
             if (!pollInterval) {
                 pollInterval = setInterval(() => {
                     loadOrders();
+                    loadDashboardMetrics();
                 }, 30000);
             }
         });
@@ -193,6 +360,7 @@ const AdminPage = () => {
         socket.on('newOrder', (data) => {
             console.log('Real-time order received:', data);
             loadOrders();
+            loadDashboardMetrics();
             setRealtimeToast({
                 orderId: data.orderId,
                 customerName: data.customerName,
@@ -221,6 +389,7 @@ const AdminPage = () => {
             });
             if (res.ok) {
                 await loadOrders();
+                await loadDashboardMetrics();
                 if (loadCatalog) {
                     await loadCatalog();
                 }
@@ -249,6 +418,7 @@ const AdminPage = () => {
                 });
                 if (res.ok) {
                     await loadOrders();
+                    await loadDashboardMetrics();
                     if (loadCatalog) {
                         await loadCatalog();
                     }
@@ -280,6 +450,7 @@ const AdminPage = () => {
                 const result = await res.json();
                 alert(result.message || "Completed orders successfully cleared.");
                 await loadOrders();
+                await loadDashboardMetrics();
                 if (loadCatalog) {
                     await loadCatalog();
                 }
@@ -537,6 +708,30 @@ const AdminPage = () => {
         setImageFile(null);
         setProdDesc(p.desc);
         setSelectedCats(p.categories || []);
+        
+        // Reconstruct categories wizard state
+        const mains = p.categories ? p.categories.filter(c => ['Men', 'Women', 'Offers', 'Special Collection'].includes(c)) : [];
+        setWizardMainCats(mains);
+        
+        const subMap = {};
+        mains.filter(m => m !== 'Special Collection').forEach(mName => {
+            const subsOfMain = categories.filter(c => c.parentName === mName).map(c => c.name);
+            const subFound = p.categories.find(c => subsOfMain.includes(c));
+            if (subFound) {
+                subMap[mName] = subFound;
+            } else {
+                // Try default subs or fallback to first
+                const defaultSubMap = {
+                    'Men': 'Men\'s Collection',
+                    'Women': 'Women\'s Collection',
+                    'Offers': 'Hot Offers'
+                };
+                subMap[mName] = defaultSubMap[mName] || '';
+            }
+        });
+        setWizardSubCats(subMap);
+        setWizardStep(1);
+        
         setDiscountPercent(p.discountPercent || 0);
         setProdStock(p.stock !== undefined ? p.stock : 10);
         setSelectedSizes(p.sizes || ['39', '40', '41', '42', '43', '44', '45']);
@@ -563,15 +758,27 @@ const AdminPage = () => {
         setImageFile(null);
         setProdDesc('');
         setSelectedCats([]);
+        setWizardStep(1);
+        setWizardMainCats([]);
+        setWizardSubCats({});
         setDiscountPercent(0);
         setProdStock(10);
         setSelectedSizes(['39', '40', '41', '42', '43', '44', '45']);
         setProdImages([]);
     };
 
-    const handleSubmitProduct = (e) => {
+    const handleSubmitProduct = async (e) => {
         e.preventDefault();
         
+        if (wizardStep === 1) {
+            if (wizardMainCats.length === 0) {
+                alert("Error: You must select at least one Main Category!");
+                return;
+            }
+            setWizardStep(2);
+            return;
+        }
+
         const priceVal = parseInt(prodPrice, 10);
         if (isNaN(priceVal)) return;
 
@@ -581,17 +788,18 @@ const AdminPage = () => {
         const stockVal = parseInt(prodStock, 10);
         const finalStock = isNaN(stockVal) ? 10 : Math.max(0, stockVal);
 
-        let categoriesList = [...selectedCats];
-        if (categoriesList.length === 0) {
-            alert("Error: You must select at least one category (e.g. Men, Women, etc.) before saving this product!");
+        const missingSub = wizardMainCats.filter(m => m !== 'Special Collection').some(m => !wizardSubCats[m]);
+        if (missingSub) {
+            alert("Error: You must select a Sub-Category for every Main Category!");
             return;
         }
 
-        if (finalDiscount > 0 && !categoriesList.includes('Offers')) {
-            categoriesList.push('Offers');
-        } else if (finalDiscount === 0 && categoriesList.includes('Offers')) {
-            categoriesList = categoriesList.filter(c => c !== 'Offers');
-        }
+        const categoriesList = [];
+        wizardMainCats.forEach(m => {
+            if (!categoriesList.includes(m)) categoriesList.push(m);
+            const sub = wizardSubCats[m];
+            if (sub && !categoriesList.includes(sub)) categoriesList.push(sub);
+        });
 
         const formData = new FormData();
         formData.append('name', prodName.trim());
@@ -632,14 +840,27 @@ const AdminPage = () => {
         });
         formData.append('existingImages', JSON.stringify(existingImages));
 
-        if (editId) {
-            updateProduct(editId, formData);
-        } else {
-            addProduct(formData);
-        }
+        setIsSaving(true);
+        try {
+            let res;
+            if (editId) {
+                res = await updateProduct(editId, formData);
+            } else {
+                res = await addProduct(formData);
+            }
 
-        setIsProductModalOpen(false);
-        resetForm();
+            if (res && res.success) {
+                setIsProductModalOpen(false);
+                resetForm();
+            } else {
+                alert(res?.message || "Failed to save product.");
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Network connection error. Please try again.");
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     const handleImageUpload = (e) => {
@@ -679,26 +900,33 @@ const AdminPage = () => {
         });
     };
 
-    const handleAddCategory = (e) => {
+    const handleAddCategory = async (e) => {
         e.preventDefault();
         if (newCatName.trim()) {
-            const success = addCategory(newCatName.trim());
+            const parentId = newCatParentId || null;
+            const success = await addCategory(newCatName.trim(), parentId, newCatShowOnHomepage);
             if (success) {
                 setNewCatName('');
+                setNewCatParentId('');
+                setNewCatShowOnHomepage(false);
             } else {
                 alert('Category already exists.');
             }
         }
     };
 
-    const handleDeleteCategory = (cat) => {
-        if (['Men', 'Women', 'Offers', 'Special Collection'].includes(cat)) {
+    const handleDeleteCategory = (catName) => {
+        if (['Men', 'Women', 'Offers', 'Special Collection'].includes(catName)) {
             alert('Cannot delete core system categories.');
             return;
         }
-        if (window.confirm(`Are you sure you want to delete the category "${cat}"? This will remove it from all products.`)) {
-            deleteCategory(cat);
+        if (window.confirm(`Are you sure you want to delete the category "${catName}"? This will remove it from all products.`)) {
+            deleteCategory(catName);
         }
+    };
+
+    const handleToggleCategoryHomepage = async (catId, currentValue) => {
+        await updateCategory(catId, { showOnHomepage: !currentValue });
     };
 
     const triggerDeleteProduct = (p) => {
@@ -768,13 +996,14 @@ const AdminPage = () => {
     // Filtered Orders
     const getFilteredOrders = () => {
         return orders.filter(o => {
+            const matchesType = o.orderType !== 'Store Reservation';
             const matchesStatus = o.status === activeOrderStatusTab;
             const matchesSearch = o.id.toLowerCase().includes(orderSearch.toLowerCase()) || 
                                   o.name.toLowerCase().includes(orderSearch.toLowerCase()) || 
                                   o.phone.includes(orderSearch);
             const matchesPayment = orderPaymentFilter === 'All' || o.paymentMethod === orderPaymentFilter;
 
-            return matchesStatus && matchesSearch && matchesPayment;
+            return matchesType && matchesStatus && matchesSearch && matchesPayment;
         }).sort((a, b) => {
             const dateA = new Date(a.date);
             const dateB = new Date(b.date);
@@ -785,12 +1014,29 @@ const AdminPage = () => {
         });
     };
 
+    // Filtered Reservations
+    const getFilteredReservations = () => {
+        return orders.filter(o => {
+            const matchesType = o.orderType === 'Store Reservation';
+            const matchesStatus = o.status === activeReservationStatusTab;
+            const matchesSearch = o.id.toLowerCase().includes(resSearch.toLowerCase()) || 
+                                  o.name.toLowerCase().includes(resSearch.toLowerCase()) || 
+                                  o.phone.includes(resSearch) || 
+                                  (o.alternativePhone && o.alternativePhone.includes(resSearch));
+            return matchesType && matchesStatus && matchesSearch;
+        }).sort((a, b) => {
+            const dateA = new Date(a.date);
+            const dateB = new Date(b.date);
+            return dateB - dateA;
+        });
+    };
+
     // Metrics calculations
-    const totalOrdersCount = orders.length;
-    const pendingOrdersCount = orders.filter(o => o.status === 'Pending').length;
-    const completedOrdersCount = orders.filter(o => o.status === 'Completed').length;
+    const totalOrdersCount = orders.filter(o => o.orderType !== 'Store Reservation').length;
+    const pendingOrdersCount = orders.filter(o => o.status === 'Pending' && o.orderType !== 'Store Reservation').length;
+    const completedOrdersCount = orders.filter(o => o.status === 'Completed' && o.orderType !== 'Store Reservation').length;
     const lowStockCount = products.filter(p => (p.stock !== undefined ? p.stock : 10) <= 5).length;
-    const totalRevenue = orders.filter(o => o.status === 'Completed').reduce((sum, o) => sum + o.total, 0);
+    const totalRevenue = orders.filter(o => o.status === 'Completed' && o.orderType !== 'Store Reservation').reduce((sum, o) => sum + o.total, 0);
     const lowStockProductsList = products.filter(p => (p.stock !== undefined ? p.stock : 10) <= 5);
 
     return (
@@ -1247,7 +1493,7 @@ const AdminPage = () => {
                         <circle cx="60" cy="52" r="22" stroke="#FFFFFF" strokeWidth="5" fill="rgba(255, 255, 255, 0.05)" />
                         <path d="M 12 105 L 22 85 L 32 105" stroke="#FFFFFF" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
                         <path d="M 40 85 L 40 95 C 40 105 60 105 60 95 L 60 85" stroke="#FFFFFF" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
-                        <path d="M 68 105 L 68 85 H 74 C 81 85 81 95 74 95 H 68 M 74 95 L 80 105" stroke="#FFFFFF" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M 68 85 H 74 C 81 85 81 95 74 95 L 80 105" stroke="#FFFFFF" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
                         <path d="M 96 105 L 106 85 L 116 105" stroke="#FFFFFF" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
                         <text x="117" y="88" fill="#FFFFFF" fontSize="8" fontFamily="sans-serif" fontWeight="bold">®</text>
                     </svg>
@@ -1266,8 +1512,17 @@ const AdminPage = () => {
                     <button className={`sidebar-link ${activeTab === 'orders' ? 'active' : ''}`} onClick={() => setActiveTab('orders')}>
                         <span>Orders</span>
                     </button>
+                    <button className={`sidebar-link ${activeTab === 'reservations' ? 'active' : ''}`} onClick={() => setActiveTab('reservations')}>
+                        <span>Store Reservations</span>
+                    </button>
                     <button className={`sidebar-link ${activeTab === 'customers' ? 'active' : ''}`} onClick={() => setActiveTab('customers')}>
                         <span>Customers Tracker</span>
+                    </button>
+                    <button className={`sidebar-link ${activeTab === 'loyalty' ? 'active' : ''}`} onClick={() => setActiveTab('loyalty')}>
+                        <span>Loyalty Program</span>
+                    </button>
+                    <button className={`sidebar-link ${activeTab === 'shipping' ? 'active' : ''}`} onClick={() => setActiveTab('shipping')}>
+                        <span>Shipping Rates</span>
                     </button>
                 </div>
 
@@ -1348,7 +1603,7 @@ const AdminPage = () => {
                             <div className="metric-card-premium">
                                 <span className="metric-label-premium">TOTAL PRODUCTS</span>
                                 <div className="metric-value-premium">{products.length}</div>
-                                <span className="metric-sub">{categories.length} active categories</span>
+                                <span className="metric-sub">{categoryNames.length} active categories</span>
                             </div>
                             <div className="metric-card-premium">
                                 <span className="metric-label-premium">INCOMING ORDERS</span>
@@ -1359,6 +1614,20 @@ const AdminPage = () => {
                                 <span className="metric-label-premium">LOW STOCK ALERT</span>
                                 <div className="metric-value-premium" style={{ color: lowStockCount > 0 ? '#EF4444' : 'inherit' }}>{lowStockCount}</div>
                                 <span className="metric-sub">Products with stock &le; 5</span>
+                            </div>
+                            <div className="metric-card-premium">
+                                <span className="metric-label-premium">LOYALTY POINTS ISSUED</span>
+                                <div className="metric-value-premium" style={{ color: 'var(--color-gold)' }}>
+                                    {dashboardMetrics ? dashboardMetrics.totalLoyaltyPointsIssued.toLocaleString() : '0'} pts
+                                </div>
+                                <span className="metric-sub">Earned by shoppers</span>
+                            </div>
+                            <div className="metric-card-premium">
+                                <span className="metric-label-premium">LOYALTY POINTS REDEEMED</span>
+                                <div className="metric-value-premium">
+                                    {dashboardMetrics ? dashboardMetrics.totalLoyaltyPointsRedeemed.toLocaleString() : '0'} pts
+                                </div>
+                                <span className="metric-sub">Used for checkout discounts</span>
                             </div>
                         </div>
 
@@ -1421,6 +1690,34 @@ const AdminPage = () => {
                                         Make sure to regularly process pending orders. Transitioning orders to <strong>Completed</strong> automatically deducts stock and locks the transaction details.
                                     </p>
                                 </div>
+                                <div className="metric-card-premium">
+                                    <span className="metric-label-premium" style={{ color: 'var(--color-gold)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--color-gold)" style={{ stroke: 'none' }}>
+                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                        </svg>
+                                        MOST LOYAL CUSTOMERS
+                                    </span>
+                                    <div style={{ marginTop: '12px' }}>
+                                        {dashboardMetrics && dashboardMetrics.mostLoyalCustomers && dashboardMetrics.mostLoyalCustomers.length > 0 ? (
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                                {dashboardMetrics.mostLoyalCustomers.map((cust, idx) => (
+                                                    <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px', paddingBottom: '8px', borderBottom: idx < 4 ? '1px solid var(--border-color)' : 'none' }}>
+                                                        <div>
+                                                            <strong style={{ color: 'var(--color-text-dark)' }}>{cust.fullName}</strong>
+                                                            <div style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>{cust.phoneNumber}</div>
+                                                        </div>
+                                                        <div style={{ textAlign: 'right' }}>
+                                                            <span style={{ color: 'var(--color-gold)', fontWeight: '600' }}>{cust.totalSpent.toLocaleString()} EGP</span>
+                                                            <div style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>{cust.loyaltyPoints} pts</div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <span style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>No customer data available</span>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1442,7 +1739,7 @@ const AdminPage = () => {
                                     <label htmlFor="p-cat">Category</label>
                                     <select id="p-cat" className="admin-select-input" value={prodCatFilter} onChange={e => setProdCatFilter(e.target.value)}>
                                         <option value="All">All Categories</option>
-                                        {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                                        {categoryNames.map(c => <option key={c} value={c}>{c}</option>)}
                                     </select>
                                 </div>
                                 <div className="control-input-group">
@@ -1542,51 +1839,138 @@ const AdminPage = () => {
                     <div style={{ display: 'flex', gap: '30px', flexDirection: 'row', flexWrap: 'wrap' }}>
                         <div style={{ flex: 2, minWidth: '400px' }}>
                             <div className="inventory-table-container">
-                                <h3 style={{ fontSize: '16px', marginBottom: '20px', color: 'var(--color-text-dark)' }}>ACTIVE PRODUCT CATEGORIES</h3>
-                                <table className="admin-table">
-                                    <thead>
-                                        <tr>
-                                            <th>CATEGORY NAME</th>
-                                            <th>SYSTEM STATUS</th>
-                                            <th>PRODUCTS LINKED</th>
-                                            <th>ACTIONS</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {categories.map(cat => {
-                                            const isCore = ['Men', 'Women', 'Offers', 'Special Collection'].includes(cat);
-                                            const linkedCount = products.filter(p => p.categories && p.categories.includes(cat)).length;
-                                            return (
-                                                <tr key={cat}>
-                                                    <td><strong style={{ color: 'var(--color-gold)' }}>{cat}</strong></td>
-                                                    <td>
-                                                        <span style={{ fontSize: '11px', padding: '3px 8px', borderRadius: '12px', backgroundColor: isCore ? 'rgba(16, 185, 129, 0.15)' : 'rgba(255, 255, 255, 0.05)', color: isCore ? '#10B981' : 'var(--color-text-muted)', fontWeight: '600' }}>
-                                                            {isCore ? 'CORE SYSTEM' : 'CUSTOM'}
-                                                        </span>
-                                                    </td>
-                                                    <td>{linkedCount} items</td>
-                                                    <td>
-                                                        {!isCore ? (
-                                                            <button className="action-btn delete-action" onClick={() => handleDeleteCategory(cat)}>Delete</button>
-                                                        ) : (
-                                                            <span style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>Locked</span>
-                                                        )}
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })}
-                                    </tbody>
-                                </table>
+                                <h3 style={{ fontSize: '16px', marginBottom: '20px', color: 'var(--color-text-dark)' }}>CATEGORY HIERARCHY</h3>
+                                
+                                {mainCategories.map(mainCat => {
+                                    const isCore = ['Men', 'Women', 'Offers', 'Special Collection'].includes(mainCat.name);
+                                    const subs = getSubcategories(mainCat.name);
+                                    const mainLinkedCount = products.filter(p => p.categories && p.categories.includes(mainCat.name)).length;
+                                    return (
+                                        <div key={mainCat._id} style={{ marginBottom: '24px' }}>
+                                            {/* Main Category Header */}
+                                            <div style={{
+                                                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                                padding: '12px 16px', borderRadius: '12px 12px 0 0',
+                                                background: 'linear-gradient(135deg, rgba(197, 168, 128, 0.12), rgba(197, 168, 128, 0.04))',
+                                                border: '1px solid var(--border-color)', borderBottom: subs.length > 0 ? 'none' : '1px solid var(--border-color)',
+                                                borderRadius: subs.length > 0 ? '12px 12px 0 0' : '12px'
+                                            }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                    <span style={{ fontSize: '18px' }}>📁</span>
+                                                    <strong style={{ color: 'var(--color-gold)', fontSize: '14px', letterSpacing: '0.05em' }}>{mainCat.name.toUpperCase()}</strong>
+                                                    <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '12px', backgroundColor: isCore ? 'rgba(16, 185, 129, 0.15)' : 'rgba(255, 255, 255, 0.05)', color: isCore ? '#10B981' : 'var(--color-text-muted)', fontWeight: '600' }}>
+                                                        {isCore ? 'CORE' : 'CUSTOM'}
+                                                    </span>
+                                                </div>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                                    <span style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>{mainLinkedCount} products · {subs.length} sub-categories</span>
+                                                    {!isCore && (
+                                                        <button className="action-btn delete-action" style={{ fontSize: '11px', padding: '4px 10px' }} onClick={() => handleDeleteCategory(mainCat.name)}>Delete</button>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {/* Sub-categories Table */}
+                                            {subs.length > 0 && (
+                                                <table className="admin-table" style={{ borderTopLeftRadius: 0, borderTopRightRadius: 0 }}>
+                                                    <thead>
+                                                        <tr>
+                                                            <th>SUB-CATEGORY</th>
+                                                            <th>PRODUCTS</th>
+                                                            <th>{mainCat.name === 'Special Collection' ? 'SHOW ON HOMEPAGE' : 'ENABLE TO USER'}</th>
+                                                            <th>ACTIONS</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {subs.map(sub => {
+                                                            const subLinkedCount = products.filter(p => p.categories && p.categories.includes(sub.name)).length;
+                                                            return (
+                                                                <tr key={sub._id}>
+                                                                    <td>
+                                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                                            <span style={{ color: 'var(--color-text-muted)', fontSize: '14px' }}>└</span>
+                                                                            <strong style={{ color: 'var(--color-text-dark)' }}>{sub.name}</strong>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td>{subLinkedCount} items</td>
+                                                                    <td>
+                                                                        <button
+                                                                            onClick={() => handleToggleCategoryHomepage(sub._id, sub.showOnHomepage)}
+                                                                            style={{
+                                                                                width: '44px', height: '24px', borderRadius: '12px', border: 'none', cursor: 'pointer',
+                                                                                backgroundColor: sub.showOnHomepage ? 'var(--color-gold)' : 'rgba(255,255,255,0.1)',
+                                                                                position: 'relative', transition: 'background-color 0.3s',
+                                                                            }}
+                                                                        >
+                                                                            <span style={{
+                                                                                position: 'absolute', top: '3px',
+                                                                                left: sub.showOnHomepage ? '23px' : '3px',
+                                                                                width: '18px', height: '18px', borderRadius: '50%',
+                                                                                backgroundColor: '#fff', transition: 'left 0.3s',
+                                                                                boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
+                                                                            }} />
+                                                                        </button>
+                                                                    </td>
+                                                                    <td>
+                                                                        <button className="action-btn delete-action" style={{ fontSize: '11px', padding: '4px 10px' }} onClick={() => handleDeleteCategory(sub.name)}>Delete</button>
+                                                                    </td>
+                                                                </tr>
+                                                            );
+                                                        })}
+                                                    </tbody>
+                                                </table>
+                                            )}
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </div>
 
                         <div className="admin-form-container" style={{ flex: 1, minWidth: '300px', backgroundColor: 'var(--color-card-dark)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '24px' }}>
-                            <h3 style={{ color: 'var(--color-gold)', marginBottom: '16px' }}>CREATE CATEGORY</h3>
+                            <h3 style={{ color: 'var(--color-gold)', marginBottom: '16px' }}>CREATE SUB-CATEGORY</h3>
                             <form className="admin-form" onSubmit={handleAddCategory}>
-                                <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                    <label htmlFor="new-cat">Category Name</label>
-                                    <input type="text" id="new-cat" required placeholder="e.g. Summer Drop" value={newCatName} onChange={e => setNewCatName(e.target.value)} />
+                                <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '14px' }}>
+                                    <label htmlFor="new-cat-parent">Parent (Main Category)</label>
+                                    <select
+                                        id="new-cat-parent"
+                                        className="admin-select-input"
+                                        value={newCatParentId}
+                                        onChange={e => setNewCatParentId(e.target.value)}
+                                        required
+                                    >
+                                        <option value="">— Select Main Category Parent —</option>
+                                        {mainCategories.filter(mc => mc.name !== 'Special Collection').map(mc => (
+                                            <option key={mc._id} value={mc._id}>{mc.name}</option>
+                                        ))}
+                                    </select>
                                 </div>
+                                <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '14px' }}>
+                                    <label htmlFor="new-cat">Category Name</label>
+                                    <input type="text" id="new-cat" required placeholder="e.g. Nike, Adidas..." value={newCatName} onChange={e => setNewCatName(e.target.value)} />
+                                </div>
+                                {newCatParentId && (
+                                    <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
+                                        <label htmlFor="new-cat-homepage" style={{ marginBottom: 0, cursor: 'pointer', flex: 1 }}>Show on Homepage Carousel</label>
+                                        <button
+                                            type="button"
+                                            id="new-cat-homepage"
+                                            onClick={() => setNewCatShowOnHomepage(!newCatShowOnHomepage)}
+                                            style={{
+                                                width: '44px', height: '24px', borderRadius: '12px', border: 'none', cursor: 'pointer',
+                                                backgroundColor: newCatShowOnHomepage ? 'var(--color-gold)' : 'rgba(255,255,255,0.1)',
+                                                position: 'relative', transition: 'background-color 0.3s', flexShrink: 0,
+                                            }}
+                                        >
+                                            <span style={{
+                                                position: 'absolute', top: '3px',
+                                                left: newCatShowOnHomepage ? '23px' : '3px',
+                                                width: '18px', height: '18px', borderRadius: '50%',
+                                                backgroundColor: '#fff', transition: 'left 0.3s',
+                                                boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
+                                            }} />
+                                        </button>
+                                    </div>
+                                )}
                                 <button type="submit" className="form-submit-btn" style={{ width: '100%', marginTop: '16px' }}>
                                     ADD CATEGORY
                                 </button>
@@ -1603,7 +1987,7 @@ const AdminPage = () => {
                         {/* TAB BAR BY STATUS */}
                         <div className="order-tabs-bar">
                             {['Pending', 'Processing', 'Shipped', 'Completed', 'Cancelled'].map(status => {
-                                const count = orders.filter(o => o.status === status).length;
+                                const count = orders.filter(o => o.status === status && o.orderType !== 'Store Reservation').length;
                                 return (
                                     <button 
                                         key={status} 
@@ -1734,6 +2118,100 @@ const AdminPage = () => {
                 )}
 
                 {/* ========================================================
+                    TAB: STORE RESERVATIONS
+                    ======================================================== */}
+                {activeTab === 'reservations' && (
+                    <div>
+                        {/* TAB BAR BY STATUS */}
+                        <div className="order-tabs-bar">
+                            {['Pending', 'Completed', 'Cancelled'].map(status => {
+                                const count = orders.filter(o => o.status === status && o.orderType === 'Store Reservation').length;
+                                return (
+                                    <button 
+                                        key={status} 
+                                        className={`order-tab-btn ${activeReservationStatusTab === status ? 'active' : ''}`}
+                                        onClick={() => setActiveReservationStatusTab(status)}
+                                    >
+                                        {status.toUpperCase()} ({count})
+                                    </button>
+                                );
+                            })}
+                        </div>
+
+                        {/* FILTERS */}
+                        <div className="controls-row">
+                            <div className="control-input-group" style={{ flex: 1 }}>
+                                <label htmlFor="res-search">Search Reservations</label>
+                                <input type="text" id="res-search" className="admin-search-input" placeholder="Search by ID, name, phone..." value={resSearch} onChange={e => setResSearch(e.target.value)} />
+                            </div>
+                        </div>
+
+                        {/* LIST TABLE */}
+                        <div className="inventory-table-container">
+                            <table className="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>RESERVATION ID</th>
+                                        <th>CUSTOMER</th>
+                                        <th>PHONE NUMBERS</th>
+                                        <th>ITEMS COUNT</th>
+                                        <th>TOTAL VALUE</th>
+                                        <th>QUICK ACTION</th>
+                                        <th>VIEW DETAILS</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {getFilteredReservations().length === 0 ? (
+                                        <tr>
+                                            <td colSpan="7" style={{ textAlign: 'center', color: 'var(--color-text-muted)', padding: '30px' }}>
+                                                No reservations match this status or filter query.
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        getFilteredReservations().map(o => (
+                                            <tr key={o.id}>
+                                                <td><span style={{ fontWeight: '600', color: 'var(--color-gold)' }}>{o.id}</span><br /><span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>{o.date}</span></td>
+                                                <td><strong>{o.name}</strong></td>
+                                                <td>
+                                                    <strong>1st:</strong> {o.phone}
+                                                    {o.alternativePhone && (
+                                                        <>
+                                                            <br />
+                                                            <strong>2nd:</strong> {o.alternativePhone}
+                                                        </>
+                                                    )}
+                                                </td>
+                                                <td>{o.items.reduce((sum, it) => sum + it.quantity, 0)} item(s)</td>
+                                                <td><strong style={{ color: 'var(--color-gold)' }}>{o.total.toLocaleString()} EGP</strong></td>
+                                                <td>
+                                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                                        {o.status === 'Pending' && (
+                                                            <>
+                                                                <button className="action-btn edit-action" onClick={() => handleUpdateOrderStatus(o.id, 'Completed')} style={{ backgroundColor: '#10B981', color: '#FFFFFF', borderColor: '#10B981' }}>Complete</button>
+                                                                <button className="action-btn delete-action" onClick={() => handleUpdateOrderStatus(o.id, 'Cancelled')}>Cancel</button>
+                                                            </>
+                                                        )}
+                                                        {o.status === 'Completed' && (
+                                                            <span style={{ fontSize: '11px', color: '#10B981', fontWeight: '600' }}>Completed ✓</span>
+                                                        )}
+                                                        {o.status === 'Cancelled' && (
+                                                            <span style={{ fontSize: '11px', color: '#EF4444', fontWeight: '600' }}>Cancelled ✗</span>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <button className="action-btn edit-action" onClick={() => setSelectedOrderDetails(o)}>Details</button>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
+
+                {/* ========================================================
                     TAB 5: CUSTOMERS TRACKER
                     ======================================================== */}
                 {activeTab === 'customers' && (
@@ -1790,170 +2268,468 @@ const AdminPage = () => {
                         </div>
                     </div>
                 )}
+
+                {/* ========================================================
+                    TAB: LOYALTY PROGRAM MANAGER
+                    ======================================================== */}
+                {activeTab === 'loyalty' && (
+                    <div>
+                        {/* Summary metrics for Loyalty Program */}
+                        <div className="metrics-grid" style={{ marginBottom: '24px' }}>
+                            <div className="metric-card-premium" style={{ padding: '18px 24px' }}>
+                                <span className="metric-label-premium">TOTAL REWARDS ISSUED</span>
+                                <div className="metric-value-premium" style={{ color: 'var(--color-gold)', fontSize: '20px' }}>
+                                    {dashboardMetrics ? dashboardMetrics.totalLoyaltyPointsIssued.toLocaleString() : '0'} pts
+                                </div>
+                                <span className="metric-sub">Accumulated all-time points</span>
+                            </div>
+                            <div className="metric-card-premium" style={{ padding: '18px 24px' }}>
+                                <span className="metric-label-premium">TOTAL REWARDS REDEEMED</span>
+                                <div className="metric-value-premium" style={{ fontSize: '20px' }}>
+                                    {dashboardMetrics ? dashboardMetrics.totalLoyaltyPointsRedeemed.toLocaleString() : '0'} pts
+                                </div>
+                                <span className="metric-sub">Exchanged for discounts</span>
+                            </div>
+                            <div className="metric-card-premium" style={{ padding: '18px 24px' }}>
+                                <span className="metric-label-premium">ACTIVE LOYALTY PROFILES</span>
+                                <div className="metric-value-premium" style={{ fontSize: '20px' }}>
+                                    {loyaltyCustomers.length} Accounts
+                                </div>
+                                <span className="metric-sub">Registered guest accounts</span>
+                            </div>
+                        </div>
+
+                        {/* SEARCH & SORT */}
+                        <div className="controls-row">
+                            <div className="control-input-group" style={{ flex: 1 }}>
+                                <label htmlFor="loyalty-search">Search Loyalty Profiles</label>
+                                <input 
+                                    type="text" 
+                                    id="loyalty-search" 
+                                    className="admin-search-input" 
+                                    placeholder="Search by phone number, name..." 
+                                    value={loyaltySearch} 
+                                    onChange={e => setLoyaltySearch(e.target.value)} 
+                                />
+                            </div>
+                            <div className="control-input-group">
+                                <label htmlFor="loyalty-sort">Sort By</label>
+                                <select 
+                                    id="loyalty-sort" 
+                                    className="admin-select-input" 
+                                    value={loyaltySort} 
+                                    onChange={e => setLoyaltySort(e.target.value)}
+                                >
+                                    <option value="spent-desc">Total Spent (High-Low)</option>
+                                    <option value="spent-asc">Total Spent (Low-High)</option>
+                                    <option value="points-desc">Current Points (High-Low)</option>
+                                    <option value="points-asc">Current Points (Low-High)</option>
+                                    <option value="orders-desc">Orders Count (High-Low)</option>
+                                    <option value="orders-asc">Orders Count (Low-High)</option>
+                                    <option value="name-asc">Customer Name (A-Z)</option>
+                                    <option value="name-desc">Customer Name (Z-A)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        {/* LIST TABLE */}
+                        <div className="inventory-table-container">
+                            {isFetchingLoyalty ? (
+                                <div style={{ textAlign: 'center', padding: '40px', color: 'var(--color-text-muted)' }}>
+                                    Loading profiles...
+                                </div>
+                            ) : (
+                                <table className="admin-table">
+                                    <thead>
+                                        <tr>
+                                            <th>PHONE NUMBER</th>
+                                            <th>FULL NAME</th>
+                                            <th>EMAIL ADDRESS</th>
+                                            <th>GOVERNORATE</th>
+                                            <th>CURRENT POINTS</th>
+                                            <th>ORDERS COUNT</th>
+                                            <th>TOTAL SPENT</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {loyaltyCustomers.length === 0 ? (
+                                            <tr>
+                                                <td colSpan="7" style={{ textAlign: 'center', color: 'var(--color-text-muted)', padding: '30px' }}>
+                                                    No loyalty profiles found.
+                                                </td>
+                                            </tr>
+                                        ) : (
+                                            loyaltyCustomers.map((cust, index) => (
+                                                <tr key={cust._id || index}>
+                                                    <td><strong style={{ color: 'var(--color-gold)' }}>{cust.phoneNumber}</strong></td>
+                                                    <td><strong>{cust.fullName}</strong></td>
+                                                    <td>{cust.email || <span style={{ color: 'var(--color-text-muted)', fontStyle: 'italic' }}>N/A</span>}</td>
+                                                    <td>{cust.city || <span style={{ color: 'var(--color-text-muted)', fontStyle: 'italic' }}>N/A</span>}</td>
+                                                    <td>
+                                                        <span style={{ 
+                                                            display: 'inline-flex',
+                                                            alignItems: 'center',
+                                                            gap: '4px',
+                                                            color: 'var(--color-gold)', 
+                                                            fontWeight: 'bold',
+                                                            backgroundColor: 'rgba(197, 168, 128, 0.1)',
+                                                            padding: '4px 10px',
+                                                            borderRadius: '12px',
+                                                            border: '1px solid rgba(197, 168, 128, 0.2)'
+                                                        }}>
+                                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="var(--color-gold)" style={{ stroke: 'none' }}>
+                                                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                                            </svg>
+                                                            {cust.loyaltyPoints.toLocaleString()}
+                                                        </span>
+                                                    </td>
+                                                    <td>{cust.totalOrders} order(s)</td>
+                                                    <td><strong style={{ color: 'var(--color-gold)' }}>{cust.totalSpent.toLocaleString()} EGP</strong></td>
+                                                </tr>
+                                            ))
+                                        )}
+                                    </tbody>
+                                </table>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* ========================================================
+                    TAB 6: SHIPPING RATES MANAGER
+                    ======================================================== */}
+                {activeTab === 'shipping' && (
+                    <div>
+                        {/* Inline Form to Add / Edit Governorate Shipping Price */}
+                        <div style={{ marginBottom: '24px', padding: '24px', backgroundColor: 'var(--color-card-dark)', border: '1px solid var(--border-color)', borderRadius: '16px' }}>
+                            <h3 style={{ fontFamily: 'var(--font-heading)', color: 'var(--color-gold)', fontSize: '16px', marginBottom: '16px', textTransform: 'uppercase' }}>
+                                {editingGovIndex !== null ? 'Edit Governorate Shipping Rate' : 'Add New Shipping Governorate'}
+                            </h3>
+                            <form onSubmit={handleAddOrEditRate} style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'flex-end' }}>
+                                <div className="control-input-group" style={{ flex: '1 1 200px' }}>
+                                    <label htmlFor="gov-name">Governorate Name *</label>
+                                    <input 
+                                        type="text" 
+                                        id="gov-name" 
+                                        required 
+                                        className="admin-search-input" 
+                                        style={{ width: '100%' }}
+                                        placeholder="e.g. Cairo" 
+                                        value={newGovName} 
+                                        onChange={e => setNewGovName(e.target.value)} 
+                                    />
+                                </div>
+                                <div className="control-input-group" style={{ flex: '1 1 150px' }}>
+                                    <label htmlFor="gov-cost">Shipping Cost (EGP) *</label>
+                                    <input 
+                                        type="number" 
+                                        id="gov-cost" 
+                                        required 
+                                        min="0"
+                                        className="admin-search-input" 
+                                        style={{ width: '100%' }}
+                                        placeholder="e.g. 50" 
+                                        value={newGovCost} 
+                                        onChange={e => setNewGovCost(e.target.value)} 
+                                    />
+                                </div>
+                                <div style={{ display: 'flex', gap: '10px' }}>
+                                    <button 
+                                        type="submit" 
+                                        className="action-btn edit-action" 
+                                        style={{ height: '42px', padding: '0 20px', borderRadius: '8px', fontWeight: '600' }}
+                                    >
+                                        {editingGovIndex !== null ? 'UPDATE' : 'ADD DESTINATION'}
+                                    </button>
+                                    {editingGovIndex !== null && (
+                                        <button 
+                                            type="button" 
+                                            className="action-btn delete-action" 
+                                            onClick={() => {
+                                                setNewGovName('');
+                                                setNewGovCost('');
+                                                setEditingGovIndex(null);
+                                            }}
+                                            style={{ height: '42px', padding: '0 20px', borderRadius: '8px', fontWeight: '600' }}
+                                        >
+                                            CANCEL
+                                        </button>
+                                    )}
+                                </div>
+                            </form>
+                        </div>
+
+                        {/* Inventory Table style list */}
+                        <div className="inventory-table-container">
+                            <table className="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>GOVERNORATE</th>
+                                        <th>SHIPPING COST</th>
+                                        <th style={{ textAlign: 'right' }}>ACTIONS</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {shippingRates.length === 0 ? (
+                                        <tr>
+                                            <td colSpan="3" style={{ textAlign: 'center', color: 'var(--color-text-muted)', padding: '30px' }}>
+                                                No shipping destinations set up. Customers won't be able to checkout until at least one governorate is added.
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        shippingRates.map((rate, idx) => (
+                                            <tr key={idx}>
+                                                <td><strong>{rate.governorate}</strong></td>
+                                                <td><span style={{ color: 'var(--color-gold)', fontWeight: '600' }}>{rate.cost} EGP</span></td>
+                                                <td style={{ textAlign: 'right' }}>
+                                                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                                                        <button className="action-btn edit-action" onClick={() => startEditRate(idx)}>Edit</button>
+                                                        <button className="action-btn delete-action" onClick={() => handleDeleteRate(idx)}>Delete</button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
             </main>
 
             {/* ADD / EDIT PRODUCT MODAL */}
             {isProductModalOpen && (
-                <div className="admin-modal-backdrop" onClick={(e) => e.target.classList.contains('admin-modal-backdrop') && setIsProductModalOpen(false)}>
+                <div className="admin-modal-backdrop" onClick={(e) => e.target.classList.contains('admin-modal-backdrop') && !isSaving && setIsProductModalOpen(false)}>
                     <div className="admin-modal-box" style={{ maxWidth: '550px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid var(--border-color)', paddingBottom: '12px' }}>
                             <h3 style={{ fontSize: '18px', fontWeight: '600', color: 'var(--color-gold)' }}>
                                 {editId ? 'EDIT SNEAKER MODEL' : 'ADD NEW SNEAKER'}
                             </h3>
-                            <button onClick={() => setIsProductModalOpen(false)} style={{ color: 'var(--color-text-muted)', fontSize: '20px', cursor: 'pointer', background: 'none', border: 'none' }}>&times;</button>
+                            <button 
+                                onClick={() => !isSaving && setIsProductModalOpen(false)} 
+                                disabled={isSaving}
+                                style={{ color: 'var(--color-text-muted)', fontSize: '20px', cursor: isSaving ? 'not-allowed' : 'pointer', background: 'none', border: 'none', opacity: isSaving ? 0.5 : 1 }}
+                            >
+                                &times;
+                            </button>
                         </div>
                         
                         <form className="admin-form" onSubmit={handleSubmitProduct} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                            <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                <label htmlFor="prod-name">Sneaker Model Name</label>
-                                <input type="text" id="prod-name" required placeholder="e.g. AURA RETRO (WHITE)" value={prodName} onChange={e => setProdName(e.target.value)} />
-                            </div>
-                            
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                                <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                    <label htmlFor="prod-price">Retail Price ($)</label>
-                                    <input type="number" id="prod-price" required placeholder="e.g. 190" value={prodPrice} onChange={e => setProdPrice(e.target.value)} />
-                                </div>
-                                <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                    <label htmlFor="prod-stock">Stock Quantity</label>
-                                    <input type="number" id="prod-stock" min="0" required placeholder="e.g. 15" value={prodStock} onChange={e => setProdStock(parseInt(e.target.value, 10) || 0)} />
-                                </div>
-                            </div>
-                            
-                            <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                <label htmlFor="prod-image">Image File / Path</label>
-                                <div style={{ display: 'flex', gap: '8px', flexDirection: 'column' }}>
-                                    <input type="text" id="prod-image" required placeholder="assets/sneaker_white.png or upload below" value={prodImage} onChange={e => setProdImage(e.target.value)} />
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                        <input type="file" id="p-img-file" accept="image/*" style={{ display: 'none' }} onChange={handleImageUpload} />
-                                        <button type="button" className="action-btn edit-action" onClick={() => document.getElementById('p-img-file').click()} style={{ padding: '8px 12px', fontSize: '11px' }}>
-                                            Upload Local Image
-                                        </button>
-                                        {prodImage && prodImage.startsWith('data:') && (
-                                            <span style={{ fontSize: '11px', color: 'var(--color-gold)' }}>✓ File Loaded</span>
-                                        )}
+                            {wizardStep === 1 ? (
+                                <>
+                                    {/* Phase 1: Main Product details & Main Category Pickers */}
+                                    <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                        <label htmlFor="prod-name">Sneaker Model Name</label>
+                                        <input type="text" id="prod-name" required placeholder="e.g. AURA RETRO (WHITE)" value={prodName} onChange={e => setProdName(e.target.value)} />
                                     </div>
-                                </div>
-                            </div>
+                                    
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                                        <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                            <label htmlFor="prod-price">Retail Price ($)</label>
+                                            <input type="number" id="prod-price" required placeholder="e.g. 190" value={prodPrice} onChange={e => setProdPrice(e.target.value)} />
+                                        </div>
+                                        <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                            <label htmlFor="prod-stock">Stock Quantity</label>
+                                            <input type="number" id="prod-stock" min="0" required placeholder="e.g. 15" value={prodStock} onChange={e => setProdStock(parseInt(e.target.value, 10) || 0)} />
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                        <label htmlFor="prod-image">Image File / Path</label>
+                                        <div style={{ display: 'flex', gap: '8px', flexDirection: 'column' }}>
+                                            <input type="text" id="prod-image" required placeholder="assets/sneaker_white.png or upload below" value={prodImage} onChange={e => setProdImage(e.target.value)} />
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                <input type="file" id="p-img-file" accept="image/*" style={{ display: 'none' }} onChange={handleImageUpload} />
+                                                <button type="button" className="action-btn edit-action" onClick={() => document.getElementById('p-img-file').click()} style={{ padding: '8px 12px', fontSize: '11px' }}>
+                                                    Upload Local Image
+                                                </button>
+                                                {prodImage && prodImage.startsWith('data:') && (
+                                                    <span style={{ fontSize: '11px', color: 'var(--color-gold)' }}>✓ File Loaded</span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
 
-                            {/* Secondary Images Section */}
-                            <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                <label>Secondary Sneaker Images (Optional)</label>
-                                <div style={{ display: 'flex', gap: '8px', flexDirection: 'column' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                        <input type="file" id="p-additional-imgs" accept="image/*" multiple style={{ display: 'none' }} onChange={handleMultipleImagesUpload} />
-                                        <button type="button" className="action-btn edit-action" onClick={() => document.getElementById('p-additional-imgs').click()} style={{ padding: '8px 12px', fontSize: '11px' }}>
-                                            Add More Images
-                                        </button>
-                                        <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
-                                            {prodImages.length} image(s) added
-                                        </span>
+                                    {/* Secondary Images Section */}
+                                    <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                        <label>Secondary Sneaker Images (Optional)</label>
+                                        <div style={{ display: 'flex', gap: '8px', flexDirection: 'column' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                <input type="file" id="p-additional-imgs" accept="image/*" multiple style={{ display: 'none' }} onChange={handleMultipleImagesUpload} />
+                                                <button type="button" className="action-btn edit-action" onClick={() => document.getElementById('p-additional-imgs').click()} style={{ padding: '8px 12px', fontSize: '11px' }}>
+                                                    Add More Images
+                                                </button>
+                                                <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
+                                                    {prodImages.length} image(s) added
+                                                </span>
+                                            </div>
+                                            {prodImages.length > 0 && (
+                                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '6px', backgroundColor: 'var(--input-bg)', padding: '10px', borderRadius: '8px', border: '1px dashed var(--border-color)' }}>
+                                                    {prodImages.map((img) => (
+                                                        <div key={img.id} style={{ position: 'relative', width: '64px', height: '52px', border: '1px solid var(--border-color)', borderRadius: '4px', overflow: 'hidden', backgroundColor: '#0a0a0a' }}>
+                                                            <img src={img.url} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                                            <button 
+                                                                type="button" 
+                                                                onClick={() => handleRemoveAdditionalImage(img.id)}
+                                                                style={{ 
+                                                                    position: 'absolute', 
+                                                                    top: '2px', 
+                                                                    right: '2px', 
+                                                                    backgroundColor: 'rgba(239, 68, 68, 0.9)', 
+                                                                    color: 'white', 
+                                                                    border: 'none', 
+                                                                    borderRadius: '50%', 
+                                                                    width: '16px', 
+                                                                    height: '16px', 
+                                                                    display: 'flex', 
+                                                                    alignItems: 'center', 
+                                                                    justifyContent: 'center', 
+                                                                    fontSize: '10px', 
+                                                                    cursor: 'pointer',
+                                                                    lineHeight: '1',
+                                                                    padding: '0'
+                                                                }}
+                                                                title="Remove Image"
+                                                            >
+                                                                ✕
+                                                            </button>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
-                                    {prodImages.length > 0 && (
-                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '6px', backgroundColor: 'var(--input-bg)', padding: '10px', borderRadius: '8px', border: '1px dashed var(--border-color)' }}>
-                                            {prodImages.map((img) => (
-                                                <div key={img.id} style={{ position: 'relative', width: '64px', height: '52px', border: '1px solid var(--border-color)', borderRadius: '4px', overflow: 'hidden', backgroundColor: '#0a0a0a' }}>
-                                                    <img src={img.url} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+
+                                    {/* Main Categories Picker */}
+                                    <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '8px', border: '1px solid rgba(255,255,255,0.06)', padding: '16px', borderRadius: '12px', backgroundColor: 'rgba(255,255,255,0.01)' }}>
+                                        <span style={{ fontSize: '13px', fontWeight: '700', color: 'var(--color-gold)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Step 1: Select Main Categories</span>
+                                        <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', margin: '0 0 8px 0' }}>Select all main categories where this sneaker model should be visible.</p>
+                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                                            {mainCategories.map(mc => {
+                                                const isSelected = wizardMainCats.includes(mc.name);
+                                                return (
+                                                    <button
+                                                        type="button"
+                                                        key={mc._id}
+                                                        onClick={() => {
+                                                            if (isSelected) {
+                                                                setWizardMainCats(wizardMainCats.filter(c => c !== mc.name));
+                                                                const newSubs = { ...wizardSubCats };
+                                                                delete newSubs[mc.name];
+                                                                setWizardSubCats(newSubs);
+                                                            } else {
+                                                                setWizardMainCats([...wizardMainCats, mc.name]);
+                                                            }
+                                                        }}
+                                                        className={`cat-tag-checkbox ${isSelected ? 'active' : ''}`}
+                                                        style={{ padding: '8px 16px', fontSize: '12px', borderRadius: '20px', border: '1px solid var(--border-color)', cursor: 'pointer', transition: 'all 0.2s' }}
+                                                    >
+                                                        {mc.name}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+
+                                    <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                        <label htmlFor="prod-discount">Discount Percentage (%)</label>
+                                        <input type="number" id="prod-discount" min="0" max="100" placeholder="e.g. 20 (optional)" value={discountPercent === 0 ? '' : discountPercent} onChange={e => setDiscountPercent(parseInt(e.target.value, 10) || 0)} />
+                                    </div>
+
+                                    <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                        <label>Available Sizes (Select Multiple)</label>
+                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '4px' }}>
+                                            {['38', '39', '40', '41', '42', '43', '44', '45', '46', '47'].map(sz => {
+                                                const isActive = selectedSizes.includes(sz);
+                                                return (
                                                     <button 
                                                         type="button" 
-                                                        onClick={() => handleRemoveAdditionalImage(img.id)}
-                                                        style={{ 
-                                                            position: 'absolute', 
-                                                            top: '2px', 
-                                                            right: '2px', 
-                                                            backgroundColor: 'rgba(239, 68, 68, 0.9)', 
-                                                            color: 'white', 
-                                                            border: 'none', 
-                                                            borderRadius: '50%', 
-                                                            width: '16px', 
-                                                            height: '16px', 
-                                                            display: 'flex', 
-                                                            alignItems: 'center', 
-                                                            justifyContent: 'center', 
-                                                            fontSize: '10px', 
-                                                            cursor: 'pointer',
-                                                            lineHeight: '1',
-                                                            padding: '0'
+                                                        key={sz} 
+                                                        className={`cat-tag-checkbox ${isActive ? 'active' : ''}`}
+                                                        onClick={() => {
+                                                            if (isActive) {
+                                                                setSelectedSizes(selectedSizes.filter(s => s !== sz));
+                                                            } else {
+                                                                setSelectedSizes([...selectedSizes, sz]);
+                                                            }
                                                         }}
-                                                        title="Remove Image"
                                                     >
-                                                        ✕
+                                                        {sz}
                                                     </button>
-                                                </div>
-                                            ))}
+                                                );
+                                            })}
                                         </div>
-                                    )}
-                                </div>
-                            </div>
-                            
-                            <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                <label>Categories (Select Multiple)</label>
-                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '4px' }}>
-                                    {categories.map(cat => {
-                                        const isActive = selectedCats.includes(cat);
-                                        return (
-                                            <button 
-                                                type="button" 
-                                                key={cat} 
-                                                className={`cat-tag-checkbox ${isActive ? 'active' : ''}`}
-                                                onClick={() => {
-                                                    if (isActive) {
-                                                        setSelectedCats(selectedCats.filter(c => c !== cat));
-                                                    } else {
-                                                        setSelectedCats([...selectedCats, cat]);
-                                                    }
-                                                }}
-                                            >
-                                                {cat}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            </div>
+                                    </div>
 
-                             <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                <label htmlFor="prod-discount">Discount Percentage (%)</label>
-                                <input type="number" id="prod-discount" min="0" max="100" placeholder="e.g. 20 (optional)" value={discountPercent === 0 ? '' : discountPercent} onChange={e => setDiscountPercent(parseInt(e.target.value, 10) || 0)} />
-                            </div>
+                                    <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                        <label htmlFor="prod-desc">Description Details</label>
+                                        <textarea id="prod-desc" rows="3" required placeholder="Product features, materials and fit..." value={prodDesc} onChange={e => setProdDesc(e.target.value)} style={{ resize: 'none' }}></textarea>
+                                    </div>
 
-                            <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                <label>Available Sizes (Select Multiple)</label>
-                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '4px' }}>
-                                    {['38', '39', '40', '41', '42', '43', '44', '45', '46', '47'].map(sz => {
-                                        const isActive = selectedSizes.includes(sz);
-                                        return (
-                                            <button 
-                                                type="button" 
-                                                key={sz} 
-                                                className={`cat-tag-checkbox ${isActive ? 'active' : ''}`}
-                                                onClick={() => {
-                                                    if (isActive) {
-                                                        setSelectedSizes(selectedSizes.filter(s => s !== sz));
-                                                    } else {
-                                                        setSelectedSizes([...selectedSizes, sz]);
-                                                    }
-                                                }}
-                                            >
-                                                {sz}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            </div>
+                                    <button 
+                                        type="submit" 
+                                        className="form-submit-btn" 
+                                        disabled={wizardMainCats.length === 0}
+                                        style={{ width: '100%', marginTop: '8px', padding: '14px', borderRadius: '30px' }}
+                                    >
+                                        Next Step: Sub-Categories ›
+                                    </button>
+                                </>
+                            ) : (
+                                <>
+                                    {/* Phase 2: Select Sub Category for each chosen Main Category */}
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                        <h4 style={{ fontSize: '13px', fontWeight: '700', color: 'var(--color-gold)', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid var(--border-color)', paddingBottom: '8px', margin: 0 }}>Step 2: Assign Sub-Categories</h4>
+                                        <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', margin: 0 }}>Select a specific sub-category for each of the selected main categories.</p>
+                                        
+                                        {wizardMainCats.filter(m => m !== 'Special Collection').length === 0 ? (
+                                            <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', fontStyle: 'italic', margin: '10px 0' }}>
+                                                No sub-categories required for Special Collection. Ready to submit!
+                                            </p>
+                                        ) : (
+                                            wizardMainCats.filter(m => m !== 'Special Collection').map(mName => (
+                                                <div key={mName} className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                                    <label htmlFor={`sub-select-${mName}`} style={{ fontSize: '12px', fontWeight: '600' }}>
+                                                        Sub-Category for <span style={{ color: 'var(--color-gold)' }}>{mName}</span>
+                                                    </label>
+                                                    <select
+                                                        id={`sub-select-${mName}`}
+                                                        className="admin-select-input"
+                                                        value={wizardSubCats[mName] || ''}
+                                                        onChange={e => setWizardSubCats({ ...wizardSubCats, [mName]: e.target.value })}
+                                                        required
+                                                    >
+                                                        <option value="">— Select Sub-Category —</option>
+                                                        {getSubcategories(mName).map(sub => (
+                                                            <option key={sub._id} value={sub.name}>{sub.name}</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
 
-                            <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                <label htmlFor="prod-desc">Description Details</label>
-                                <textarea id="prod-desc" rows="3" required placeholder="Product features, materials and fit..." value={prodDesc} onChange={e => setProdDesc(e.target.value)} style={{ resize: 'none' }}></textarea>
-                            </div>
-
-                            <div className="form-btns-row" style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
-                                <button type="button" className="form-cancel-btn" onClick={() => setIsProductModalOpen(false)} style={{ flex: 1 }}>
-                                    CANCEL
-                                </button>
-                                <button type="submit" className="form-submit-btn" style={{ flex: 2 }}>
-                                    {editId ? 'SAVE CHANGES' : 'ADD SNEAKER'}
-                                </button>
-                            </div>
+                                    <div className="form-btns-row" style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
+                                        <button 
+                                            type="button" 
+                                            className="form-cancel-btn" 
+                                            onClick={() => !isSaving && setWizardStep(1)} 
+                                            disabled={isSaving}
+                                            style={{ flex: 1, opacity: isSaving ? 0.5 : 1, cursor: isSaving ? 'not-allowed' : 'pointer' }}
+                                        >
+                                            ‹ BACK
+                                        </button>
+                                        <button 
+                                            type="submit" 
+                                            className="form-submit-btn" 
+                                            disabled={isSaving}
+                                            style={{ flex: 2, cursor: isSaving ? 'not-allowed' : 'pointer' }}
+                                        >
+                                            {isSaving ? 'SAVING...' : (editId ? 'SAVE CHANGES' : 'ADD SNEAKER')}
+                                        </button>
+                                    </div>
+                                </>
+                            )}
                         </form>
                     </div>
                 </div>
@@ -1965,11 +2741,11 @@ const AdminPage = () => {
                     <div className="admin-modal-box" style={{ maxWidth: '750px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid var(--border-color)', paddingBottom: '12px' }}>
                             <h2 style={{ fontSize: '18px', fontWeight: '600' }}>
-                                ORDER DETAILS: <span style={{ color: 'var(--color-gold)' }}>{selectedOrderDetails.id}</span>
+                                {selectedOrderDetails.orderType === 'Store Reservation' ? 'RESERVATION DETAILS' : 'ORDER DETAILS'}: <span style={{ color: 'var(--color-gold)' }}>{selectedOrderDetails.id}</span>
                             </h2>
                             <button onClick={() => setSelectedOrderDetails(null)} style={{ color: 'var(--color-text-muted)', fontSize: '20px', cursor: 'pointer', background: 'none', border: 'none' }}>&times;</button>
                         </div>
-                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', fontSize: '13px', lineHeight: '1.6', marginBottom: '24px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', fontSize: '13px', lineHeight: '1.6', marginBottom: '24px' }}>
                             <div>
                                 <span style={{ color: 'var(--color-text-muted)', display: 'block', fontSize: '11px', fontWeight: '600' }}>CUSTOMER NAME</span>
                                 <strong style={{ fontSize: '14px' }}>{selectedOrderDetails.name}</strong>
@@ -1984,16 +2760,26 @@ const AdminPage = () => {
                                     </>
                                 )}
 
-                                <span style={{ color: 'var(--color-text-muted)', display: 'block', fontSize: '11px', fontWeight: '600', marginTop: '12px' }}>SHIPPING ADDRESS</span>
-                                <span style={{ fontStyle: 'italic' }}>{selectedOrderDetails.address}</span>
+                                <span style={{ color: 'var(--color-text-muted)', display: 'block', fontSize: '11px', fontWeight: '600', marginTop: '12px' }}>
+                                    {selectedOrderDetails.orderType === 'Store Reservation' ? 'FULFILLMENT TYPE' : 'SHIPPING ADDRESS'}
+                                </span>
+                                <span style={{ fontStyle: 'italic' }}>
+                                    {selectedOrderDetails.orderType === 'Store Reservation' ? 'In-Store Pickup (حجز في المحل)' : selectedOrderDetails.address}
+                                </span>
                             </div>
                             
                             <div>
-                                <span style={{ color: 'var(--color-text-muted)', display: 'block', fontSize: '11px', fontWeight: '600' }}>ORDER DATE</span>
+                                <span style={{ color: 'var(--color-text-muted)', display: 'block', fontSize: '11px', fontWeight: '600' }}>
+                                    {selectedOrderDetails.orderType === 'Store Reservation' ? 'RESERVATION DATE' : 'ORDER DATE'}
+                                </span>
                                 <strong>{selectedOrderDetails.date}</strong>
                                 
-                                <span style={{ color: 'var(--color-text-muted)', display: 'block', fontSize: '11px', fontWeight: '600', marginTop: '12px' }}>PAYMENT METHOD</span>
-                                <strong>{selectedOrderDetails.paymentMethod || 'Cash on Delivery'}</strong>
+                                <span style={{ color: 'var(--color-text-muted)', display: 'block', fontSize: '11px', fontWeight: '600', marginTop: '12px' }}>
+                                    {selectedOrderDetails.orderType === 'Store Reservation' ? 'PAYMENT STATUS' : 'PAYMENT METHOD'}
+                                </span>
+                                <strong>
+                                    {selectedOrderDetails.orderType === 'Store Reservation' ? 'Pay In-Store on Collection' : (selectedOrderDetails.paymentMethod || 'Cash on Delivery')}
+                                </strong>
                                 
                                 <span style={{ color: 'var(--color-text-muted)', display: 'block', fontSize: '11px', fontWeight: '600', marginTop: '12px' }}>ADDITIONAL NOTES</span>
                                 <span style={{ fontStyle: 'italic', color: selectedOrderDetails.notes ? 'inherit' : 'var(--color-text-muted)' }}>
@@ -2003,7 +2789,9 @@ const AdminPage = () => {
                         </div>
 
                         <div style={{ marginBottom: '24px' }}>
-                            <span style={{ color: 'var(--color-text-muted)', display: 'block', fontSize: '11px', fontWeight: '600', marginBottom: '8px' }}>PRODUCTS ORDERED</span>
+                            <span style={{ color: 'var(--color-text-muted)', display: 'block', fontSize: '11px', fontWeight: '600', marginBottom: '8px' }}>
+                                {selectedOrderDetails.orderType === 'Store Reservation' ? 'PRODUCTS RESERVED' : 'PRODUCTS ORDERED'}
+                            </span>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '160px', overflowY: 'auto' }}>
                                 {selectedOrderDetails.items.map((item, idx) => (
                                     <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px', backgroundColor: 'var(--input-bg)', borderRadius: '8px' }}>
@@ -2020,9 +2808,19 @@ const AdminPage = () => {
                                     </div>
                                 ))}
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px', borderTop: '1px solid var(--border-color)', paddingTop: '12px', fontSize: '15px' }}>
-                                <span>Total Price:</span>
-                                <strong style={{ color: 'var(--color-gold)', fontSize: '17px' }}>{selectedOrderDetails.total.toLocaleString()} EGP</strong>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '16px', borderTop: '1px solid var(--border-color)', paddingTop: '12px', fontSize: '14px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--color-text-muted)' }}>
+                                    <span>Subtotal:</span>
+                                    <span>{(selectedOrderDetails.total - (selectedOrderDetails.shippingCost || 0)).toLocaleString()} EGP</span>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--color-text-muted)' }}>
+                                    <span>Shipping Cost:</span>
+                                    <span>{(selectedOrderDetails.shippingCost || 0).toLocaleString()} EGP</span>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '15px', fontWeight: 'bold', marginTop: '4px' }}>
+                                    <span>Total Price:</span>
+                                    <strong style={{ color: 'var(--color-gold)', fontSize: '17px' }}>{selectedOrderDetails.total.toLocaleString()} EGP</strong>
+                                </div>
                             </div>
                         </div>
 
@@ -2035,15 +2833,27 @@ const AdminPage = () => {
                                     onChange={(e) => handleUpdateOrderStatus(selectedOrderDetails.id, e.target.value)}
                                     style={{ padding: '8px 12px', fontSize: '12px' }}
                                 >
-                                    <option value="Pending">Pending</option>
-                                    <option value="Processing">Processing</option>
-                                    <option value="Shipped">Shipped</option>
-                                    <option value="Completed">Completed</option>
-                                    <option value="Cancelled">Cancelled</option>
+                                    {selectedOrderDetails.orderType === 'Store Reservation' ? (
+                                        <>
+                                            <option value="Pending">Pending</option>
+                                            <option value="Completed">Completed</option>
+                                            <option value="Cancelled">Cancelled</option>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <option value="Pending">Pending</option>
+                                            <option value="Processing">Processing</option>
+                                            <option value="Shipped">Shipped</option>
+                                            <option value="Completed">Completed</option>
+                                            <option value="Cancelled">Cancelled</option>
+                                        </>
+                                    )}
                                 </select>
                             </div>
                             <div style={{ display: 'flex', gap: '10px' }}>
-                                <button className="action-btn delete-action" onClick={() => handleDeleteOrder(selectedOrderDetails.id)}>Delete Order</button>
+                                <button className="action-btn delete-action" onClick={() => handleDeleteOrder(selectedOrderDetails.id)}>
+                                    {selectedOrderDetails.orderType === 'Store Reservation' ? 'Delete Reservation' : 'Delete Order'}
+                                </button>
                                 <button className="action-btn edit-action" onClick={() => setSelectedOrderDetails(null)}>Close</button>
                             </div>
                         </div>

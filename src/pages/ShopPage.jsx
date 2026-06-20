@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useProducts } from '../context/ProductContext';
 import { useSearchParams } from 'react-router-dom';
 import QuickViewModal from '../components/QuickViewModal';
-import LiveChat from '../components/LiveChat';
+import SocialMedia from '../components/SocialMedia';
 
 const ShopPage = () => {
     const { products } = useProducts();
@@ -43,6 +43,9 @@ const ShopPage = () => {
             }
         }
     }, [searchParams, products]);
+
+    // Category filter from URL parameter "?category=Name"
+    const urlCategory = searchParams.get('category') || '';
 
     const handleOpenQuickView = (prod) => {
         setSelectedProduct(prod);
@@ -100,6 +103,11 @@ const ShopPage = () => {
         setIsFilterTrayActive(false);
     };
 
+    const handleSearchSubmit = (e) => {
+        e.preventDefault();
+        setIsSearchOverlayActive(false);
+    };
+
     // Filtering logic
     const filteredProducts = products.filter((p) => {
         // Search filter matching
@@ -131,36 +139,16 @@ const ShopPage = () => {
             if (!matchesPrice) return false;
         }
 
+        // URL category filter
+        if (urlCategory) {
+            if (!p.categories || !p.categories.includes(urlCategory)) return false;
+        }
+
         return true;
     });
 
     return (
         <main style={{ minHeight: '80vh' }}>
-            {/* SEARCH OVERLAY */}
-            <div className={`search-overlay ${isSearchOverlayActive ? 'active' : ''}`} id="search-overlay">
-                <div className="search-container">
-                    <input 
-                        type="text" 
-                        id="search-input"
-                        className="search-input"
-                        placeholder="SEARCH SNEAKERS CATALOG..." 
-                        value={overlayQuery}
-                        onChange={(e) => setOverlayQuery(e.target.value)}
-                        autoFocus={isSearchOverlayActive}
-                    />
-                    <button 
-                        className="close-search-btn" 
-                        id="close-search"
-                        onClick={() => { setIsSearchOverlayActive(false); setOverlayQuery(''); }}
-                        aria-label="Close search overlay"
-                    >
-                        <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                        </svg>
-                    </button>
-                </div>
-            </div>
 
             {/* BREADCRUMB */}
             <div className="breadcrumb-container">
@@ -227,18 +215,29 @@ const ShopPage = () => {
                             </button>
                         </div>
 
-                        {/* Search Icon Trigger */}
-                        <button 
-                            className="control-btn search-btn" 
-                            id="search-btn"
-                            onClick={() => setIsSearchOverlayActive(true)}
-                            aria-label="Open search overlay"
-                        >
-                            <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <circle cx="11" cy="11" r="8"></circle>
-                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                            </svg>
-                        </button>
+                        {/* Inline Expanding Search */}
+                        <div className={`toolbar-search-wrapper ${isSearchOverlayActive ? 'expanded' : ''}`}>
+                            <input 
+                                type="text" 
+                                id="search-input"
+                                className="toolbar-search-input"
+                                placeholder="Search..." 
+                                value={overlayQuery}
+                                onChange={(e) => setOverlayQuery(e.target.value)}
+                                onKeyDown={(e) => { if (e.key === 'Enter') e.target.blur(); }}
+                            />
+                            <button 
+                                className={`control-btn search-btn ${isSearchOverlayActive ? 'active' : ''}`} 
+                                id="search-btn"
+                                onClick={() => setIsSearchOverlayActive(!isSearchOverlayActive)}
+                                aria-label="Toggle search input"
+                            >
+                                <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -319,6 +318,18 @@ const ShopPage = () => {
 
             {/* PRODUCT CATALOG GRID SECTION */}
             <section className="products-section">
+                {(overlayQuery || inlineQuery) && (
+                    <div className="search-results-badge">
+                        <span>Search results for: <strong>"{overlayQuery || inlineQuery}"</strong></span>
+                        <button 
+                            onClick={() => { setOverlayQuery(''); setInlineQuery(''); }} 
+                            className="clear-search-badge-btn"
+                            title="Clear search"
+                        >
+                            &times;
+                        </button>
+                    </div>
+                )}
                 <div className={`product-grid ${layout === 'list' ? 'list-layout' : ''}`} id="product-grid">
                     {filteredProducts.length === 0 ? (
                         <div className="catalog-no-results" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '60px 0' }}>
@@ -332,7 +343,7 @@ const ShopPage = () => {
                         </div>
                     ) : (
                         filteredProducts.map((p) => (
-                            <div className="product-card item-card" key={p.id} data-id={p.id}>
+                            <div className="product-card item-card" key={p.id} data-id={p.id} onClick={() => handleOpenQuickView(p)}>
                                 <div className="card-image-box">
                                     <span className="badge badge-new">NEW</span>
                                     <img src={p.img} alt={p.name} className="product-img" />
@@ -371,8 +382,8 @@ const ShopPage = () => {
                 onClose={handleCloseQuickView} 
             />
 
-            {/* Support chatbot floating assistant */}
-            <LiveChat />
+            {/* Social Media floating panel */}
+            <SocialMedia />
         </main>
     );
 };

@@ -12,12 +12,19 @@ export const CartProvider = ({ children }) => {
 
     // Load cart on mount
     const loadCart = () => {
-        const storedCart = localStorage.getItem('aura_cart');
-        if (storedCart) {
-            setCart(JSON.parse(storedCart));
-        } else {
-            setCart([]);
+        try {
+            const storedCart = localStorage.getItem('aura_cart');
+            if (storedCart) {
+                const parsed = JSON.parse(storedCart);
+                if (Array.isArray(parsed)) {
+                    setCart(parsed);
+                    return;
+                }
+            }
+        } catch (err) {
+            console.error("Error loading cart from localStorage:", err);
         }
+        setCart([]);
     };
 
     useEffect(() => {
@@ -89,7 +96,7 @@ export const CartProvider = ({ children }) => {
                 quantity: item.quantity
             }));
 
-            const res = await fetch(`${API_URL}/orders`, {
+            const res = await fetch(`${API_URL}/orders/create`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -103,7 +110,10 @@ export const CartProvider = ({ children }) => {
                     customerCity: customerDetails.customerCity,
                     notes: customerDetails.notes || '',
                     paymentMethod: customerDetails.paymentMethod || 'Cash on Delivery',
-                    items: orderItems
+                    items: orderItems,
+                    email: customerDetails.email || '',
+                    usePoints: customerDetails.usePoints || false,
+                    orderType: customerDetails.orderType || 'Delivery'
                 })
             });
 

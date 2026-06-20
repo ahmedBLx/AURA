@@ -15,9 +15,25 @@ class DashboardController {
       // 2. Count Total Orders
       const totalOrders = await Order.countDocuments();
 
-      // 3. Count Total Customers (distinct customerPhone in Order collection)
-      const uniquePhones = await Order.distinct('customerPhone');
-      const totalCustomers = uniquePhones.length;
+      // 3. Count Total Customers (from new Customer collection)
+      const Customer = require('../models/Customer');
+      const totalCustomers = await Customer.countDocuments();
+
+      // Loyalty metrics
+      const pointsIssuedResult = await Customer.aggregate([
+        { $group: { _id: null, totalPoints: { $sum: '$loyaltyPoints' } } }
+      ]);
+      const currentPoints = pointsIssuedResult[0] ? pointsIssuedResult[0].totalPoints : 0;
+
+      const pointsRedeemedResult = await Order.aggregate([
+        { $group: { _id: null, totalRedeemed: { $sum: '$pointsUsed' } } }
+      ]);
+      const totalLoyaltyPointsRedeemed = pointsRedeemedResult[0] ? pointsRedeemedResult[0].totalRedeemed : 0;
+      const totalLoyaltyPointsIssued = currentPoints + totalLoyaltyPointsRedeemed;
+
+      const mostLoyalCustomers = await Customer.find()
+        .sort({ totalSpent: -1 })
+        .limit(5);
 
       // 4. Count Total Products
       const totalProducts = await Product.countDocuments();
@@ -42,6 +58,9 @@ class DashboardController {
             totalOrders,
             totalCustomers,
             totalProducts,
+            totalLoyaltyPointsIssued,
+            totalLoyaltyPointsRedeemed,
+            mostLoyalCustomers,
           },
           recentOrders,
           lowStockProducts,

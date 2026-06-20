@@ -1,11 +1,435 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useProducts } from '../context/ProductContext';
 import { useAuth } from '../context/AuthContext';
 import QuickViewModal from '../components/QuickViewModal';
-import LiveChat from '../components/LiveChat';
+import SocialMedia from '../components/SocialMedia';
+
+// Sub-component for auto-scrolling product carousel per subcategory
+const SubCategoryProductCarousel = ({ category, products, layout, favorites, toggleFavorite, handleQuickView }) => {
+    const carouselRef = useRef(null);
+    const [currentSlide, setCurrentSlide] = useState(0);
+    const [isUserInteracting, setIsUserInteracting] = useState(false);
+    const [scrollProgress, setScrollProgress] = useState(0);
+    const [visibleRatio, setVisibleRatio] = useState(0.2);
+    const autoScrollTimerRef = useRef(null);
+    const resumeTimerRef = useRef(null);
+
+    const totalSlides = products.length;
+
+    const scrollToSlide = useCallback((index) => {
+        if (!carouselRef.current || totalSlides === 0) return;
+        const container = carouselRef.current;
+        const card = container.querySelector('.product-card');
+        if (!card) return;
+        const cardWidth = card.offsetWidth + 24; // width + gap
+        container.scrollTo({ left: cardWidth * index, behavior: 'smooth' });
+        setCurrentSlide(index);
+    }, [totalSlides]);
+
+    const goToNextSlide = useCallback(() => {
+        const next = (currentSlide + 1) % totalSlides;
+        scrollToSlide(next);
+    }, [currentSlide, totalSlides, scrollToSlide]);
+
+    // Auto-scroll every 3 seconds
+    useEffect(() => {
+        if (totalSlides <= 1 || isUserInteracting) return;
+
+        autoScrollTimerRef.current = setInterval(() => {
+            goToNextSlide();
+        }, 3000);
+
+        return () => {
+            if (autoScrollTimerRef.current) clearInterval(autoScrollTimerRef.current);
+        };
+    }, [totalSlides, isUserInteracting, goToNextSlide]);
+
+    const handleScrollStart = useCallback(() => {
+        setIsUserInteracting(true);
+        if (autoScrollTimerRef.current) clearInterval(autoScrollTimerRef.current);
+        if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
+    }, []);
+
+    const handleScrollEnd = useCallback(() => {
+        if (!carouselRef.current) return;
+        const container = carouselRef.current;
+        const card = container.querySelector('.product-card');
+        if (!card) return;
+        const cardWidth = card.offsetWidth + 24; // width + gap
+        const newIndex = Math.round(container.scrollLeft / cardWidth);
+        setCurrentSlide(newIndex);
+
+        if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
+        resumeTimerRef.current = setTimeout(() => {
+            setIsUserInteracting(false);
+        }, 5000);
+    }, []);
+
+    const handleScroll = (e) => {
+        const container = e.currentTarget;
+        const maxScroll = container.scrollWidth - container.clientWidth;
+        if (maxScroll > 0) {
+            setScrollProgress(container.scrollLeft / maxScroll);
+            setVisibleRatio(container.clientWidth / container.scrollWidth);
+        }
+        handleScrollEnd();
+    };
+
+    useEffect(() => {
+        if (carouselRef.current) {
+            const container = carouselRef.current;
+            if (container.scrollWidth > 0) {
+                setVisibleRatio(container.clientWidth / container.scrollWidth);
+            }
+        }
+    }, [products]);
+
+    const handleNext = () => {
+        handleScrollStart();
+        const next = (currentSlide + 1) % totalSlides;
+        scrollToSlide(next);
+        if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
+        resumeTimerRef.current = setTimeout(() => setIsUserInteracting(false), 5000);
+    };
+
+    const handlePrev = () => {
+        handleScrollStart();
+        const prev = (currentSlide - 1 + totalSlides) % totalSlides;
+        scrollToSlide(prev);
+        if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
+        resumeTimerRef.current = setTimeout(() => setIsUserInteracting(false), 5000);
+    };
+
+    // Drag-to-scroll and mouse wheel horizontal scroll bindings
+    useEffect(() => {
+        const container = carouselRef.current;
+        if (!container || layout === 'list') return;
+
+        let isDown = false;
+        let startX;
+        let scrollLeftVal;
+
+        const onMouseDown = (e) => {
+            isDown = true;
+            startX = e.pageX - container.offsetLeft;
+            scrollLeftVal = container.scrollLeft;
+            handleScrollStart();
+        };
+
+        const onMouseLeave = () => {
+            if (!isDown) return;
+            isDown = false;
+            container.classList.remove('active-dragging');
+            handleScrollEnd();
+        };
+
+        const onMouseUp = () => {
+            if (!isDown) return;
+            isDown = false;
+            container.classList.remove('active-dragging');
+            handleScrollEnd();
+        };
+
+        const onMouseMove = (e) => {
+            if (!isDown) return;
+            const x = e.pageX - container.offsetLeft;
+            const walk = (x - startX) * 1.5; // Scroll speed multiplier
+            if (Math.abs(x - startX) > 5) {
+                container.classList.add('active-dragging');
+            }
+            e.preventDefault();
+            container.scrollLeft = scrollLeftVal - walk;
+        };
+
+        container.addEventListener('mousedown', onMouseDown);
+        container.addEventListener('mouseleave', onMouseLeave);
+        container.addEventListener('mouseup', onMouseUp);
+        container.addEventListener('mousemove', onMouseMove);
+
+        return () => {
+            container.removeEventListener('mousedown', onMouseDown);
+            container.removeEventListener('mouseleave', onMouseLeave);
+            container.removeEventListener('mouseup', onMouseUp);
+            container.removeEventListener('mousemove', onMouseMove);
+        };
+    }, [layout, products, handleScrollStart, handleScrollEnd]);
+
+    useEffect(() => {
+        return () => {
+            if (autoScrollTimerRef.current) clearInterval(autoScrollTimerRef.current);
+            if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
+        };
+    }, []);
+
+    return (
+        <section className="category-carousel-section" style={{ padding: '20px 0' }}>
+            <div className="category-carousel-header" style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                margin: '40px 0 20px 0',
+                width: '100%',
+                position: 'relative'
+            }}>
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '100%',
+                    gap: '20px'
+                }}>
+                    <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--border-color)' }}></div>
+                    <div style={{ textAlign: 'center' }}>
+                        <h3 className="category-carousel-title glowing-category-title" style={{
+                            fontSize: '20px',
+                            textTransform: 'uppercase',
+                            color: 'var(--color-gold)',
+                            margin: 0,
+                            letterSpacing: '0.1em',
+                            whiteSpace: 'nowrap'
+                        }}>
+                            {category.name}
+                        </h3>
+                    </div>
+                    <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--border-color)' }}></div>
+                </div>
+            </div>
+
+            <div className="category-frame-container">
+                <style>{`
+                .category-carousel-track::-webkit-scrollbar {
+                    display: none;
+                }
+                .category-carousel-wrapper:hover .carousel-nav-btn {
+                    opacity: 1 !important;
+                    pointer-events: auto !important;
+                }
+                .carousel-nav-btn {
+                    opacity: 0;
+                    pointer-events: none;
+                    position: absolute;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    z-index: 10;
+                    width: 46px;
+                    height: 46px;
+                    border-radius: 50%;
+                    background: rgba(10, 10, 10, 0.75) !important;
+                    backdrop-filter: blur(12px);
+                    -webkit-backdrop-filter: blur(12px);
+                    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+                    color: var(--color-gold) !important;
+                    display: flex;
+                    align-items: center;
+                    justifyContent: center;
+                    cursor: pointer;
+                    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+                    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+                }
+                .carousel-nav-btn:hover {
+                    background-color: var(--color-gold) !important;
+                    color: #000000 !important;
+                    transform: translateY(-50%) scale(1.1) !important;
+                    box-shadow: 0 0 20px rgba(197, 168, 128, 0.6) !important;
+                }
+                .carousel-nav-btn:active {
+                    transform: translateY(-50%) scale(0.95) !important;
+                }
+                .badge-special {
+                    background: linear-gradient(135deg, #EF4444, #B91C1C) !important;
+                    box-shadow: 0 4px 10px rgba(239, 68, 68, 0.25);
+                    border-radius: 6px !important;
+                    padding: 3px 8px !important;
+                    letter-spacing: 0.02em;
+                }
+                .quick-view-btn {
+                    background: rgba(255, 255, 255, 0.08) !important;
+                    backdrop-filter: blur(8px);
+                    -webkit-backdrop-filter: blur(8px);
+                    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+                    color: #FFFFFF !important;
+                    border-radius: 20px !important;
+                    font-size: 11px !important;
+                    font-weight: 600 !important;
+                    letter-spacing: 0.05em;
+                    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+                }
+                .quick-view-btn:hover {
+                    background: var(--color-gold) !important;
+                    border-color: var(--color-gold) !important;
+                    color: #000000 !important;
+                    transform: scale(1.04) !important;
+                    box-shadow: 0 6px 16px rgba(197, 168, 128, 0.35) !important;
+                }
+                .favorite-action-btn svg {
+                    transition: all 0.3s ease;
+                }
+                .favorite-action-btn:hover svg {
+                    color: #EF4444 !important;
+                    fill: rgba(239, 68, 68, 0.15);
+                    transform: scale(1.15);
+                }
+                .favorite-action-btn.liked svg {
+                    color: #EF4444 !important;
+                    fill: #EF4444 !important;
+                }
+                @media (max-width: 1024px) {
+                    .carousel-nav-btn {
+                        opacity: 0.8 !important;
+                        pointer-events: auto !important;
+                        width: 38px !important;
+                        height: 38px !important;
+                    }
+                }
+            `}</style>
+
+            <div className="category-carousel-wrapper" style={{ maxWidth: '100%', position: 'relative' }}>
+                {/* Navigation Buttons */}
+                {totalSlides > 1 && layout !== 'list' && (
+                    <>
+                        <button onClick={handlePrev} className="carousel-nav-btn prev" style={{ left: '10px' }} aria-label="Previous Slide">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="15 18 9 12 15 6"></polyline>
+                            </svg>
+                        </button>
+                        <button onClick={handleNext} className="carousel-nav-btn next" style={{ right: '10px' }} aria-label="Next Slide">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="9 18 15 12 9 6"></polyline>
+                            </svg>
+                        </button>
+                    </>
+                )}
+
+                <div
+                    className={`category-carousel-track ${layout === 'list' ? 'list-layout' : ''}`}
+                    ref={carouselRef}
+                    onTouchStart={handleScrollStart}
+                    onMouseDown={handleScrollStart}
+                    onScroll={handleScroll}
+                    style={{
+                        gap: '24px',
+                        padding: '24px 12px',
+                        scrollSnapType: layout === 'list' ? 'none' : 'x mandatory',
+                        display: 'flex',
+                        overflowX: 'auto',
+                        scrollbarWidth: 'none',
+                        scrollBehavior: 'smooth'
+                    }}
+                >
+                    {products.map((p) => {
+                        const discountPercent = p.discountPercent || 0;
+                        const hasDiscount = discountPercent > 0;
+                        const salePrice = Math.round(p.price * (1 - discountPercent / 100));
+
+                        return (
+                            <div
+                                className="product-card item-card"
+                                key={p.id}
+                                onClick={() => handleQuickView(p, hasDiscount ? salePrice : p.price)}
+                                style={{
+                                    flex: layout === 'list' ? '1 1 100%' : '0 0 280px',
+                                    scrollSnapAlign: 'start',
+                                    margin: 0,
+                                    backgroundColor: 'var(--color-card-dark)',
+                                    border: '1px solid var(--border-color)',
+                                    borderRadius: '20px',
+                                    overflow: 'hidden'
+                                }}
+                            >
+                                <div className="card-image-box" style={{ height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', backgroundColor: 'rgba(255,255,255,0.02)', position: 'relative' }}>
+                                    {hasDiscount && (
+                                        <span className="badge badge-special" style={{ backgroundColor: '#EF4444', color: '#FFFFFF', position: 'absolute', top: '12px', left: '12px', zIndex: 2, padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 'bold' }}>
+                                            {discountPercent}% OFF
+                                        </span>
+                                    )}
+                                    <img src={p.img} alt={p.name} className="product-img" style={{ maxWidth: '90%', maxHeight: '90%', objectFit: 'contain', transition: 'transform 0.4s ease' }} />
+                                    {layout !== 'list' && (
+                                        <div className="card-overlay-actions">
+                                            <button className="quick-view-btn" onClick={() => handleQuickView(p, hasDiscount ? salePrice : p.price)}>Quick View</button>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="card-info-box" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                    <div className="info-left">
+                                        <h3 className="product-name" style={{ fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '240px', margin: 0 }}>{p.name}</h3>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                                            {hasDiscount ? (
+                                                <>
+                                                    <span style={{ textDecoration: 'line-through', color: 'var(--color-text-muted)', fontSize: '11px' }}>{p.price} EGP</span>
+                                                    <span className="product-price" style={{ color: 'var(--color-gold)', fontWeight: '700', fontSize: '13px' }}>{salePrice} EGP</span>
+                                                </>
+                                            ) : (
+                                                <span className="product-price" style={{ fontSize: '13px' }}>{p.price} EGP</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="info-right" style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                                        {layout === 'list' && (
+                                            <button 
+                                                className="quick-view-btn" 
+                                                onClick={() => handleQuickView(p, hasDiscount ? salePrice : p.price)}
+                                                style={{ padding: '8px 18px', fontSize: '12px' }}
+                                            >
+                                                Quick View
+                                            </button>
+                                        )}
+                                        <button 
+                                            className={`favorite-action-btn ${favorites[p.id] ? 'liked' : ''}`} 
+                                            onClick={(e) => toggleFavorite(e, p.id)}
+                                            style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+                                            aria-label="Add to Favorites"
+                                        >
+                                            <svg className="heart-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" style={{ width: '18px', height: '18px' }}>
+                                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+
+                {/* Sleek horizontal scroll progress indicator */}
+                {totalSlides > 1 && layout !== 'list' && (
+                    <div className="carousel-progress-container" style={{
+                        marginTop: '25px',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        width: '100%'
+                    }}>
+                        <div className="carousel-progress-track" style={{
+                            width: '140px',
+                            height: '2px',
+                            backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                            borderRadius: '2px',
+                            position: 'relative',
+                            overflow: 'hidden'
+                        }}>
+                            <div className="carousel-progress-thumb" style={{
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                height: '100%',
+                                width: `${Math.max(15, Math.min(100, visibleRatio * 100))}%`,
+                                transform: `translateX(${scrollProgress * (140 - 140 * visibleRatio)}px)`,
+                                backgroundColor: 'var(--color-gold)',
+                                borderRadius: '2px',
+                                transition: 'transform 0.1s ease-out, width 0.3s ease-out',
+                                boxShadow: '0 0 8px var(--color-gold)'
+                            }} />
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>
+    </section>
+    );
+};
 
 const WomenPage = ({ onOpenAuth }) => {
-    const { products } = useProducts();
+    const { products, categories } = useProducts();
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
     const [favorites, setFavorites] = useState({});
@@ -26,9 +450,6 @@ const WomenPage = ({ onOpenAuth }) => {
     const [email, setEmail] = useState('');
     const [submitted, setSubmitted] = useState(false);
 
-    // Filter products dynamically for Women's collection
-    const womenProducts = products.filter((p) => (p.categories && p.categories.includes('Women')) || p.isWomen === true);
-
     const handlePriceChange = (key) => {
         setSelectedPrices((prev) => ({
             ...prev,
@@ -45,8 +466,45 @@ const WomenPage = ({ onOpenAuth }) => {
         setIsFilterTrayActive(false);
     };
 
-    const getFilteredProducts = () => {
-        return womenProducts.filter((p) => {
+    const handleSearchSubmit = (e) => {
+        e.preventDefault();
+        setIsSearchOverlayActive(false);
+    };
+
+    const handleQuickView = (p) => {
+        setSelectedProduct(p);
+        setIsQuickViewOpen(true);
+    };
+
+    const toggleFavorite = (e, prodId) => {
+        e.stopPropagation();
+        setFavorites((prev) => ({
+            ...prev,
+            [prodId]: !prev[prodId]
+        }));
+    };
+
+    const handleNotifySubmit = (e) => {
+        e.preventDefault();
+        if (email.trim()) {
+            setSubmitted(true);
+            setEmail('');
+        }
+    };
+
+    // Filter enabled subcategories for Women
+    const womenSubCategories = categories.filter(
+        (c) => c.parentName === 'Women' && c.showOnHomepage === true
+    );
+
+    // Filter products dynamically for Women's collection
+    const womenProducts = products.filter(
+        (p) => (p.categories && p.categories.includes('Women')) || p.isWomen === true
+    );
+
+    // Apply main filters (search query & price)
+    const getFilteredSubProducts = (subProducts) => {
+        return subProducts.filter((p) => {
             // Search filter matching
             if (searchQuery.trim()) {
                 const query = searchQuery.toLowerCase();
@@ -70,7 +528,8 @@ const WomenPage = ({ onOpenAuth }) => {
         });
     };
 
-    const filteredProducts = getFilteredProducts();
+    // Fallback: If no subcategories are enabled, filter all products
+    const mainFilteredProducts = getFilteredSubProducts(womenProducts);
 
     useEffect(() => {
         const fetchSettings = async () => {
@@ -92,27 +551,6 @@ const WomenPage = ({ onOpenAuth }) => {
         };
         fetchSettings();
     }, []);
-
-    const handleQuickView = (p) => {
-        setSelectedProduct(p);
-        setIsQuickViewOpen(true);
-    };
-
-    const toggleFavorite = (e, prodId) => {
-        e.stopPropagation();
-        setFavorites((prev) => ({
-            ...prev,
-            [prodId]: !prev[prodId]
-        }));
-    };
-
-    const handleNotifySubmit = (e) => {
-        e.preventDefault();
-        if (email.trim()) {
-            setSubmitted(true);
-            setEmail('');
-        }
-    };
 
     // Spinner loading indicator
     if (loadingSettings) {
@@ -173,23 +611,7 @@ const WomenPage = ({ onOpenAuth }) => {
                 <section className="discover-section">
                     <div className="discover-container">
                         <div className="discover-left">
-                            {/* Toggle Filter Button */}
-                            <div className="toggle-container">
-                                <button 
-                                    className={`toggle-switch ${isFilterTrayActive ? 'active' : ''}`}
-                                    id="filter-toggle"
-                                    onClick={() => {
-                                        setIsFilterTrayActive(!isFilterTrayActive);
-                                        if (isFilterTrayActive) resetFilters();
-                                    }}
-                                    aria-label="Toggle Filters Tray"
-                                >
-                                    <span className="toggle-knob"></span>
-                                </button>
-                                <span className="filter-count" id="filter-count">
-                                    FILTER ({filteredProducts.length} products)
-                                </span>
-                            </div>
+                            {/* Filter toggle removed */}
                         </div>
 
                         <div className="discover-right">
@@ -223,153 +645,124 @@ const WomenPage = ({ onOpenAuth }) => {
                                 </button>
                             </div>
 
-                            {/* Search Icon Trigger */}
-                            <button 
-                                className="control-btn search-btn" 
-                                id="search-btn"
-                                onClick={() => setIsSearchOverlayActive(true)}
-                                aria-label="Open search overlay"
-                            >
-                                <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <circle cx="11" cy="11" r="8"></circle>
-                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                </section>
-
-                {/* MULTI-CRITERIA FILTER TRAY */}
-                <div 
-                    className={`filter-tray ${isFilterTrayActive ? 'active' : ''}`} 
-                    id="filter-tray" 
-                    style={{ 
-                        display: isFilterTrayActive ? 'flex' : 'none', 
-                        justifyContent: 'center', 
-                        gap: '40px', 
-                        padding: '24px 80px',
-                        backgroundColor: 'rgba(255, 255, 255, 0.03)', 
-                        backdropFilter: 'blur(16px)', 
-                        WebkitBackdropFilter: 'blur(16px)',
-                        borderBottom: '1px solid rgba(255, 255, 255, 0.08)'
-                    }}
-                >
-                    {/* Price Filter */}
-                    <div className="filter-group">
-                        <span className="filter-group-title">Filter by Price</span>
-                        <div className="filter-checkboxes">
-                            <label className="filter-checkbox-label">
-                                <input 
-                                    type="checkbox" 
-                                    checked={selectedPrices.under200} 
-                                    onChange={() => handlePriceChange('under200')} 
-                                />
-                                <span className="filter-checkbox-custom"></span>
-                                Under 200 EGP
-                            </label>
-                            <label className="filter-checkbox-label">
-                                <input 
-                                    type="checkbox" 
-                                    checked={selectedPrices.over200} 
-                                    onChange={() => handlePriceChange('over200')} 
-                                />
-                                <span className="filter-checkbox-custom"></span>
-                                200 EGP & Above
-                            </label>
-                        </div>
-                    </div>
-
-                    {/* Search query display if active */}
-                    <div className="filter-group search-filter-group">
-                        <span className="filter-group-title">Active Search Query</span>
-                        <input 
-                            type="text" 
-                            className="inline-search-input" 
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder="Type to filter..."
-                        />
-                    </div>
-                </div>
-
-                {/* FULL-SCREEN SEARCH OVERLAY */}
-                {isSearchOverlayActive && (
-                    <div className="search-overlay active" id="search-overlay">
-                        <div className="search-overlay-backdrop" onClick={() => setIsSearchOverlayActive(false)}></div>
-                        <div className="search-box-container">
-                            <div className="search-bar-wrapper">
-                                <svg className="search-bar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <circle cx="11" cy="11" r="8"></circle>
-                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                                </svg>
+                            {/* Inline Expanding Search */}
+                            <div className={`toolbar-search-wrapper ${isSearchOverlayActive ? 'expanded' : ''}`}>
                                 <input 
                                     type="text" 
-                                    className="search-bar-input" 
                                     id="search-input"
-                                    placeholder="Search Women sneakers..." 
+                                    className="toolbar-search-input"
+                                    placeholder="Search..." 
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    autoFocus
+                                    onKeyDown={(e) => { if (e.key === 'Enter') e.target.blur(); }}
                                 />
-                                <button className="close-search-btn" onClick={() => { setIsSearchOverlayActive(false); setSearchQuery(''); }} aria-label="Close search">
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                                <button 
+                                    className={`control-btn search-btn ${isSearchOverlayActive ? 'active' : ''}`} 
+                                    id="search-btn"
+                                    onClick={() => setIsSearchOverlayActive(!isSearchOverlayActive)}
+                                    aria-label="Toggle search input"
+                                >
+                                    <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <circle cx="11" cy="11" r="8"></circle>
+                                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                                     </svg>
                                 </button>
                             </div>
                         </div>
                     </div>
+                </section>
+
+
+                {/* Search query badge */}
+                {searchQuery && (
+                    <div className="search-results-badge" style={{ marginBottom: '24px' }}>
+                        <span>Search results for: <strong>"{searchQuery}"</strong></span>
+                        <button onClick={() => setSearchQuery('')} className="clear-search-badge-btn" title="Clear search">&times;</button>
+                    </div>
                 )}
 
-                {/* PRODUCT CATALOG GRID */}
-                <div className={`product-grid ${layout === 'list' ? 'list-layout' : ''}`} id="women-product-grid">
-                    {filteredProducts.length === 0 ? (
-                        <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '80px 20px', color: 'var(--color-text-muted)' }}>
-                            <p style={{ fontSize: '18px', fontWeight: '500', marginBottom: '8px' }}>No matches found</p>
-                            <p>No items match your active filters or search terms. Try modifying your selections.</p>
+                {/* CAROUSELS OR FALLBACK PRODUCT GRID */}
+                <div className="women-collections-carousels-container">
+                    {womenSubCategories.length === 0 ? (
+                        // Fallback to simple grid if no subcategories are enabled
+                        <div className={`product-grid ${layout === 'list' ? 'list-layout' : ''}`} id="women-product-grid">
+                            {mainFilteredProducts.length === 0 ? (
+                                <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '80px 20px', color: 'var(--color-text-muted)' }}>
+                                    <p style={{ fontSize: '18px', fontWeight: '500', marginBottom: '8px' }}>No matches found</p>
+                                    <p>No items match your active filters or search terms.</p>
+                                </div>
+                            ) : (
+                                mainFilteredProducts.map((p) => {
+                                    const discountPercent = p.discountPercent || 0;
+                                    const hasDiscount = discountPercent > 0;
+                                    const salePrice = Math.round(p.price * (1 - discountPercent / 100));
+                                    return (
+                                        <div className="product-card item-card" key={p.id} data-id={p.id} onClick={() => handleQuickView(p, hasDiscount ? salePrice : p.price)} style={{ cursor: 'pointer' }}>
+                                            <div className="card-image-box">
+                                                {hasDiscount && (
+                                                    <span className="badge badge-special" style={{ backgroundColor: '#EF4444', color: '#FFFFFF' }}>
+                                                        {discountPercent}% OFF
+                                                    </span>
+                                                )}
+                                                <span className="badge badge-new" style={{ backgroundColor: 'rgba(255, 94, 151, 0.15)', color: '#FF5E97', border: '1px solid rgba(255, 94, 151, 0.2)' }}>WOMEN</span>
+                                                <img src={p.img} alt={p.name} className="product-img" />
+                                                {layout !== 'list' && (
+                                                    <div className="card-overlay-actions">
+                                                        <button className="quick-view-btn" onClick={() => handleQuickView(p, hasDiscount ? salePrice : p.price)}>Quick View</button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="card-info-box">
+                                                <div className="info-left">
+                                                    <h3 className="product-name">{p.name}</h3>
+                                                    <span className="product-price">{hasDiscount ? salePrice : p.price} EGP</span>
+                                                </div>
+                                                <div className="info-right">
+                                                    {layout === 'list' && (
+                                                        <button 
+                                                            className="quick-view-btn" 
+                                                            onClick={() => handleQuickView(p, hasDiscount ? salePrice : p.price)}
+                                                            style={{ marginRight: '16px', padding: '8px 18px', fontSize: '12px' }}
+                                                        >
+                                                            Quick View
+                                                        </button>
+                                                    )}
+                                                    <button 
+                                                        className={`favorite-action-btn ${favorites[p.id] ? 'liked' : ''}`} 
+                                                        onClick={(e) => toggleFavorite(e, p.id)}
+                                                        aria-label="Add to Favorites"
+                                                    >
+                                                        <svg className="heart-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                                                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                                        </svg>
+                                                        <span className="favorite-text">Favorite</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })
+                            )}
                         </div>
                     ) : (
-                        filteredProducts.map((p) => (
-                            <div className="product-card item-card" key={p.id} data-id={p.id}>
-                                <div className="card-image-box">
-                                    <span className="badge badge-new" style={{ backgroundColor: 'rgba(255, 94, 151, 0.15)', color: '#FF5E97', border: '1px solid rgba(255, 94, 151, 0.2)' }}>WOMEN</span>
-                                    <img src={p.img} alt={p.name} className="product-img" />
-                                    {layout !== 'list' && (
-                                        <div className="card-overlay-actions">
-                                            <button className="quick-view-btn" onClick={() => handleQuickView(p)}>Quick View</button>
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="card-info-box">
-                                    <div className="info-left">
-                                        <h3 className="product-name">{p.name}</h3>
-                                        <span className="product-price">{p.price} EGP</span>
-                                    </div>
-                                    <div className="info-right">
-                                        {layout === 'list' && (
-                                            <button 
-                                                className="quick-view-btn" 
-                                                onClick={() => handleQuickView(p)}
-                                                style={{ marginRight: '16px', padding: '8px 18px', fontSize: '12px' }}
-                                            >
-                                                Quick View
-                                            </button>
-                                        )}
-                                        <button 
-                                            className={`favorite-action-btn ${favorites[p.id] ? 'liked' : ''}`} 
-                                            onClick={(e) => toggleFavorite(e, p.id)}
-                                            aria-label="Add to Favorites"
-                                        >
-                                            <svg className="heart-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" style={{ transform: favorites[p.id] ? 'scale(1.2)' : 'none' }}>
-                                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                                            </svg>
-                                            <span className="favorite-text">Favorite</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        ))
+                        // Render individual carousels for each sub-category
+                        womenSubCategories.map((cat) => {
+                            const subProducts = womenProducts.filter(p => p.categories && p.categories.includes(cat.name));
+                            const filteredSubProducts = getFilteredSubProducts(subProducts);
+                            if (filteredSubProducts.length === 0) return null;
+                            
+                            return (
+                                <SubCategoryProductCarousel
+                                    key={cat._id}
+                                    category={cat}
+                                    products={filteredSubProducts}
+                                    layout={layout}
+                                    favorites={favorites}
+                                    toggleFavorite={toggleFavorite}
+                                    handleQuickView={handleQuickView}
+                                />
+                            );
+                        })
                     )}
                 </div>
 
@@ -380,7 +773,7 @@ const WomenPage = ({ onOpenAuth }) => {
                     onClose={() => setIsQuickViewOpen(false)} 
                 />
 
-                <LiveChat />
+                <SocialMedia />
             </main>
         );
     }
@@ -636,7 +1029,7 @@ const WomenPage = ({ onOpenAuth }) => {
                 )}
             </div>
 
-            <LiveChat />
+            <SocialMedia />
         </main>
     );
 };

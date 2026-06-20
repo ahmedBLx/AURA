@@ -38,6 +38,10 @@ const QuickViewModal = ({ product, isOpen, onClose }) => {
 
     if (!isOpen || !product) return null;
 
+    const discountPercent = product.discountPercent || 0;
+    const hasDiscount = discountPercent > 0;
+    const salePrice = Math.round(product.price * (1 - discountPercent / 100));
+
     const handleAddToBag = () => {
         addToCart(product, selectedSize);
         setAddedStatus(true);
@@ -99,7 +103,14 @@ const QuickViewModal = ({ product, isOpen, onClose }) => {
                     <div className="modal-info-col">
                         <span className="modal-brand-tag">AURA SNEAKERS</span>
                         <h2>{product.name}</h2>
-                        <div className="modal-price">{product.price} EGP</div>
+                        {hasDiscount ? (
+                            <div className="modal-price" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <span style={{ textDecoration: 'line-through', color: 'var(--color-text-muted)', fontSize: '16px' }}>{product.price} EGP</span>
+                                <span style={{ color: 'var(--color-gold)' }}>{salePrice} EGP</span>
+                            </div>
+                        ) : (
+                            <div className="modal-price">{product.price} EGP</div>
+                        )}
                         <p className="modal-desc">{product.desc}</p>
 
                         {/* Size Selection */}

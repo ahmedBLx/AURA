@@ -13,6 +13,10 @@ const CategorySchema = new mongoose.Schema(
       ref: 'Category',
       default: null,
     },
+    showOnHomepage: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

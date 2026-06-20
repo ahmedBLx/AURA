@@ -1,5 +1,27 @@
 const rateLimit = require('express-rate-limit');
 
+let store;
+if (process.env.REDIS_URL || process.env.REDIS_HOST) {
+  try {
+    const { createClient } = require('redis');
+    const RedisStore = require('rate-limit-redis').default || require('rate-limit-redis');
+    
+    const redisUrl = process.env.REDIS_URL || `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT || 6379}`;
+    const client = createClient({ url: redisUrl });
+    
+    client.connect().catch(err => {
+      console.error('Failed to connect Redis for rate-limiting store, falling back to in-memory:', err);
+    });
+    
+    store = new RedisStore({
+      sendCommand: (...args) => client.sendCommand(args),
+    });
+    console.log('Rate limiter initialized with Redis store.');
+  } catch (err) {
+    console.error('Could not initialize Redis client for rate limiter, falling back to in-memory store:', err);
+  }
+}
+
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // Limit each IP to 100 requests per windowMs
@@ -9,6 +31,7 @@ const apiLimiter = rateLimit({
   },
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  store: store || undefined,
 });
 
 const authLimiter = rateLimit({
@@ -20,9 +43,11 @@ const authLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  store: store || undefined,
 });
 
 module.exports = {
   apiLimiter,
   authLimiter,
 };
+

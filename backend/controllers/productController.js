@@ -54,19 +54,84 @@ class ProductController {
     }
   }
 
+  async getUploadSignature(req, res, next) {
+    try {
+      const hasInvalidName = !process.env.CLOUDINARY_CLOUD_NAME || 
+                            process.env.CLOUDINARY_CLOUD_NAME === 'AURA-DARE' || 
+                            process.env.CLOUDINARY_CLOUD_NAME.includes('your_');
+      const hasMissingKeys = !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET;
+
+      if (hasInvalidName || hasMissingKeys) {
+        return res.status(200).json({
+          status: 'success',
+          data: {
+            useLocalFallback: true
+          }
+        });
+      }
+
+      const timestamp = Math.round(new Date().getTime() / 1000);
+      const folder = 'aura/products';
+      
+      const { cloudinary } = require('../config/cloudinary');
+      const signature = cloudinary.utils.api_sign_request(
+        {
+          timestamp,
+          folder
+        },
+        process.env.CLOUDINARY_API_SECRET
+      );
+
+      res.status(200).json({
+        status: 'success',
+        data: {
+          useLocalFallback: false,
+          signature,
+          timestamp,
+          apiKey: process.env.CLOUDINARY_API_KEY,
+          cloudName: process.env.CLOUDINARY_CLOUD_NAME,
+          folder
+        }
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
   async createProduct(req, res, next) {
     try {
       const data = { ...req.body };
 
-      // Upload primary image to Cloudinary
-      if (req.files) {
-        if (req.files['img'] && req.files['img'][0]) {
-          data.img = await uploadToCloudinary(req.files['img'][0].buffer);
+      // Handle primary image
+      if (req.files && req.files['img'] && req.files['img'][0]) {
+        data.img = await uploadToCloudinary(req.files['img'][0].buffer);
+      }
+
+      // Handle secondary images
+      if (req.files && req.files['images'] && req.files['images'].length > 0) {
+        const uploadedImages = await Promise.all(
+          req.files['images'].map(f => uploadToCloudinary(f.buffer))
+        );
+        let bodyImages = [];
+        if (data.images) {
+          if (Array.isArray(data.images)) {
+            bodyImages = data.images;
+          } else if (typeof data.images === 'string') {
+            try {
+              bodyImages = JSON.parse(data.images);
+            } catch (e) {
+              bodyImages = data.images.split(',').map(c => c.trim()).filter(Boolean);
+            }
+          }
         }
-        if (req.files['images'] && req.files['images'].length > 0) {
-          data.images = await Promise.all(
-            req.files['images'].map(f => uploadToCloudinary(f.buffer))
-          );
+        data.images = [...bodyImages, ...uploadedImages];
+      } else {
+        if (typeof data.images === 'string') {
+          try {
+            data.images = JSON.parse(data.images);
+          } catch (e) {
+            data.images = data.images.split(',').map(c => c.trim()).filter(Boolean);
+          }
         }
       }
 
@@ -114,7 +179,7 @@ class ProductController {
       }
 
       // Handle secondary images: keep existing URLs + upload new files to Cloudinary
-      if (data.existingImages !== undefined || (req.files && req.files['images'])) {
+      if (data.existingImages !== undefined || (req.files && req.files['images']) || data.images !== undefined) {
         let existingImages = [];
         if (data.existingImages) {
           if (typeof data.existingImages === 'string') {
@@ -125,6 +190,16 @@ class ProductController {
             }
           } else if (Array.isArray(data.existingImages)) {
             existingImages = data.existingImages;
+          }
+        } else if (data.images) {
+          if (typeof data.images === 'string') {
+            try {
+              existingImages = JSON.parse(data.images);
+            } catch (e) {
+              existingImages = data.images.split(',').map(img => img.trim()).filter(Boolean);
+            }
+          } else if (Array.isArray(data.images)) {
+            existingImages = data.images;
           }
         }
 

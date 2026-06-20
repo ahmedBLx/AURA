@@ -4,6 +4,7 @@ const AppError = require('../utils/appError');
 class OrderController {
   async getOrders(req, res, next) {
     try {
+
       const { status, page, limit } = req.query;
 
       const currentPage = parseInt(page, 10) || 1;
@@ -54,6 +55,7 @@ class OrderController {
         notes,
         paymentMethod,
         items,
+        orderType,
       } = req.body;
 
       const order = await orderService.createOrder({
@@ -66,6 +68,7 @@ class OrderController {
         notes,
         paymentMethod,
         items,
+        orderType,
       });
 
       // Emit real-time Socket.IO event
@@ -125,6 +128,56 @@ class OrderController {
         status: 'success',
         message: `${count} completed orders successfully deleted`,
         count,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async createOrderWithLoyalty(req, res, next) {
+    try {
+      const {
+        customerName,
+        customerPhone,
+        customerAlternativePhone,
+        customerAddress,
+        customerGovernorate,
+        customerCity,
+        notes,
+        paymentMethod,
+        items,
+        email,
+        usePoints,
+        orderType,
+      } = req.body;
+
+      const order = await orderService.createOrderWithLoyalty({
+        customerName,
+        customerPhone,
+        customerAlternativePhone,
+        customerAddress,
+        customerGovernorate,
+        customerCity,
+        notes,
+        paymentMethod,
+        items,
+        email,
+        usePoints,
+        orderType,
+      });
+
+      const io = req.app.get('io');
+      if (io) {
+        io.emit('newOrder', {
+          orderId: order.orderId,
+          customerName: order.customerName,
+          total: order.total,
+        });
+      }
+
+      res.status(201).json({
+        status: 'success',
+        data: { order },
       });
     } catch (err) {
       next(err);

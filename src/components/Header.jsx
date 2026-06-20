@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useTheme } from '../context/ThemeContext';
@@ -9,7 +9,6 @@ const Header = ({ onOpenAuth }) => {
     const { cartCount, setCartOpen } = useCart();
     const { theme, toggleTheme } = useTheme();
     const navigate = useNavigate();
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     const handleAuthClick = () => {
         if (user) {
@@ -17,7 +16,22 @@ const Header = ({ onOpenAuth }) => {
         } else {
             onOpenAuth();
         }
-        setMobileMenuOpen(false);
+    };
+
+    const handleAboutClick = (e) => {
+        e.preventDefault();
+        const aboutSection = document.getElementById('about');
+        if (aboutSection) {
+            aboutSection.scrollIntoView({ behavior: 'smooth' });
+        } else {
+            navigate('/');
+            setTimeout(() => {
+                const sec = document.getElementById('about');
+                if (sec) {
+                    sec.scrollIntoView({ behavior: 'smooth' });
+                }
+            }, 150);
+        }
     };
 
     const isAdmin = user && user.role === 'admin';
@@ -25,52 +39,74 @@ const Header = ({ onOpenAuth }) => {
     return (
         <header className="main-header">
             <div className="header-container">
-                {/* Brand Logo */}
-                <Link to={isAdmin ? '/admin' : '/'} className="brand-logo" id="logo" onClick={() => setMobileMenuOpen(false)}>
+                {/* Left Side Content: Empty layout spacer */}
+                <div className="header-left">
+                </div>
+
+                {/* Center Brand Logo (Perfectly balanced) */}
+                <Link to={isAdmin ? '/admin' : '/'} className="brand-logo" id="logo">
                     <svg className="brand-logo-svg" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="60" cy="28" r="22" stroke="#FFFFFF" strokeWidth="5" fill="rgba(255, 255, 255, 0.05)" />
-                        <circle cx="60" cy="52" r="22" stroke="#FFFFFF" strokeWidth="5" fill="rgba(255, 255, 255, 0.05)" />
-                        <path d="M 12 105 L 22 85 L 32 105" stroke="#FFFFFF" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
-                        <path d="M 40 85 L 40 95 C 40 105 60 105 60 95 L 60 85" stroke="#FFFFFF" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
-                        <path d="M 68 105 L 68 85 H 74 C 81 85 81 95 74 95 H 68 M 74 95 L 80 105" stroke="#FFFFFF" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
-                        <path d="M 96 105 L 106 85 L 116 105" stroke="#FFFFFF" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
-                        <text x="117" y="88" fill="#FFFFFF" fontSize="8" fontFamily="sans-serif" fontWeight="bold">®</text>
+                        {/* Shorter center-to-center distance to bring circles closer together */}
+                        <circle cx="60" cy="39" r="22" stroke="#FFFFFF" strokeWidth="5" fill="rgba(255, 255, 255, 0.05)" />
+                        <circle cx="60" cy="49" r="22" stroke="#FFFFFF" strokeWidth="5" fill="rgba(255, 255, 255, 0.05)" />
+                        {/* Visually balanced and consistent letters spacing (A-U-R-A) */}
+                        <path d="M 12 105 L 21 85 L 30 105" stroke="#FFFFFF" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M 38 85 L 38 95 C 38 105 56 105 56 95 L 56 85" stroke="#FFFFFF" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M 64 85 H 73 C 82 85 82 95 73 95 L 82 105" stroke="#FFFFFF" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M 90 105 L 99 85 L 108 105" stroke="#FFFFFF" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+                        <text x="111" y="87" fill="#FFFFFF" fontSize="7.5" fontFamily="var(--font-heading)" fontWeight="bold" opacity="0.8">®</text>
                     </svg>
                 </Link>
 
-                {/* Hamburger Menu Toggle */}
-                <button 
-                    className={`mobile-menu-toggle ${mobileMenuOpen ? 'active' : ''}`}
-                    onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                    aria-label="Toggle navigation menu"
-                >
-                    <span className="bar"></span>
-                    <span className="bar"></span>
-                    <span className="bar"></span>
-                </button>
+                {/* Right Side Actions: Theme, Simplified Account, Cart */}
+                <div className="header-right">
+                    {/* Theme Toggle Button */}
+                    <button 
+                        className="icon-btn theme-toggle-btn"
+                        id="theme-toggle-btn"
+                        onClick={toggleTheme}
+                        aria-label={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                        title={theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+                    >
+                        {theme === 'dark' ? (
+                            <svg className="icon theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="12" cy="12" r="5"></circle>
+                                <line x1="12" y1="1" x2="12" y2="3"></line>
+                                <line x1="12" y1="21" x2="12" y2="23"></line>
+                                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                                <line x1="1" y1="12" x2="3" y2="12"></line>
+                                <line x1="21" y1="12" x2="23" y2="12"></line>
+                                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                            </svg>
+                        ) : (
+                            <svg className="icon theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                            </svg>
+                        )}
+                    </button>
 
-                {/* Center Navigation (Desktop) */}
-                <nav className="center-nav">
-                    <Link to={isAdmin ? '/admin' : '/'} className="nav-link">Home</Link>
-                    <span className="nav-separator">|</span>
-                    <Link to="/men" className="nav-link">Men</Link>
-                    <span className="nav-separator">|</span>
-                    <Link to="/women" className="nav-link">Women</Link>
-                    <span className="nav-separator">|</span>
-                    <Link to="/offers" className="nav-link">Offers</Link>
-                </nav>
+                    {/* Simplified Account Icon */}
+                    <button 
+                        className={`icon-btn account-btn ${user ? 'logged-in' : ''}`} 
+                        id="header-login-btn"
+                        onClick={handleAuthClick}
+                        aria-label="User Account"
+                        title={user ? `Hi, ${user.name.split(' ')[0]}` : 'Account'}
+                    >
+                        <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </button>
 
-                {/* Right Side Actions */}
-                <div className="header-actions">
-                    {/* Cart Button (Visible only to customers/guests, not admin) */}
+                    {/* Cart Button */}
                     {!isAdmin && (
                         <button 
                             className="icon-btn cart-btn" 
                             id="cart-btn"
-                            onClick={() => {
-                                setCartOpen(true);
-                                setMobileMenuOpen(false);
-                            }}
+                            onClick={() => setCartOpen(true)}
                             aria-label="Open Cart Bag"
                         >
                             <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -81,40 +117,27 @@ const Header = ({ onOpenAuth }) => {
                             <span className="cart-badge">{cartCount}</span>
                         </button>
                     )}
-
-                    {/* Login / Logout / Dashboard Button */}
-                    <button 
-                        className={`login-btn ${user ? 'logged-in' : ''}`} 
-                        id="header-login-btn"
-                        onClick={handleAuthClick}
-                    >
-                        <svg className="icon user-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="12" cy="7" r="4"></circle>
-                        </svg>
-                        <span>{user ? `Hi, ${user.name.split(' ')[0]}` : 'Login'}</span>
-                    </button>
-                    <a href="#about" onClick={(e) => e.preventDefault()} className="about-link">ABOUT</a>
                 </div>
             </div>
 
-            {/* Mobile Nav Drawer */}
-            <div className={`mobile-nav-drawer ${mobileMenuOpen ? 'open' : ''}`}>
-                <nav className="mobile-nav-links">
-                    <Link to={isAdmin ? '/admin' : '/'} className="mobile-nav-link" onClick={() => setMobileMenuOpen(false)}>Home</Link>
-                    <Link to="/men" className="mobile-nav-link" onClick={() => setMobileMenuOpen(false)}>Men</Link>
-                    <Link to="/women" className="mobile-nav-link" onClick={() => setMobileMenuOpen(false)}>Women</Link>
-                    <Link to="/offers" className="mobile-nav-link" onClick={() => setMobileMenuOpen(false)}>Offers</Link>
-                    <div className="mobile-nav-divider"></div>
-                    <a href="#about" onClick={(e) => { e.preventDefault(); setMobileMenuOpen(false); }} className="mobile-nav-link">About Us</a>
-                </nav>
-            </div>
-            {mobileMenuOpen && (
-                <div className="mobile-nav-backdrop" onClick={() => setMobileMenuOpen(false)}></div>
+            {/* Navigation Centered Row Under Brand Logo */}
+            {!isAdmin && (
+                <div className="header-nav-row">
+                    <nav className="desktop-nav-centered">
+                        <Link to="/" className="nav-link nav-home-link" aria-label="Home" title="Home">
+                            <svg className="icon home-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ width: '20px', height: '20px' }}>
+                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                            </svg>
+                        </Link>
+                        <Link to="/men" className="nav-link">Men</Link>
+                        <Link to="/women" className="nav-link">Women</Link>
+                        <Link to="/offers" className="nav-link">Offers</Link>
+                    </nav>
+                </div>
             )}
         </header>
     );
 };
 
 export default Header;
-

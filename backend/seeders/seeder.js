@@ -18,31 +18,56 @@ const seedData = async () => {
   try {
     // 1. Connect to Database
     await connectDB();
-    console.log('Clearing database collections...');
-
-    // 2. Clear Existing Data
-    await Admin.deleteMany({});
-    await Product.deleteMany({});
-    await Category.deleteMany({});
-    await Review.deleteMany({});
-    await Coupon.deleteMany({});
-    await Notification.deleteMany({});
-    await AuditLog.deleteMany({});
-    await Setting.deleteMany({});
-    await Order.deleteMany({});
-    await OrderItem.deleteMany({});
-
-    console.log('Database cleared.');
+    // 2. Clear Existing Data (Only if FORCE_SEED is true)
+    if (process.env.FORCE_SEED === 'true') {
+      console.log('Clearing database collections as FORCE_SEED is true...');
+      await Admin.deleteMany({});
+      await Product.deleteMany({});
+      await Category.deleteMany({});
+      await Review.deleteMany({});
+      await Coupon.deleteMany({});
+      await Notification.deleteMany({});
+      await AuditLog.deleteMany({});
+      await Setting.deleteMany({});
+      await Order.deleteMany({});
+      await OrderItem.deleteMany({});
+      console.log('Database cleared.');
+    } else {
+      console.log('Skipping database clear (FORCE_SEED is not true).');
+      // If we already have categories, skip seed
+      const existingCats = await Category.countDocuments();
+      if (existingCats > 0) {
+        console.log('Database already has category data. Seed aborted to prevent duplicate/accidental override.');
+        process.exit(0);
+      }
+    }
 
     // 3. Seed Categories
     console.log('Seeding categories...');
-    const categoryNames = ['Men', 'Women', 'Offers', 'Special Collection'];
-    const seededCategories = [];
-    for (const name of categoryNames) {
-      const cat = await Category.create({ name });
-      seededCategories.push(cat);
+    const mainCategories = ['Men', 'Women', 'Offers', 'Special Collection'];
+    const seededMainCategories = {};
+    for (const name of mainCategories) {
+      const cat = await Category.create({ name, parent: null, showOnHomepage: false });
+      seededMainCategories[name] = cat;
     }
-    console.log(`Seeded ${seededCategories.length} categories.`);
+
+    const subCategories = [
+      { name: 'Adidas', parentName: 'Men' },
+      { name: 'Nike', parentName: 'Women' },
+      { name: 'Classic', parentName: 'Offers' }
+    ];
+
+    const seededSubCategories = {};
+    for (const sub of subCategories) {
+      const parentCat = seededMainCategories[sub.parentName];
+      const cat = await Category.create({
+        name: sub.name,
+        parent: parentCat._id,
+        showOnHomepage: true
+      });
+      seededSubCategories[sub.name] = cat;
+    }
+    console.log(`Seeded ${mainCategories.length} main categories and ${subCategories.length} sub-categories.`);
 
     // 4. Seed Admins
     console.log('Seeding admin...');
@@ -66,7 +91,7 @@ const seedData = async () => {
         desc: 'Designed for modern lifestyle explorers. Features a lightweight, breathable knit structure, responsive sole cushioning, and our signature eco-friendly mustard-hued dye.',
         discountPercent: 21,
         stock: 15,
-        categories: ['Men', 'Offers'],
+        categories: ['Men', 'Adidas'],
       },
       {
         name: 'AURA ECLIPSE (CHARCOAL)',
@@ -75,7 +100,7 @@ const seedData = async () => {
         desc: 'The stealth choice for city trails. Crafted with charcoal black water-repellent yarn, a recycled rubber rugged outsole, and maximum-comfort heel stability panels.',
         discountPercent: 16,
         stock: 8,
-        categories: ['Men', 'Offers'],
+        categories: ['Men', 'Adidas'],
       },
       {
         name: 'AURA HORIZON (CORAL)',
@@ -84,7 +109,7 @@ const seedData = async () => {
         desc: 'Step with vibrant energy. Built with flexible coral-peach mesh fibers, ultra-light shock-absorption technology, and breathable fabrics perfect for summer walks.',
         discountPercent: 26,
         stock: 20,
-        categories: ['Women', 'Offers'],
+        categories: ['Women', 'Nike'],
       },
       {
         name: 'AURA RETRO (WHITE)',
@@ -93,7 +118,7 @@ const seedData = async () => {
         desc: 'Step into a timeless legend. Featuring premium full-grain white leather with cement-grey speckle accents, responsive air cushioning, and vintage street court appeal.',
         discountPercent: 18,
         stock: 12,
-        categories: ['Men', 'Women', 'Offers', 'Special Collection'],
+        categories: ['Special Collection'],
       },
     ];
 

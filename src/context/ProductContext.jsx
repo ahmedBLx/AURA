@@ -4,7 +4,7 @@ const ProductContext = createContext();
 
 export const ProductProvider = ({ children }) => {
     const [products, setProducts] = useState([]);
-    const [categories, setCategories] = useState([]);
+    const [categories, setCategories] = useState([]); // Full category objects { _id, name, parent, showOnHomepage }
     const [loading, setLoading] = useState(true);
 
     const BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:5002').replace(/\/$/, '');
@@ -45,27 +45,73 @@ export const ProductProvider = ({ children }) => {
         };
     };
 
+    // Map DB category to UI format
+    const mapCategory = (c, allCats = []) => {
+        const parentId = c.parent ? (typeof c.parent === 'object' ? c.parent._id || c.parent : c.parent) : null;
+        let parentName = null;
+        if (c.parent && typeof c.parent === 'object' && c.parent.name) {
+            parentName = c.parent.name;
+        } else if (parentId) {
+            const foundParent = allCats.find(cat => cat._id === parentId);
+            if (foundParent) {
+                parentName = foundParent.name;
+            }
+        }
+        return {
+            _id: c._id,
+            name: c.name,
+            parent: parentId ? { _id: parentId } : null,
+            parentName: parentName,
+            showOnHomepage: c.showOnHomepage || false,
+        };
+    };
+
+    // Derived: flat list of category names (backward compat)
+    const categoryNames = categories.map(c => c.name);
+
+    // Derived: main (root) categories
+    const mainCategories = categories.filter(c => !c.parent);
+
+    // Derived: sub-categories grouped by parent name
+    const getSubcategories = (parentName) => {
+        return categories.filter(c => c.parentName === parentName);
+    };
+
+    // Derived: homepage categories
+    const homepageCategories = categories.filter(c => c.showOnHomepage && c.parent);
+
     // Fetch products and categories
     const loadCatalog = async () => {
         try {
             // Load Categories
             const catRes = await fetch(`${API_URL}/categories`);
-            let mappedCats = ['Men', 'Women', 'Offers', 'Special Collection'];
-            if (catRes.ok) {
-                const catResult = await catRes.json();
-                if (catResult.data?.categories?.length > 0) {
-                    mappedCats = catResult.data.categories.map(c => c.name);
-                }
+            if (!catRes.ok) {
+                throw new Error(`Categories API returned status ${catRes.status}`);
+            }
+            const catResult = await catRes.json();
+            let mappedCats = [];
+            if (catResult.data?.categories?.length > 0) {
+                mappedCats = catResult.data.categories.map(mapCategory);
+            }
+            // If no categories from API, seed default main categories as objects
+            if (mappedCats.length === 0) {
+                mappedCats = [
+                    { _id: 'men', name: 'Men', parent: null, parentName: null, showOnHomepage: false },
+                    { _id: 'women', name: 'Women', parent: null, parentName: null, showOnHomepage: false },
+                    { _id: 'offers', name: 'Offers', parent: null, parentName: null, showOnHomepage: false },
+                    { _id: 'special', name: 'Special Collection', parent: null, parentName: null, showOnHomepage: false },
+                ];
             }
             setCategories(mappedCats);
 
             // Load Products
             const prodRes = await fetch(`${API_URL}/products?limit=100`);
-            if (prodRes.ok) {
-                const prodResult = await prodRes.json();
-                const items = prodResult.data.products || [];
-                setProducts(items.map(mapProduct));
+            if (!prodRes.ok) {
+                throw new Error(`Products API returned status ${prodRes.status}`);
             }
+            const prodResult = await prodRes.json();
+            const items = prodResult.data.products || [];
+            setProducts(items.map(mapProduct));
         } catch (err) {
             console.error('Failed to load catalog:', err);
             // Fallback to offline localStorage
@@ -98,19 +144,119 @@ export const ProductProvider = ({ children }) => {
         }
     }, [categories]);
 
+    const uploadFileToCloudinary = async (file, sigData) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('api_key', sigData.apiKey);
+        formData.append('timestamp', sigData.timestamp);
+        formData.append('signature', sigData.signature);
+        formData.append('folder', sigData.folder);
+
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${sigData.cloudName}/image/upload`, {
+            method: 'POST',
+            body: formData
+        });
+        if (!res.ok) {
+            throw new Error('Cloudinary client upload failed');
+        }
+        const result = await res.json();
+        return result.secure_url;
+    };
+
+    const processClientSideUploadAndSubmit = async (formData, method, url, sigData) => {
+        const jsonBody = {};
+        
+        // Retrieve simple fields
+        const fields = ['name', 'price', 'desc', 'discountPercent', 'stock', 'categories', 'sizes'];
+        fields.forEach(f => {
+            const val = formData.get(f);
+            if (val !== null) {
+                jsonBody[f] = val;
+            }
+        });
+
+        // Upload primary image if it's a File
+        const imgField = formData.get('img');
+        if (imgField instanceof File) {
+            jsonBody.img = await uploadFileToCloudinary(imgField, sigData);
+        } else if (imgField) {
+            jsonBody.img = imgField;
+        }
+
+        // Upload new secondary images
+        const secondaryImages = formData.getAll('images');
+        const uploadedUrls = [];
+        for (const file of secondaryImages) {
+            if (file instanceof File) {
+                const url = await uploadFileToCloudinary(file, sigData);
+                uploadedUrls.push(url);
+            }
+        }
+
+        // Existing images
+        let finalImages = [];
+        const existingImagesStr = formData.get('existingImages');
+        if (existingImagesStr) {
+            try {
+                finalImages = JSON.parse(existingImagesStr);
+            } catch (e) {
+                finalImages = [];
+            }
+        }
+
+        jsonBody.images = [...finalImages, ...uploadedUrls];
+
+        // Submit JSON to backend
+        const res = await fetch(url, {
+            method,
+            headers: getHeaders(),
+            body: JSON.stringify(jsonBody)
+        });
+        return res;
+    };
+
     const addProduct = async (product) => {
         try {
             const isFormData = product instanceof FormData;
-            const headers = { ...getHeaders() };
-            if (isFormData) {
-                delete headers['Content-Type'];
-            }
+            let res;
 
-            const res = await fetch(`${API_URL}/products`, {
-                method: 'POST',
-                headers,
-                body: isFormData ? product : JSON.stringify(product)
-            });
+            if (isFormData) {
+                // Try client-side upload first
+                let useClientUpload = false;
+                let sigData = null;
+                try {
+                    const sigRes = await fetch(`${API_URL}/products/upload-signature`, {
+                        headers: getHeaders()
+                    });
+                    if (sigRes.ok) {
+                        const sigResult = await sigRes.json();
+                        if (sigResult && sigResult.status === 'success' && !sigResult.data.useLocalFallback) {
+                            sigData = sigResult.data;
+                            useClientUpload = true;
+                        }
+                    }
+                } catch (err) {
+                    console.warn('Failed to fetch upload signature, falling back to server-side upload:', err);
+                }
+
+                if (useClientUpload && sigData) {
+                    res = await processClientSideUploadAndSubmit(product, 'POST', `${API_URL}/products`, sigData);
+                } else {
+                    const headers = { ...getHeaders() };
+                    delete headers['Content-Type'];
+                    res = await fetch(`${API_URL}/products`, {
+                        method: 'POST',
+                        headers,
+                        body: product
+                    });
+                }
+            } else {
+                res = await fetch(`${API_URL}/products`, {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify(product)
+                });
+            }
 
             if (res.ok) {
                 const result = await res.json();
@@ -129,21 +275,49 @@ export const ProductProvider = ({ children }) => {
 
     const updateProduct = async (id, updatedProduct) => {
         try {
-            // Find _id from local id mapping (e.g. nomad -> _id)
             const localProd = products.find(p => p.id === id);
             const dbId = localProd ? localProd.id : id;
 
             const isFormData = updatedProduct instanceof FormData;
-            const headers = { ...getHeaders() };
-            if (isFormData) {
-                delete headers['Content-Type'];
-            }
+            let res;
 
-            const res = await fetch(`${API_URL}/products/${dbId}`, {
-                method: 'PATCH',
-                headers,
-                body: isFormData ? updatedProduct : JSON.stringify(updatedProduct)
-            });
+            if (isFormData) {
+                // Try client-side upload first
+                let useClientUpload = false;
+                let sigData = null;
+                try {
+                    const sigRes = await fetch(`${API_URL}/products/upload-signature`, {
+                        headers: getHeaders()
+                    });
+                    if (sigRes.ok) {
+                        const sigResult = await sigRes.json();
+                        if (sigResult && sigResult.status === 'success' && !sigResult.data.useLocalFallback) {
+                            sigData = sigResult.data;
+                            useClientUpload = true;
+                        }
+                    }
+                } catch (err) {
+                    console.warn('Failed to fetch upload signature, falling back to server-side upload:', err);
+                }
+
+                if (useClientUpload && sigData) {
+                    res = await processClientSideUploadAndSubmit(updatedProduct, 'PATCH', `${API_URL}/products/${dbId}`, sigData);
+                } else {
+                    const headers = { ...getHeaders() };
+                    delete headers['Content-Type'];
+                    res = await fetch(`${API_URL}/products/${dbId}`, {
+                        method: 'PATCH',
+                        headers,
+                        body: updatedProduct
+                    });
+                }
+            } else {
+                res = await fetch(`${API_URL}/products/${dbId}`, {
+                    method: 'PATCH',
+                    headers: getHeaders(),
+                    body: JSON.stringify(updatedProduct)
+                });
+            }
 
             if (res.ok) {
                 const result = await res.json();
@@ -183,7 +357,7 @@ export const ProductProvider = ({ children }) => {
         }
     };
 
-    const addCategory = async (categoryName) => {
+    const addCategory = async (categoryName, parentId = null, showOnHomepage = false) => {
         const name = categoryName.trim();
         if (!name) return false;
 
@@ -191,16 +365,43 @@ export const ProductProvider = ({ children }) => {
             const res = await fetch(`${API_URL}/categories`, {
                 method: 'POST',
                 headers: getHeaders(),
-                body: JSON.stringify({ name })
+                body: JSON.stringify({ name, parentId, showOnHomepage })
             });
 
             if (res.ok) {
-                setCategories(prev => [...prev, name]);
+                const result = await res.json();
+                setCategories(prev => {
+                    const newCat = mapCategory(result.data.category, prev);
+                    return [...prev, newCat];
+                });
                 return true;
             }
             return false;
         } catch (err) {
             console.error('Add category error:', err);
+            return false;
+        }
+    };
+
+    const updateCategory = async (categoryId, updates) => {
+        try {
+            const res = await fetch(`${API_URL}/categories/${categoryId}`, {
+                method: 'PATCH',
+                headers: getHeaders(),
+                body: JSON.stringify(updates)
+            });
+
+            if (res.ok) {
+                const result = await res.json();
+                setCategories(prev => {
+                    const updatedCat = mapCategory(result.data.category, prev);
+                    return prev.map(c => c._id === categoryId ? updatedCat : c);
+                });
+                return true;
+            }
+            return false;
+        } catch (err) {
+            console.error('Update category error:', err);
             return false;
         }
     };
@@ -213,7 +414,7 @@ export const ProductProvider = ({ children }) => {
             });
 
             if (res.ok) {
-                setCategories(prev => prev.filter(c => c !== categoryName));
+                setCategories(prev => prev.filter(c => c.name !== categoryName));
                 // Remove category from products locally
                 setProducts(prev => prev.map(p => {
                     if (p.categories && p.categories.includes(categoryName)) {
@@ -231,7 +432,22 @@ export const ProductProvider = ({ children }) => {
     };
 
     return (
-        <ProductContext.Provider value={{ products, categories, addProduct, updateProduct, deleteProduct, addCategory, deleteCategory, loading, loadCatalog }}>
+        <ProductContext.Provider value={{
+            products,
+            categories,         // Full category objects
+            categoryNames,      // Flat name array (backward compat)
+            mainCategories,     // Root categories only
+            getSubcategories,   // Function: (parentName) => sub-cats
+            homepageCategories, // Categories with showOnHomepage=true
+            addProduct,
+            updateProduct,
+            deleteProduct,
+            addCategory,
+            updateCategory,
+            deleteCategory,
+            loading,
+            loadCatalog
+        }}>
             {!loading && children}
         </ProductContext.Provider>
     );

@@ -16,9 +16,11 @@ class SettingController {
   async getPublicSettings(req, res, next) {
     try {
       const settings = await settingService.getSettings();
+      const publicKeys = require('../config/publicSettings');
+      const filtered = settings.filter(s => publicKeys.includes(s.key));
       res.status(200).json({
         status: 'success',
-        data: { settings },
+        data: { settings: filtered },
       });
     } catch (err) {
       next(err);
