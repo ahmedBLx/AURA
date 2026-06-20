@@ -101,6 +101,11 @@ app.use('/api/', (req, res, next) => {
   res.set('Pragma', 'no-cache');
   res.set('Expires', '0');
   res.set('Surrogate-Control', 'no-store');
+  
+  // Disable ETag / conditional request validation to prevent 304 Not Modified status
+  delete req.headers['if-none-match'];
+  delete req.headers['if-modified-since'];
+  
   next();
 });
 
