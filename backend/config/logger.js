@@ -62,7 +62,7 @@ if (!isVercel) {
 }
 
 const logger = winston.createLogger({
-  level: process.env.NODE_ENV === 'development' ? 'debug' : 'info',
+  level: (process.env.NODE_ENV === 'production' || isVercel) ? 'info' : 'debug',
   levels,
   format,
   transports,

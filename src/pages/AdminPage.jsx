@@ -330,6 +330,18 @@ const AdminPage = () => {
 
     useEffect(() => {
         let pollInterval = null;
+        const isVercel = BASE_URL.includes('vercel.app');
+
+        if (isVercel) {
+            console.log('Detected Vercel backend. Skipping Socket.IO to avoid 503 errors and falling back to order polling every 30s');
+            pollInterval = setInterval(() => {
+                loadOrders();
+                loadDashboardMetrics();
+            }, 30000);
+            return () => {
+                if (pollInterval) clearInterval(pollInterval);
+            };
+        }
 
         const socket = io(BASE_URL, {
             reconnection: false,      // don't spam retries if serverless doesn't support it
