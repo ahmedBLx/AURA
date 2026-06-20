@@ -91,7 +91,8 @@ export const ProductProvider = ({ children }) => {
             const catResult = await catRes.json();
             let mappedCats = [];
             if (catResult.data?.categories?.length > 0) {
-                mappedCats = catResult.data.categories.map(mapCategory);
+                const rawCats = catResult.data.categories;
+                mappedCats = rawCats.map(c => mapCategory(c, rawCats));
             }
             // If no categories from API, seed default main categories as objects
             if (mappedCats.length === 0) {
