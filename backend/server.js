@@ -29,6 +29,7 @@ const pointsRoutes = require('./routes/pointsRoutes');
 
 const app = express();
 app.set('trust proxy', true);
+app.disable('etag');
 
 // Socket.IO is only set up outside Vercel (serverless doesn't support persistent WS)
 let server;
@@ -123,6 +124,14 @@ app.use('/api/', async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+});
+
+// Root path handler for health checks
+app.get('/', (req, res) => {
+  res.status(200).json({
+    status: 'success',
+    message: 'AURA Backend API is running successfully.'
+  });
 });
 
 // Bind API Routes
