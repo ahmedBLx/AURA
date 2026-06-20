@@ -6412,3 +6412,137 @@ html.light-theme .toolbar-search-wrapper.expanded .toolbar-search-input {
         width: 130px;
     }
 }
+
+/* ==========================================
+   CATEGORY CAROUSEL HEADER RESPONSIVENESS
+   ========================================== */
+.category-carousel-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 40px 0 20px 0;
+    width: 100%;
+    position: relative;
+    padding: 0 80px;
+}
+
+.category-carousel-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    gap: 20px;
+}
+
+.category-carousel-line {
+    flex: 1;
+    height: 1px;
+    background-color: var(--border-color);
+}
+
+.category-title-wrapper {
+    text-align: center;
+}
+
+.category-carousel-title {
+    font-size: 26px;
+    text-transform: uppercase;
+    color: #FFFFFF;
+    margin: 0;
+    letter-spacing: 0.1em;
+    white-space: nowrap;
+}
+
+.category-carousel-eyebrow {
+    display: block;
+    margin-top: 4px;
+    letter-spacing: 0.15em;
+    font-size: 11px;
+    color: var(--color-gold);
+    text-transform: uppercase;
+}
+
+.view-all-btn {
+    position: absolute;
+    right: 80px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--color-gold);
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+/* Responsiveness overrides for Category Carousel Header */
+@media (max-width: 1024px) {
+    .category-carousel-header {
+        padding: 0 40px;
+    }
+    .view-all-btn {
+        right: 40px;
+    }
+}
+
+@media (max-width: 768px) {
+    .category-carousel-header {
+        padding: 0 24px;
+        align-items: flex-start;
+        flex-direction: row;
+        justify-content: space-between;
+        margin: 24px 0 12px 0;
+    }
+    .category-carousel-title-row {
+        width: auto;
+        gap: 0;
+        justify-content: flex-start;
+    }
+    .category-carousel-line {
+        display: none !important; /* Hide lines on mobile */
+    }
+    .category-title-wrapper {
+        text-align: left;
+    }
+    .category-carousel-title {
+        font-size: 18px !important;
+        white-space: normal !important; /* Allow wrapping if needed */
+    }
+    .view-all-btn {
+        position: static !important;
+        transform: none !important;
+        padding: 6px 0 !important;
+        font-size: 11px !important;
+    }
+    
+    /* Header layout fixes to avoid logo collision on small screens */
+    .account-btn, .cart-btn, .theme-toggle-btn {
+        width: 32px !important;
+        height: 32px !important;
+    }
+    .header-right {
+        gap: 6px !important;
+    }
+    .account-btn .icon, .cart-btn .icon, .theme-toggle-btn .icon {
+        width: 17px !important;
+        height: 17px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-heading {
+        font-size: 26px !important;
+    }
+    .hero-subtitle {
+        font-size: 14px !important;
+    }
+}

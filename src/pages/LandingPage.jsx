@@ -164,71 +164,23 @@ const SubCategoryProductCarousel = ({ category, products, navigate, handleQuickV
 
     return (
         <section className="category-carousel-section" style={{ padding: '20px 0' }}>
-            <div className="category-carousel-header" style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                margin: '40px 0 20px 0',
-                width: '100%',
-                position: 'relative'
-            }}>
-                <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: '100%',
-                    gap: '20px'
-                }}>
-                    <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--border-color)' }}></div>
-                    <div style={{ textAlign: 'center' }}>
-                        <h2 className="category-carousel-title glowing-category-title" style={{
-                            fontSize: '26px',
-                            textTransform: 'uppercase',
-                            color: '#FFFFFF',
-                            margin: 0,
-                            letterSpacing: '0.1em',
-                            whiteSpace: 'nowrap'
-                        }}>
+            <div className="category-carousel-header">
+                <div className="category-carousel-title-row">
+                    <div className="category-carousel-line"></div>
+                    <div className="category-title-wrapper">
+                        <h2 className="category-carousel-title glowing-category-title">
                             {category.name}
                         </h2>
-                        <span className="category-carousel-eyebrow" style={{
-                            display: 'block',
-                            marginTop: '4px',
-                            letterSpacing: '0.15em',
-                            fontSize: '11px',
-                            color: 'var(--color-gold)',
-                            textTransform: 'uppercase'
-                        }}>
+                        <span className="category-carousel-eyebrow">
                             {category.parentName || 'COLLECTION'}
                         </span>
                     </div>
-                    <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--border-color)' }}></div>
+                    <div className="category-carousel-line"></div>
                 </div>
                 
                 <button 
                     onClick={() => navigate(`/shop?category=${encodeURIComponent(category.name)}`)}
-                    style={{
-                        position: 'absolute',
-                        right: 0,
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        background: 'none',
-                        border: 'none',
-                        color: 'var(--color-gold)',
-                        fontFamily: 'var(--font-heading)',
-                        fontWeight: '600',
-                        fontSize: '12px',
-                        letterSpacing: '0.1em',
-                        textTransform: 'uppercase',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        padding: '8px 12px',
-                        borderRadius: '4px',
-                        transition: 'background-color 0.3s'
-                    }}
-                    className="view-all-hover-effect"
+                    className="view-all-btn view-all-hover-effect"
                 >
                     View All 
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
