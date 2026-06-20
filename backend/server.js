@@ -28,6 +28,7 @@ const customerRoutes = require('./routes/customerRoutes');
 const pointsRoutes = require('./routes/pointsRoutes');
 
 const app = express();
+app.set('trust proxy', true);
 
 // Socket.IO is only set up outside Vercel (serverless doesn't support persistent WS)
 let server;

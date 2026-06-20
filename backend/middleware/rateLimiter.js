@@ -32,6 +32,7 @@ const apiLimiter = rateLimit({
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
   store: store || undefined,
+  validate: false, // Disable validation checks to prevent proxy validation crashes on Vercel
 });
 
 const authLimiter = rateLimit({
@@ -44,6 +45,7 @@ const authLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   store: store || undefined,
+  validate: false, // Disable validation checks to prevent proxy validation crashes on Vercel
 });
 
 module.exports = {
