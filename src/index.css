@@ -3022,7 +3022,7 @@ html.light-theme .whatsapp-number-item:hover .number-value {
    ========================================== */
 .admin-view-container {
     background-color: transparent;
-    min-height: calc(100vh - 80px);
+    min-height: calc(100dvh - 80px);
     width: 100%;
     color: #FFFFFF;
     padding: 60px 40px;
@@ -4084,7 +4084,7 @@ body.dark-landing .specials-section {
     top: 0;
     left: 0;
     width: 100vw;
-    height: 100vh;
+    height: 100dvh;
     z-index: -2;
     background-color: #000000;
     overflow: hidden;
@@ -4750,7 +4750,7 @@ html.light-theme .product-grid.list-layout .product-name {
     top: 80px;
     left: -100%;
     width: 280px;
-    height: calc(100vh - 80px);
+    height: calc(100dvh - 80px);
     background-color: rgba(10, 10, 10, 0.95);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
@@ -4859,7 +4859,7 @@ html.light-theme .product-grid.list-layout .product-name {
     top: 80px;
     left: 0;
     width: 100vw;
-    height: calc(100vh - 80px);
+    height: calc(100dvh - 80px);
     background-color: rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
@@ -5214,7 +5214,7 @@ html.light-theme .product-grid.list-layout .product-name {
     top: 0;
     left: 0;
     width: 100vw;
-    height: 100vh;
+    height: 100dvh;
     z-index: 990;
     background: transparent;
 }
@@ -6639,5 +6639,14 @@ html.light-theme .toolbar-search-wrapper.expanded .search-btn {
     }
     .hero-subtitle {
         font-size: 14px !important;
+    }
+}
+
+/* iOS Performance Fix for Safari Ghost Crash */
+@supports (-webkit-touch-callout: none) {
+    * {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        
     }
 }

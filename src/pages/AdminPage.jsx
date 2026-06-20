@@ -1052,7 +1052,7 @@ const AdminPage = () => {
     const lowStockProductsList = products.filter(p => (p.stock !== undefined ? p.stock : 10) <= 5);
 
     return (
-        <div className={`admin-app-wrapper ${theme}-theme`} style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'transparent', fontFamily: 'var(--font-body)' }}>
+        <div className={`admin-app-wrapper ${theme}-theme`} style={{ display: 'flex', minHeight: '100dvh', backgroundColor: 'transparent', fontFamily: 'var(--font-body)' }}>
             <style>{`
                 /* CSS Dynamic Theme Variables */
                 .dark-theme {
