@@ -2,14 +2,11 @@ import OptimizedImage from '../components/OptimizedImage';
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useProducts } from '../context/ProductContext';
-import { useRouter } from 'next/navigation';
 import { io } from 'socket.io-client';
 
 const AdminPage = () => {
     const { user, users, logout } = useAuth();
     const { products, categories, categoryNames, mainCategories, getSubcategories, homepageCategories, addProduct, updateProduct, deleteProduct, addCategory, updateCategory, deleteCategory, loadCatalog } = useProducts();
-    const router = useRouter();
-    const navigate = (url) => router.push(url);
     const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5002';
 
     // UI & Layout States
@@ -706,7 +703,6 @@ const AdminPage = () => {
 
     const handleLogout = () => {
         logout();
-        navigate('/');
     };
 
     const handleAddNewProductClick = () => {
