@@ -9,7 +9,9 @@ export const AuthProvider = ({ children }) => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    const API_URL = `${(import.meta.env.VITE_API_BASE_URL || 'http://localhost:5002').replace(/\/$/, '')}/api/v1/auth`;
+    // Same-origin monolith: default to a relative base URL. Next.js inlines
+    // NEXT_PUBLIC_* natively, so an override still works if ever deployed split.
+    const API_URL = `${(process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '')}/api/v1/auth`;
 
     // Helper to get auth header
     const getHeaders = (token) => {

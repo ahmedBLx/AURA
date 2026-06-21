@@ -35,7 +35,7 @@ const CartDrawer = () => {
     const [loyaltyDetails, setLoyaltyDetails] = useState(null);
     const [isSearchingPhone, setIsSearchingPhone] = useState(false);
 
-    const API_URL = `${(import.meta.env.VITE_API_BASE_URL || 'http://localhost:5002').replace(/\/$/, '')}/api/v1`;
+    const API_URL = `${(process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '')}/api/v1`;
 
     useEffect(() => {
         const fetchShippingRates = async () => {

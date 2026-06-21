@@ -7,7 +7,7 @@ import { io } from 'socket.io-client';
 const AdminPage = () => {
     const { user, users, logout } = useAuth();
     const { products, categories, categoryNames, mainCategories, getSubcategories, homepageCategories, addProduct, updateProduct, deleteProduct, addCategory, updateCategory, deleteCategory, loadCatalog } = useProducts();
-    const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5002';
+    const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '';
 
     // UI & Layout States
     const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard' | 'products' | 'categories' | 'orders' | 'customers' | 'loyalty'
@@ -329,7 +329,9 @@ const AdminPage = () => {
 
     useEffect(() => {
         let pollInterval = null;
-        const isVercel = BASE_URL.includes('vercel.app');
+        // BASE_URL is now same-origin/relative, so detect serverless from the host.
+        // (Non-vercel.app custom domains still fall back to polling via connect_error.)
+        const isVercel = typeof window !== 'undefined' && window.location.hostname.endsWith('.vercel.app');
 
         if (isVercel) {
             console.log('Detected Vercel backend. Skipping Socket.IO to avoid 503 errors and falling back to order polling every 30s');

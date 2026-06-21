@@ -22,16 +22,6 @@ const nextConfig = {
       },
     ];
   },
-  webpack: (config, { webpack }) => {
-    config.plugins.push(
-      new webpack.DefinePlugin({
-        'import.meta.env': JSON.stringify({
-          VITE_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || '',
-        }),
-      })
-    );
-    return config;
-  },
 };
 
 export default nextConfig;

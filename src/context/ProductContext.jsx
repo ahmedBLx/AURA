@@ -9,7 +9,7 @@ export const ProductProvider = ({ children }) => {
     const [categories, setCategories] = useState([]); // Full category objects { _id, name, parent, showOnHomepage }
     const [loading, setLoading] = useState(true);
 
-    const BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:5002').replace(/\/$/, '');
+    const BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '');
     const API_URL = `${BASE_URL}/api/v1`;
 
     // Helper to get auth header
