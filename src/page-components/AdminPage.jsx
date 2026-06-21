@@ -1,26 +1,43 @@
 import OptimizedImage from '../components/OptimizedImage';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useProducts } from '../context/ProductContext';
-import { io } from 'socket.io-client';
+import { useAdmin } from '../context/AdminContext';
 
 const AdminPage = () => {
     const { user, users, logout } = useAuth();
     const { products, categories, categoryNames, mainCategories, getSubcategories, homepageCategories, addProduct, updateProduct, deleteProduct, addCategory, updateCategory, deleteCategory, loadCatalog } = useProducts();
     const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '';
 
-    // UI & Layout States
-    const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard' | 'products' | 'categories' | 'orders' | 'customers' | 'loyalty'
-    const theme = 'dark';
-    const [orders, setOrders] = useState([]);
-    const [realtimeToast, setRealtimeToast] = useState(null);
+    // Consume AdminContext
+    const {
+        activeTab,
+        setActiveTab,
+        orders,
+        realtimeToast,
+        setRealtimeToast,
+        dashboardMetrics,
+        loyaltyCustomers,
+        isFetchingLoyalty,
+        womenSoon,
+        shippingRates,
+        loadOrders,
+        loadSettings,
+        loadDashboardMetrics,
+        loadLoyaltyCustomers,
+        updateOrderStatus,
+        deleteOrder,
+        toggleWomenSoon,
+        saveShippingRates,
+        clearCompletedOrders
+    } = useAdmin();
 
-    // Loyalty and dashboard metrics states
-    const [dashboardMetrics, setDashboardMetrics] = useState(null);
-    const [loyaltyCustomers, setLoyaltyCustomers] = useState([]);
+    // UI & Layout States
+    const theme = 'dark';
+
+    // Local Search & Sort states
     const [loyaltySearch, setLoyaltySearch] = useState('');
     const [loyaltySort, setLoyaltySort] = useState('spent-desc');
-    const [isFetchingLoyalty, setIsFetchingLoyalty] = useState(false);
     
     // Search, Filter, Sort States
     const [prodSearch, setProdSearch] = useState('');
@@ -48,10 +65,8 @@ const AdminPage = () => {
     const [discountPercent, setDiscountPercent] = useState(0);
     const [prodStock, setProdStock] = useState(10);
     const [selectedSizes, setSelectedSizes] = useState(['39', '40', '41', '42', '43', '44', '45']);
-    const [womenSoon, setWomenSoon] = useState(true);
 
     // Shipping form states
-    const [shippingRates, setShippingRates] = useState([]);
     const [newGovName, setNewGovName] = useState('');
     const [newGovCost, setNewGovCost] = useState('');
     const [editingGovIndex, setEditingGovIndex] = useState(null);
@@ -76,247 +91,58 @@ const AdminPage = () => {
     const [isProductModalOpen, setIsProductModalOpen] = useState(false); // controls the Add/Edit Product Modal
     const [isSaving, setIsSaving] = useState(false);
 
-    // Load orders
-    const loadOrders = async () => {
-        const token = localStorage.getItem('aura_token');
-        try {
-            const res = await fetch(`${BASE_URL}/api/v1/orders`, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            if (res.ok) {
-                const result = await res.json();
-                const mappedOrders = result.data.orders.map(o => ({
-                    id: o.orderId,
-                    dbId: o._id,
-                    date: new Date(o.createdAt).toLocaleString('en-US', { hour12: true }),
-                    name: o.customerName,
-                    phone: o.customerPhone,
-                    alternativePhone: o.customerAlternativePhone || '',
-                    governorate: o.customerGovernorate,
-                    city: o.customerCity,
-                    address: o.orderType === 'Store Reservation' ? 'N/A (Store Reservation)' : `${o.customerAddress}, ${o.customerCity}, ${o.customerGovernorate}`,
-                    notes: o.notes,
-                    paymentMethod: o.paymentMethod,
-                    orderType: o.orderType || 'Delivery',
-                    items: o.items.map(item => {
-                        const prod = item.product;
-                        const imgUrl = prod && prod.img 
-                            ? (prod.img.startsWith('http') || prod.img.startsWith('assets') || prod.img.startsWith('data:') ? prod.img : `${BASE_URL}/${prod.img}`)
-                            : 'assets/sneaker_white.png';
-                        return {
-                            id: prod ? (prod._id || prod.id) : item._id,
-                            name: item.productName,
-                            price: item.price,
-                            size: item.size,
-                            quantity: item.quantity,
-                            img: imgUrl
-                        };
-                    }),
-                    total: o.total,
-                    shippingCost: o.shippingCost || 0,
-                    status: o.status
-                }));
-                setOrders(mappedOrders);
-                localStorage.setItem('aura_orders', JSON.stringify(mappedOrders));
-                return;
-            } else {
-                if (res.status === 401 || res.status === 403) {
-                    localStorage.removeItem('aura_token');
-                    localStorage.removeItem('aura_orders');
-                    setOrders([]);
-                    return;
-                }
-                throw new Error(`API returned status ${res.status}`);
+    // Aliases to preserve UI compatibility
+    const handleUpdateOrderStatus = async (orderId, newStatus) => {
+        const success = await updateOrderStatus(orderId, newStatus);
+        if (success && selectedOrderDetails && selectedOrderDetails.id === orderId) {
+            setSelectedOrderDetails(prev => ({ ...prev, status: newStatus }));
+        }
+    };
+
+    const handleDeleteOrder = async (orderId) => {
+        if (window.confirm(`Are you sure you want to delete order ${orderId}?`)) {
+            const success = await deleteOrder(orderId);
+            if (success && selectedOrderDetails && selectedOrderDetails.id === orderId) {
+                setSelectedOrderDetails(null);
             }
-        } catch (err) {
-            console.error('Failed to load orders from API:', err);
-        }
-
-        // Fallback
-        const storedOrders = localStorage.getItem('aura_orders');
-        if (storedOrders) {
-            setOrders(JSON.parse(storedOrders));
         }
     };
 
-    const loadSettings = async () => {
-        const token = localStorage.getItem('aura_token');
-        try {
-            const res = await fetch(`${BASE_URL}/api/v1/settings`, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            if (res.ok) {
-                const result = await res.json();
-                const settings = result.data.settings;
-                const ws = settings.find(s => s.key === 'women_soon');
-                if (ws) {
-                    setWomenSoon(ws.value === true || ws.value === 'true');
-                }
-                const sr = settings.find(s => s.key === 'shipping_rates');
-                if (sr && Array.isArray(sr.value)) {
-                    setShippingRates(sr.value);
-                }
+    const handleToggleWomenSoon = () => {
+        toggleWomenSoon(!womenSoon);
+    };
+
+    const handleSaveShippingRates = saveShippingRates;
+    const handleClearCompletedOrders = clearCompletedOrders;
+
+    const prodImagesRef = useRef(prodImages);
+    useEffect(() => {
+        prodImagesRef.current = prodImages;
+    }, [prodImages]);
+
+    useEffect(() => {
+        return () => {
+            if (prodImagesRef.current) {
+                prodImagesRef.current.forEach(img => {
+                    if (img.url && img.url.startsWith('blob:')) {
+                        URL.revokeObjectURL(img.url);
+                    }
+                });
             }
-        } catch (err) {
-            console.error('Failed to load settings in AdminPage:', err);
-        }
-    };
-
-    const handleToggleWomenSoon = async () => {
-        const token = localStorage.getItem('aura_token');
-        const newValue = !womenSoon;
-        try {
-            const res = await fetch(`${BASE_URL}/api/v1/settings`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    key: 'women_soon',
-                    value: newValue,
-                    description: 'Whether the Women section is in Coming Soon mode'
-                })
-            });
-            if (res.ok) {
-                setWomenSoon(newValue);
-            } else {
-                alert('Failed to update setting');
-            }
-        } catch (err) {
-            console.error('Error toggling setting:', err);
-            alert('Network error updating setting');
-        }
-    };
-
-    const handleSaveShippingRates = async (updatedRates) => {
-        const token = localStorage.getItem('aura_token');
-        try {
-            const res = await fetch(`${BASE_URL}/api/v1/settings`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    key: 'shipping_rates',
-                    value: updatedRates,
-                    description: 'Shipping rates for governorates'
-                })
-            });
-            if (res.ok) {
-                setShippingRates(updatedRates);
-                return true;
-            } else {
-                alert('Failed to save shipping rates');
-                return false;
-            }
-        } catch (err) {
-            console.error('Error saving shipping rates:', err);
-            alert('Error connecting to the server');
-            return false;
-        }
-    };
-
-    const handleAddOrEditRate = async (e) => {
-        e.preventDefault();
-        if (!newGovName.trim() || !newGovCost) return;
-        
-        let updated;
-        if (editingGovIndex !== null) {
-            updated = [...shippingRates];
-            updated[editingGovIndex] = {
-                governorate: newGovName.trim(),
-                cost: Number(newGovCost)
-            };
-        } else {
-            if (shippingRates.some(r => r.governorate.toLowerCase() === newGovName.trim().toLowerCase())) {
-                alert('Governorate already exists!');
-                return;
-            }
-            updated = [
-                ...shippingRates,
-                { governorate: newGovName.trim(), cost: Number(newGovCost) }
-            ];
-        }
-
-        const success = await handleSaveShippingRates(updated);
-        if (success) {
-            setNewGovName('');
-            setNewGovCost('');
-            setEditingGovIndex(null);
-        }
-    };
-
-    const handleDeleteRate = async (indexToDelete) => {
-        if (!window.confirm('Are you sure you want to delete this shipping destination?')) return;
-        const updated = shippingRates.filter((_, idx) => idx !== indexToDelete);
-        await handleSaveShippingRates(updated);
-    };
-
-    const startEditRate = (index) => {
-        const rate = shippingRates[index];
-        setNewGovName(rate.governorate);
-        setNewGovCost(rate.cost);
-        setEditingGovIndex(index);
-    };
-
-    const loadDashboardMetrics = async () => {
-        const token = localStorage.getItem('aura_token');
-        try {
-            const res = await fetch(`${BASE_URL}/api/v1/dashboard/metrics`, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            if (res.ok) {
-                const result = await res.json();
-                setDashboardMetrics(result.data.metrics);
-            }
-        } catch (err) {
-            console.error('Failed to load dashboard metrics:', err);
-        }
-    };
-
-    const loadLoyaltyCustomers = async (searchVal = loyaltySearch, sortVal = loyaltySort) => {
-        const token = localStorage.getItem('aura_token');
-        setIsFetchingLoyalty(true);
-        try {
-            const res = await fetch(`${BASE_URL}/api/v1/customers?search=${encodeURIComponent(searchVal)}&sort=${sortVal}`, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            if (res.ok) {
-                const result = await res.json();
-                setLoyaltyCustomers(result.data.customers || []);
-            }
-        } catch (err) {
-            console.error('Failed to load loyalty customers:', err);
-        } finally {
-            setIsFetchingLoyalty(false);
-        }
-    };
+        };
+    }, []);
 
     useEffect(() => {
         loadOrders();
         loadSettings();
         loadDashboardMetrics();
-    }, []);
+    }, [loadOrders, loadSettings, loadDashboardMetrics]);
 
     useEffect(() => {
         if (activeTab === 'loyalty') {
             loadLoyaltyCustomers(loyaltySearch, loyaltySort);
         }
-    }, [activeTab, loyaltySort]);
+    }, [activeTab, loyaltySort, loadLoyaltyCustomers]);
 
     useEffect(() => {
         if (activeTab === 'loyalty') {
@@ -325,157 +151,7 @@ const AdminPage = () => {
             }, 300);
             return () => clearTimeout(delayDebounceFn);
         }
-    }, [loyaltySearch]);
-
-    useEffect(() => {
-        let pollInterval = null;
-        // BASE_URL is now same-origin/relative, so detect serverless from the host.
-        // (Non-vercel.app custom domains still fall back to polling via connect_error.)
-        const isVercel = typeof window !== 'undefined' && window.location.hostname.endsWith('.vercel.app');
-
-        if (isVercel) {
-            console.log('Detected Vercel backend. Skipping Socket.IO to avoid 503 errors and falling back to order polling every 30s');
-            pollInterval = setInterval(() => {
-                loadOrders();
-                loadDashboardMetrics();
-            }, 30000);
-            return () => {
-                if (pollInterval) clearInterval(pollInterval);
-            };
-        }
-
-        const socket = io(BASE_URL, {
-            reconnection: false,      // don't spam retries if serverless doesn't support it
-            timeout: 5000,
-        });
-
-        socket.on('connect', () => {
-            console.log('Admin Socket Connected (real-time mode)');
-            // Clear polling if socket connected successfully
-            if (pollInterval) {
-                clearInterval(pollInterval);
-                pollInterval = null;
-            }
-        });
-
-        socket.on('connect_error', () => {
-            // Socket.IO not available (e.g. Vercel serverless) — fall back to polling
-            console.log('Socket.IO unavailable, falling back to order polling every 30s');
-            socket.disconnect();
-            if (!pollInterval) {
-                pollInterval = setInterval(() => {
-                    loadOrders();
-                    loadDashboardMetrics();
-                }, 30000);
-            }
-        });
-
-        socket.on('newOrder', (data) => {
-            console.log('Real-time order received:', data);
-            loadOrders();
-            loadDashboardMetrics();
-            setRealtimeToast({
-                orderId: data.orderId,
-                customerName: data.customerName,
-                total: data.total
-            });
-            setTimeout(() => setRealtimeToast(null), 6000);
-        });
-
-        return () => {
-            socket.disconnect();
-            if (pollInterval) clearInterval(pollInterval);
-        };
-    }, []);
-
-    // Status transitions
-    const handleUpdateOrderStatus = async (orderId, newStatus) => {
-        const token = localStorage.getItem('aura_token');
-        try {
-            const res = await fetch(`${BASE_URL}/api/v1/orders/${orderId}/status`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ status: newStatus })
-            });
-            if (res.ok) {
-                await loadOrders();
-                await loadDashboardMetrics();
-                if (loadCatalog) {
-                    await loadCatalog();
-                }
-                if (selectedOrderDetails && selectedOrderDetails.id === orderId) {
-                    setSelectedOrderDetails(prev => ({ ...prev, status: newStatus }));
-                }
-            } else {
-                const errResult = await res.json();
-                alert(errResult.message || "Failed to update order status.");
-            }
-        } catch (err) {
-            console.error('Update status error:', err);
-            alert("Network connection error.");
-        }
-    };
-
-    const handleDeleteOrder = async (orderId) => {
-        if (window.confirm(`Are you sure you want to delete order ${orderId}?`)) {
-            const token = localStorage.getItem('aura_token');
-            try {
-                const res = await fetch(`${BASE_URL}/api/v1/orders/${orderId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                if (res.ok) {
-                    await loadOrders();
-                    await loadDashboardMetrics();
-                    if (loadCatalog) {
-                        await loadCatalog();
-                    }
-                    if (selectedOrderDetails && selectedOrderDetails.id === orderId) {
-                        setSelectedOrderDetails(null);
-                    }
-                } else {
-                    const errResult = await res.json();
-                    alert(errResult.message || "Failed to delete order.");
-                }
-            } catch (err) {
-                console.error('Delete order error:', err);
-                alert("Network connection error.");
-            }
-        }
-    };
-
-    const handleClearCompletedOrders = async () => {
-        const token = localStorage.getItem('aura_token');
-        try {
-            const res = await fetch(`${BASE_URL}/api/v1/orders/completed`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-
-            if (res.ok) {
-                const result = await res.json();
-                alert(result.message || "Completed orders successfully cleared.");
-                await loadOrders();
-                await loadDashboardMetrics();
-                if (loadCatalog) {
-                    await loadCatalog();
-                }
-            } else {
-                const errResult = await res.json();
-                alert(errResult.message || "Failed to clear completed orders.");
-            }
-        } catch (err) {
-            console.error('Clear completed orders error:', err);
-            alert("Network connection error.");
-        }
-    };
+    }, [loyaltySearch, loadLoyaltyCustomers]);
 
     const handlePrintCompletedOrdersReport = () => {
         const completedOrders = orders.filter(o => o.status === 'Completed');
@@ -763,6 +439,13 @@ const AdminPage = () => {
     };
 
     const resetForm = () => {
+        // Revoke any blob URLs to avoid memory leaks
+        prodImages.forEach(img => {
+            if (img.url && img.url.startsWith('blob:')) {
+                URL.revokeObjectURL(img.url);
+            }
+        });
+
         setEditId('');
         setProdName('');
         setProdPrice('');

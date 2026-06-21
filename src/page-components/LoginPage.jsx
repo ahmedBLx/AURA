@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useRouter } from 'next/navigation';
 import SocialMedia from '../components/SocialMedia';
@@ -10,6 +10,20 @@ const LoginPage = () => {
     const [activeTab, setActiveTab] = useState('login'); // 'login' | 'signup'
     const [successMessage, setSuccessMessage] = useState('');
     const [isSuccess, setIsSuccess] = useState(false);
+
+    const redirectTimerRef = useRef(null);
+
+    const mountedRef = useRef(true);
+
+    useEffect(() => {
+        mountedRef.current = true;
+        return () => {
+            mountedRef.current = false;
+            if (redirectTimerRef.current) {
+                clearTimeout(redirectTimerRef.current);
+            }
+        };
+    }, []);
 
     // Form inputs state
     const [loginEmail, setLoginEmail] = useState('');
@@ -54,11 +68,17 @@ const LoginPage = () => {
         }
 
         const res = await login(loginEmail, loginPassword, 'admin');
+        if (!mountedRef.current) return;
         if (res.success) {
             setSuccessMessage("Admin authentication successful. Accessing console...");
             setIsSuccess(true);
-            setTimeout(() => {
-                router.push('/admin');
+            if (redirectTimerRef.current) {
+                clearTimeout(redirectTimerRef.current);
+            }
+            redirectTimerRef.current = setTimeout(() => {
+                if (mountedRef.current) {
+                    router.push('/admin');
+                }
             }, 1800);
         } else {
             setErrors({
@@ -95,11 +115,17 @@ const LoginPage = () => {
         }
 
         const res = await signup(signupName, signupEmail, signupPassword, 'admin', signupAdminCode);
+        if (!mountedRef.current) return;
         if (res.success) {
             setSuccessMessage("Admin account created successfully. Redirecting...");
             setIsSuccess(true);
-            setTimeout(() => {
-                router.push('/admin');
+            if (redirectTimerRef.current) {
+                clearTimeout(redirectTimerRef.current);
+            }
+            redirectTimerRef.current = setTimeout(() => {
+                if (mountedRef.current) {
+                    router.push('/admin');
+                }
             }, 1800);
         } else {
             if (res.field === 'email') {

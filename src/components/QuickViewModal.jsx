@@ -40,6 +40,16 @@ const QuickViewModal = ({ product, isOpen, onClose }) => {
     }, [isOpen, product]);
 
 
+    const timerRef = useRef(null);
+
+    useEffect(() => {
+        return () => {
+            if (timerRef.current) {
+                clearTimeout(timerRef.current);
+            }
+        };
+    }, []);
+
     if (!isOpen || !product) return null;
 
     const discountPercent = product.discountPercent || 0;
@@ -49,7 +59,10 @@ const QuickViewModal = ({ product, isOpen, onClose }) => {
     const handleAddToBag = () => {
         addToCart(product, selectedSize);
         setAddedStatus(true);
-        setTimeout(() => {
+        if (timerRef.current) {
+            clearTimeout(timerRef.current);
+        }
+        timerRef.current = setTimeout(() => {
             setAddedStatus(false);
             onClose();
         }, 1000);

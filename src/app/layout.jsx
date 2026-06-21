@@ -4,7 +4,9 @@ import { ThemeProvider } from '../context/ThemeContext';
 import { AuthProvider } from '../context/AuthContext';
 import { ProductProvider } from '../context/ProductContext';
 import { CartProvider } from '../context/CartContext';
+import { AdminProvider } from '../context/AdminContext';
 import ClientLayout from '../components/ClientLayout';
+import ErrorBoundary from '../components/ErrorBoundary';
 
 export const metadata = {
   title: 'AURA - Dare To Dream',
@@ -21,17 +23,21 @@ export default function RootLayout({ children }) {
         <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
       </head>
       <body>
-        <ThemeProvider>
-          <AuthProvider>
-            <ProductProvider>
-              <CartProvider>
-                <ClientLayout>
-                  {children}
-                </ClientLayout>
-              </CartProvider>
-            </ProductProvider>
-          </AuthProvider>
-        </ThemeProvider>
+        <ErrorBoundary>
+          <ThemeProvider>
+            <AuthProvider>
+              <ProductProvider>
+                <CartProvider>
+                  <AdminProvider>
+                    <ClientLayout>
+                      {children}
+                    </ClientLayout>
+                  </AdminProvider>
+                </CartProvider>
+              </ProductProvider>
+            </AuthProvider>
+          </ThemeProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );

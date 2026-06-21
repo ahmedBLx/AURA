@@ -5,7 +5,7 @@
 // in place before auth/theme/hydration logic executes. See src/polyfills.js.
 import '../polyfills';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 
 const ThemeContext = createContext();
 
@@ -19,9 +19,9 @@ export const ThemeProvider = ({ children }) => {
         }
     }, []);
 
-    const toggleTheme = () => {
+    const toggleTheme = useCallback(() => {
         setTheme(prev => prev === 'dark' ? 'light' : 'dark');
-    };
+    }, []);
 
     useEffect(() => {
         localStorage.setItem('aura_theme', theme);
@@ -35,8 +35,10 @@ export const ThemeProvider = ({ children }) => {
         }
     }, [theme]);
 
+    const value = useMemo(() => ({ theme, toggleTheme }), [theme, toggleTheme]);
+
     return (
-        <ThemeContext.Provider value={{ theme, toggleTheme }}>
+        <ThemeContext.Provider value={value}>
             {children}
         </ThemeContext.Provider>
     );

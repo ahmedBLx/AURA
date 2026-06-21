@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useTheme } from '../context/ThemeContext';
@@ -10,6 +10,16 @@ const Header = () => {
     const { cartCount, setCartOpen } = useCart();
     const { theme, toggleTheme } = useTheme();
     const router = useRouter();
+
+    const aboutTimeoutRef = useRef(null);
+
+    useEffect(() => {
+        return () => {
+            if (aboutTimeoutRef.current) {
+                clearTimeout(aboutTimeoutRef.current);
+            }
+        };
+    }, []);
 
     const handleAuthClick = () => {
         if (user) {
@@ -26,7 +36,10 @@ const Header = () => {
             aboutSection.scrollIntoView({ behavior: 'smooth' });
         } else {
             router.push('/');
-            setTimeout(() => {
+            if (aboutTimeoutRef.current) {
+                clearTimeout(aboutTimeoutRef.current);
+            }
+            aboutTimeoutRef.current = setTimeout(() => {
                 const sec = document.getElementById('about');
                 if (sec) {
                     sec.scrollIntoView({ behavior: 'smooth' });

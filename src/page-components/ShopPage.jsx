@@ -1,5 +1,5 @@
 import OptimizedImage from '../components/OptimizedImage';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useProducts } from '../context/ProductContext';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import QuickViewModal from '../components/QuickViewModal';
@@ -111,44 +111,46 @@ const ShopPage = () => {
         setIsSearchOverlayActive(false);
     };
 
-    // Filtering logic
-    const filteredProducts = products.filter((p) => {
-        // Search filter matching
-        const searchQuery = (inlineQuery || overlayQuery).toLowerCase().trim();
-        if (searchQuery) {
-            const nameMatch = p.name.toLowerCase().includes(searchQuery);
-            const descMatch = p.desc ? p.desc.toLowerCase().includes(searchQuery) : false;
-            if (!nameMatch && !descMatch) return false;
-        }
+    // Filtering logic (memoized)
+    const filteredProducts = useMemo(() => {
+        return products.filter((p) => {
+            // Search filter matching
+            const searchQuery = (inlineQuery || overlayQuery).toLowerCase().trim();
+            if (searchQuery) {
+                const nameMatch = p.name.toLowerCase().includes(searchQuery);
+                const descMatch = p.desc ? p.desc.toLowerCase().includes(searchQuery) : false;
+                if (!nameMatch && !descMatch) return false;
+            }
 
-        // Collection filter matching
-        const activeCollections = Object.keys(selectedCollections).filter((key) => selectedCollections[key]);
-        if (activeCollections.length > 0) {
-            const matchesCollection = activeCollections.some((col) => 
-                p.id.toLowerCase().includes(col) || p.name.toLowerCase().includes(col)
-            );
-            if (!matchesCollection) return false;
-        }
+            // Collection filter matching
+            const activeCollections = Object.keys(selectedCollections).filter((key) => selectedCollections[key]);
+            if (activeCollections.length > 0) {
+                const matchesCollection = activeCollections.some((col) => 
+                    p.id.toLowerCase().includes(col) || p.name.toLowerCase().includes(col)
+                );
+                if (!matchesCollection) return false;
+            }
 
-        // Price filter matching
-        const activePrices = Object.keys(selectedPrices).filter((key) => selectedPrices[key]);
-        if (activePrices.length > 0) {
-            const matchesPrice = activePrices.some((range) => {
-                const priceVal = p.price * (1 - (p.discountPercent || 0) / 100);
-                if (range === 'under200') return priceVal < 200;
-                if (range === 'over200') return priceVal >= 200;
-                return true;
-            });
-            if (!matchesPrice) return false;
-        }
+            // Price filter matching
+            const activePrices = Object.keys(selectedPrices).filter((key) => selectedPrices[key]);
+            if (activePrices.length > 0) {
+                const matchesPrice = activePrices.some((range) => {
+                    const priceVal = p.price * (1 - (p.discountPercent || 0) / 100);
+                    if (range === 'under200') return priceVal < 200;
+                    if (range === 'over200') return priceVal >= 200;
+                    return true;
+                });
+                if (!matchesPrice) return false;
+            }
 
-        // URL category filter
-        if (urlCategory) {
-            if (!p.categories || !p.categories.includes(urlCategory)) return false;
-        }
+            // URL category filter
+            if (urlCategory) {
+                if (!p.categories || !p.categories.includes(urlCategory)) return false;
+            }
 
-        return true;
-    });
+            return true;
+        });
+    }, [products, inlineQuery, overlayQuery, selectedCollections, selectedPrices, urlCategory]);
 
     return (
         <main style={{ minHeight: '80vh' }}>

@@ -1,19 +1,16 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
+import { apiClient } from '../services/apiClient';
 
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
     const [cart, setCart] = useState([]);
     const [cartOpen, setCartOpen] = useState(false);
-    const [cartCount, setCartCount] = useState(0);
-    const [cartSubtotal, setCartSubtotal] = useState(0);
-
-    const API_URL = `${(process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '')}/api/v1`;
 
     // Load cart on mount
-    const loadCart = () => {
+    const loadCart = useCallback(() => {
         try {
             const storedCart = localStorage.getItem('aura_cart');
             if (storedCart) {
@@ -27,22 +24,21 @@ export const CartProvider = ({ children }) => {
             console.error("Error loading cart from localStorage:", err);
         }
         setCart([]);
-    };
+    }, []);
 
     useEffect(() => {
         loadCart();
-    }, []);
+    }, [loadCart]);
 
     // Sync counts whenever cart state changes
     useEffect(() => {
         localStorage.setItem('aura_cart', JSON.stringify(cart));
-        const count = cart.reduce((sum, item) => sum + item.quantity, 0);
-        const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-        setCartCount(count);
-        setCartSubtotal(subtotal);
     }, [cart]);
 
-    const addToCart = (product, size) => {
+    const cartCount = useMemo(() => cart.reduce((sum, item) => sum + item.quantity, 0), [cart]);
+    const cartSubtotal = useMemo(() => cart.reduce((sum, item) => sum + item.price * item.quantity, 0), [cart]);
+
+    const addToCart = useCallback((product, size) => {
         setCart((prevCart) => {
             const existingIndex = prevCart.findIndex(
                 (item) => item.id === product.id && item.size === size
@@ -66,9 +62,9 @@ export const CartProvider = ({ children }) => {
             }
         });
         setCartOpen(true);
-    };
+    }, []);
 
-    const updateQuantity = (id, size, change) => {
+    const updateQuantity = useCallback((id, size, change) => {
         setCart((prevCart) => {
             return prevCart
                 .map((item) => {
@@ -79,18 +75,18 @@ export const CartProvider = ({ children }) => {
                 })
                 .filter((item) => item.quantity > 0);
         });
-    };
+    }, []);
 
-    const removeFromCart = (id, size) => {
+    const removeFromCart = useCallback((id, size) => {
         setCart((prevCart) => prevCart.filter((item) => !(item.id === id && item.size === size)));
-    };
+    }, []);
 
-    const clearCart = () => {
+    const clearCart = useCallback(() => {
         setCart([]);
         localStorage.removeItem('aura_cart');
-    };
+    }, []);
 
-    const placeOrder = async (customerDetails) => {
+    const placeOrder = useCallback(async (customerDetails) => {
         try {
             const orderItems = cart.map(item => ({
                 productId: item.id,
@@ -98,67 +94,67 @@ export const CartProvider = ({ children }) => {
                 quantity: item.quantity
             }));
 
-            const res = await fetch(`${API_URL}/orders/create`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    customerName: customerDetails.customerName,
-                    customerPhone: customerDetails.customerPhone,
-                    customerAlternativePhone: customerDetails.customerAlternativePhone || '',
-                    customerAddress: customerDetails.customerAddress,
-                    customerGovernorate: customerDetails.customerGovernorate,
-                    customerCity: customerDetails.customerCity,
-                    notes: customerDetails.notes || '',
-                    paymentMethod: customerDetails.paymentMethod || 'Cash on Delivery',
-                    items: orderItems,
-                    email: customerDetails.email || '',
-                    usePoints: customerDetails.usePoints || false,
-                    orderType: customerDetails.orderType || 'Delivery'
-                })
+            const result = await apiClient.post('orders/create', {
+                customerName: customerDetails.customerName,
+                customerPhone: customerDetails.customerPhone,
+                customerAlternativePhone: customerDetails.customerAlternativePhone || '',
+                customerAddress: customerDetails.customerAddress,
+                customerGovernorate: customerDetails.customerGovernorate,
+                customerCity: customerDetails.customerCity,
+                notes: customerDetails.notes || '',
+                paymentMethod: customerDetails.paymentMethod || 'Cash on Delivery',
+                items: orderItems,
+                email: customerDetails.email || '',
+                usePoints: customerDetails.usePoints || false,
+                orderType: customerDetails.orderType || 'Delivery'
             });
 
-            if (res.ok) {
-                const result = await res.json();
-                const createdOrder = result.data.order;
-                
-                // Clear cart locally
-                clearCart();
-                
-                // Keep local copy of order history for offline accessibility
-                const existingOrders = JSON.parse(localStorage.getItem('aura_orders')) || [];
-                const updatedOrders = [createdOrder, ...existingOrders];
-                localStorage.setItem('aura_orders', JSON.stringify(updatedOrders));
-                localStorage.setItem('aura_orders_count', updatedOrders.length.toString());
+            const createdOrder = result.data.order;
+            
+            // Clear cart locally
+            clearCart();
+            
+            // Keep local copy of order history for offline accessibility
+            const existingOrders = JSON.parse(localStorage.getItem('aura_orders')) || [];
+            const updatedOrders = [createdOrder, ...existingOrders];
+            localStorage.setItem('aura_orders', JSON.stringify(updatedOrders));
+            localStorage.setItem('aura_orders_count', updatedOrders.length.toString());
 
-                return createdOrder.orderId;
-            } else {
-                const errResult = await res.json();
-                throw new Error(errResult.message || "Failed to place order.");
-            }
+            return createdOrder.orderId;
         } catch (err) {
             console.error('Checkout error:', err);
             throw err;
         }
-    };
+    }, [cart, clearCart]);
+
+    const value = useMemo(() => ({
+        cart,
+        cartOpen,
+        setCartOpen,
+        cartCount,
+        cartSubtotal,
+        addToCart,
+        updateQuantity,
+        removeFromCart,
+        clearCart,
+        placeOrder,
+        loadCart
+    }), [
+        cart,
+        cartOpen,
+        setCartOpen,
+        cartCount,
+        cartSubtotal,
+        addToCart,
+        updateQuantity,
+        removeFromCart,
+        clearCart,
+        placeOrder,
+        loadCart
+    ]);
 
     return (
-        <CartContext.Provider
-            value={{
-                cart,
-                cartOpen,
-                setCartOpen,
-                cartCount,
-                cartSubtotal,
-                addToCart,
-                updateQuantity,
-                removeFromCart,
-                clearCart,
-                placeOrder,
-                loadCart
-            }}
-        >
+        <CartContext.Provider value={value}>
             {children}
         </CartContext.Provider>
     );
