@@ -451,7 +451,10 @@ export const ProductProvider = ({ children }) => {
             loading,
             loadCatalog
         }}>
-            {!loading && children}
+            {/* Render children immediately — don't blank the whole app while the
+                catalog loads. A slow/failed catalog fetch must not lock the UI;
+                consumers already handle empty products/categories. */}
+            {children}
         </ProductContext.Provider>
     );
 };
