@@ -176,8 +176,14 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
+        // Always render children — do NOT gate the whole app behind `loading`.
+        // Gating blanked every page until the /me request resolved, causing a
+        // visible blank→content flicker (worst on slow old-device networks) and
+        // delaying SSR content. Protected routes guard themselves via `loading`
+        // (e.g. the admin page shows a "Verifying…" state); public pages don't
+        // need auth, so they can render immediately.
         <AuthContext.Provider value={{ user, users, login, signup, logout, loading }}>
-            {!loading && children}
+            {children}
         </AuthContext.Provider>
     );
 };

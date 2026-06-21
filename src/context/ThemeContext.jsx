@@ -1,5 +1,10 @@
 'use client';
 
+// Load runtime polyfills first, before any other client code runs. ThemeProvider
+// is the outermost client provider, so this guarantees old-browser polyfills are
+// in place before auth/theme/hydration logic executes. See src/polyfills.js.
+import '../polyfills';
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const ThemeContext = createContext();
