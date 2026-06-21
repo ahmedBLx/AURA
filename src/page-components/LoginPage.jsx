@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import SocialMedia from '../components/SocialMedia';
 
 const LoginPage = () => {
-    const { login, signup, user } = useAuth();
+    const { login, signup, user, loading } = useAuth();
     const router = useRouter();
 
     const [activeTab, setActiveTab] = useState('login'); // 'login' | 'signup'
@@ -28,10 +28,10 @@ const LoginPage = () => {
 
     // Redirect if already logged in as admin
     useEffect(() => {
-        if (user && user.role === 'admin') {
-            router.push('/admin');
+        if (!loading && user && user.role === 'admin' && !isSuccess) {
+            router.replace('/admin');
         }
-    }, [user, router]);
+    }, [user, loading, isSuccess, router]);
 
     const validateEmail = (email) => {
         return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
