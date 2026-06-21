@@ -1,12 +1,18 @@
+'use client';
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
-    const [theme, setTheme] = useState(() => {
+    const [theme, setTheme] = useState('dark');
+
+    useEffect(() => {
         const saved = localStorage.getItem('aura_theme');
-        return saved === 'light' ? 'light' : 'dark';
-    });
+        if (saved) {
+            setTheme(saved === 'light' ? 'light' : 'dark');
+        }
+    }, []);
 
     const toggleTheme = () => {
         setTheme(prev => prev === 'dark' ? 'light' : 'dark');

@@ -1,3 +1,4 @@
+import OptimizedImage from '../components/OptimizedImage';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useProducts } from '../context/ProductContext';
 import { useAuth } from '../context/AuthContext';
@@ -148,7 +149,6 @@ const SubCategoryProductCarousel = ({ category, products, layout, favorites, tog
 
     useEffect(() => {
         return () => {
-            if (autoScrollTimerRef.current) clearInterval(autoScrollTimerRef.current);
             if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
         };
     }, []);
@@ -335,7 +335,7 @@ const SubCategoryProductCarousel = ({ category, products, layout, favorites, tog
                                             {discountPercent}% OFF
                                         </span>
                                     )}
-                                    <img src={p.img} alt={p.name} className="product-img" style={{ maxWidth: '90%', maxHeight: '90%', objectFit: 'contain', transition: 'transform 0.4s ease' }} />
+                                    <OptimizedImage src={p.img} alt={p.name} className="product-img" aspectRatio="4/3" style={{ maxWidth: '90%', maxHeight: '90%', objectFit: 'contain', transition: 'transform 0.4s ease' }} />
                                     {layout !== 'list' && (
                                         <div className="card-overlay-actions">
                                             <button className="quick-view-btn" onClick={() => handleQuickView(p, hasDiscount ? salePrice : p.price)}>Quick View</button>
@@ -421,7 +421,7 @@ const SubCategoryProductCarousel = ({ category, products, layout, favorites, tog
     );
 };
 
-const OffersPage = () => {
+const MenPage = () => {
     const { products, categories } = useProducts();
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
@@ -451,11 +451,6 @@ const OffersPage = () => {
         setIsFilterTrayActive(false);
     };
 
-    const handleSearchSubmit = (e) => {
-        e.preventDefault();
-        setIsSearchOverlayActive(false);
-    };
-
     const handleQuickView = (p) => {
         setSelectedProduct(p);
         setIsQuickViewOpen(true);
@@ -469,14 +464,19 @@ const OffersPage = () => {
         }));
     };
 
-    // Filter enabled subcategories for Offers
-    const offersSubCategories = categories.filter(
-        (c) => c.parentName === 'Offers' && c.showOnHomepage === true
+    const handleSearchSubmit = (e) => {
+        e.preventDefault();
+        setIsSearchOverlayActive(false);
+    };
+
+    // Filter enabled subcategories for Men
+    const menSubCategories = categories.filter(
+        (c) => c.parentName === 'Men' && c.showOnHomepage === true
     );
 
-    // Filter products dynamically for Offers
-    const offersProducts = products.filter(
-        (p) => (p.categories && p.categories.includes('Offers')) || (p.discountPercent && p.discountPercent > 0)
+    // Filter products dynamically for Men's collection
+    const menProducts = products.filter(
+        (p) => (p.categories && p.categories.includes('Men')) || p.isMen === true
     );
 
     // Apply main filters (search query & price)
@@ -506,17 +506,17 @@ const OffersPage = () => {
     };
 
     // Fallback: If no subcategories are enabled, filter all products
-    const mainFilteredProducts = getFilteredSubProducts(offersProducts);
+    const mainFilteredProducts = getFilteredSubProducts(menProducts);
 
     return (
         <main style={{ minHeight: '85vh', padding: '60px 80px', position: 'relative' }}>
             <style>{`
-                .offers-header {
+                .men-header {
                     max-width: 1440px;
                     margin: 0 auto 36px auto;
                     text-align: center;
                 }
-                .offers-subtitle {
+                .men-subtitle {
                     font-family: var(--font-heading);
                     font-size: 13px;
                     font-weight: 600;
@@ -526,7 +526,7 @@ const OffersPage = () => {
                     display: block;
                     margin-bottom: 8px;
                 }
-                .offers-title {
+                .men-title {
                     font-family: var(--font-heading);
                     font-size: 36px;
                     font-weight: 500;
@@ -541,9 +541,9 @@ const OffersPage = () => {
                 }
             `}</style>
 
-            <div className="offers-header">
-                <span className="offers-subtitle">EXCLUSIVE PRICE DROPS</span>
-                <h1 className="offers-title">SPECIAL OFFERS</h1>
+            <div className="men-header">
+                <span className="men-subtitle">PERFORMANCE & STYLE</span>
+                <h1 className="men-title">MEN COLLECTION</h1>
             </div>
 
             {/* DISCOVER CONTROLS SECTION */}
@@ -593,10 +593,10 @@ const OffersPage = () => {
             )}
 
             {/* CAROUSELS OR FALLBACK PRODUCT GRID */}
-            <div className="offers-collections-carousels-container">
-                {offersSubCategories.length === 0 ? (
+            <div className="men-collections-carousels-container">
+                {menSubCategories.length === 0 ? (
                     // Fallback to simple grid if no subcategories are enabled
-                    <div className={`product-grid ${layout === 'list' ? 'list-layout' : ''}`} id="offers-product-grid">
+                    <div className={`product-grid ${layout === 'list' ? 'list-layout' : ''}`} id="men-product-grid">
                         {mainFilteredProducts.length === 0 ? (
                             <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '80px 20px', color: 'var(--color-text-muted)' }}>
                                 <p style={{ fontSize: '18px', fontWeight: '500', marginBottom: '8px' }}>No matches found</p>
@@ -615,8 +615,8 @@ const OffersPage = () => {
                                                     {discountPercent}% OFF
                                                 </span>
                                             )}
-                                            <span className="badge badge-new">OFFERS</span>
-                                            <img src={p.img} alt={p.name} className="product-img" />
+                                            <span className="badge badge-new">MEN</span>
+                                            <OptimizedImage src={p.img} alt={p.name} className="product-img" aspectRatio="4/3" />
                                             {layout !== 'list' && (
                                                 <div className="card-overlay-actions">
                                                     <button className="quick-view-btn" onClick={() => handleQuickView(p, hasDiscount ? salePrice : p.price)}>Quick View</button>
@@ -626,16 +626,7 @@ const OffersPage = () => {
                                         <div className="card-info-box">
                                             <div className="info-left">
                                                 <h3 className="product-name">{p.name}</h3>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px' }}>
-                                                    {hasDiscount ? (
-                                                        <>
-                                                            <span style={{ textDecoration: 'line-through', color: 'var(--color-text-muted)', fontSize: '13px' }}>{p.price} EGP</span>
-                                                            <span className="product-price" style={{ color: 'var(--color-gold)', fontWeight: '700' }}>{salePrice} EGP</span>
-                                                        </>
-                                                    ) : (
-                                                        <span className="product-price">{p.price} EGP</span>
-                                                    )}
-                                                </div>
+                                                <span className="product-price">{hasDiscount ? salePrice : p.price} EGP</span>
                                             </div>
                                             <div className="info-right">
                                                 {layout === 'list' && (
@@ -666,8 +657,8 @@ const OffersPage = () => {
                     </div>
                 ) : (
                     // Render individual carousels for each sub-category
-                    offersSubCategories.map((cat) => {
-                        const subProducts = offersProducts.filter(p => p.categories && p.categories.includes(cat.name));
+                    menSubCategories.map((cat) => {
+                        const subProducts = menProducts.filter(p => p.categories && p.categories.includes(cat.name));
                         const filteredSubProducts = getFilteredSubProducts(subProducts);
                         if (filteredSubProducts.length === 0) return null;
                         
@@ -698,4 +689,4 @@ const OffersPage = () => {
     );
 };
 
-export default OffersPage;
+export default MenPage;

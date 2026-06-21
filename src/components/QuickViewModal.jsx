@@ -1,3 +1,4 @@
+import OptimizedImage from './OptimizedImage';
 import React, { useState, useEffect, useRef } from 'react';
 import { useCart } from '../context/CartContext';
 
@@ -74,7 +75,7 @@ const QuickViewModal = ({ product, isOpen, onClose }) => {
                     {/* Left Column Image & Gallery */}
                     <div className="modal-image-col" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                         <div className="modal-main-image-container" style={{ width: '100%', height: '320px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.05)', backgroundColor: 'rgba(0, 0, 0, 0.2)' }}>
-                            <img src={activeImg || product.img} alt={product.name} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', transition: 'all 0.3s ease' }} />
+                            <OptimizedImage src={activeImg || product.img} alt={product.name} className="object-contain" aspectRatio="4/3" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', transition: 'all 0.3s ease' }} />
                         </div>
                         
                         {allImages.length > 1 && (
@@ -101,7 +102,7 @@ const QuickViewModal = ({ product, isOpen, onClose }) => {
                                             }}
                                             aria-label={`View image option ${idx + 1}`}
                                         >
-                                            <img src={img} alt={`${product.name} thumbnail ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                            <OptimizedImage src={img} alt={`${product.name} thumbnail ${idx + 1}`} className="object-contain" aspectRatio="4/3" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                                         </button>
                                     );
                                 })}

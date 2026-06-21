@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import SocialMedia from '../components/SocialMedia';
 
 const LoginPage = () => {
     const { login, signup, user } = useAuth();
-    const navigate = useNavigate();
+    const router = useRouter();
 
     const [activeTab, setActiveTab] = useState('login'); // 'login' | 'signup'
     const [successMessage, setSuccessMessage] = useState('');
@@ -29,9 +29,9 @@ const LoginPage = () => {
     // Redirect if already logged in as admin
     useEffect(() => {
         if (user && user.role === 'admin') {
-            navigate('/admin');
+            router.push('/admin');
         }
-    }, [user, navigate]);
+    }, [user, router]);
 
     const validateEmail = (email) => {
         return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -58,7 +58,7 @@ const LoginPage = () => {
             setSuccessMessage("Admin authentication successful. Accessing console...");
             setIsSuccess(true);
             setTimeout(() => {
-                navigate('/admin');
+                router.push('/admin');
             }, 1800);
         } else {
             setErrors({
@@ -99,7 +99,7 @@ const LoginPage = () => {
             setSuccessMessage("Admin account created successfully. Redirecting...");
             setIsSuccess(true);
             setTimeout(() => {
-                navigate('/admin');
+                router.push('/admin');
             }, 1800);
         } else {
             if (res.field === 'email') {

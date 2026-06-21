@@ -1,13 +1,15 @@
+import OptimizedImage from '../components/OptimizedImage';
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useProducts } from '../context/ProductContext';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { io } from 'socket.io-client';
 
 const AdminPage = () => {
     const { user, users, logout } = useAuth();
     const { products, categories, categoryNames, mainCategories, getSubcategories, homepageCategories, addProduct, updateProduct, deleteProduct, addCategory, updateCategory, deleteCategory, loadCatalog } = useProducts();
-    const navigate = useNavigate();
+    const router = useRouter();
+    const navigate = (url) => router.push(url);
     const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5002';
 
     // UI & Layout States
@@ -1668,7 +1670,7 @@ const AdminPage = () => {
                                                 <tr key={p.id}>
                                                     <td>
                                                         <div className="inventory-img-box">
-                                                            <img src={p.img} alt={p.name} className="inventory-img" />
+                                                            <OptimizedImage src={p.img} alt={p.name} className="inventory-img" aspectRatio="4/3" />
                                                         </div>
                                                     </td>
                                                     <td><span className="inventory-name">{p.name}</span></td>
@@ -1805,7 +1807,7 @@ const AdminPage = () => {
                                         <tr key={p.id}>
                                             <td>
                                                 <div className="inventory-img-box">
-                                                    <img src={p.img} alt={p.name} className="inventory-img" />
+                                                    <OptimizedImage src={p.img} alt={p.name} className="inventory-img" aspectRatio="4/3" />
                                                 </div>
                                             </td>
                                             <td><span className="inventory-name">{p.name}</span></td>
@@ -2579,7 +2581,7 @@ const AdminPage = () => {
                                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '6px', backgroundColor: 'var(--input-bg)', padding: '10px', borderRadius: '8px', border: '1px dashed var(--border-color)' }}>
                                                     {prodImages.map((img) => (
                                                         <div key={img.id} style={{ position: 'relative', width: '64px', height: '52px', border: '1px solid var(--border-color)', borderRadius: '4px', overflow: 'hidden', backgroundColor: '#0a0a0a' }}>
-                                                            <img src={img.url} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                                            <OptimizedImage src={img.url} alt="preview" className="object-contain" aspectRatio="4/3" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                                                             <button 
                                                                 type="button" 
                                                                 onClick={() => handleRemoveAdditionalImage(img.id)}
@@ -2808,7 +2810,7 @@ const AdminPage = () => {
                                 {selectedOrderDetails.items.map((item, idx) => (
                                     <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px', backgroundColor: 'var(--input-bg)', borderRadius: '8px' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                            <img src={item.img} alt={item.name} style={{ width: '40px', height: '32px', objectFit: 'contain' }} />
+                                            <OptimizedImage src={item.img} alt={item.name} className="object-contain" aspectRatio="4/3" style={{ width: '40px', height: '32px', objectFit: 'contain' }} />
                                             <div>
                                                 <span style={{ fontWeight: '600', fontSize: '13px' }}>{item.name}</span>
                                                 <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', display: 'block' }}>Size: {item.size}</span>

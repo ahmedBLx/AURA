@@ -1,3 +1,4 @@
+import OptimizedImage from '../components/OptimizedImage';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useProducts } from '../context/ProductContext';
 import { useAuth } from '../context/AuthContext';
@@ -335,7 +336,7 @@ const SubCategoryProductCarousel = ({ category, products, layout, favorites, tog
                                             {discountPercent}% OFF
                                         </span>
                                     )}
-                                    <img src={p.img} alt={p.name} className="product-img" style={{ maxWidth: '90%', maxHeight: '90%', objectFit: 'contain', transition: 'transform 0.4s ease' }} />
+                                    <OptimizedImage src={p.img} alt={p.name} className="product-img" aspectRatio="4/3" style={{ maxWidth: '90%', maxHeight: '90%', objectFit: 'contain', transition: 'transform 0.4s ease' }} />
                                     {layout !== 'list' && (
                                         <div className="card-overlay-actions">
                                             <button className="quick-view-btn" onClick={() => handleQuickView(p, hasDiscount ? salePrice : p.price)}>Quick View</button>
@@ -669,7 +670,7 @@ const WomenPage = () => {
                                                     </span>
                                                 )}
                                                 <span className="badge badge-new" style={{ backgroundColor: 'rgba(255, 94, 151, 0.15)', color: '#FF5E97', border: '1px solid rgba(255, 94, 151, 0.2)' }}>WOMEN</span>
-                                                <img src={p.img} alt={p.name} className="product-img" />
+                                                <OptimizedImage src={p.img} alt={p.name} className="product-img" aspectRatio="4/3" />
                                                 {layout !== 'list' && (
                                                     <div className="card-overlay-actions">
                                                         <button className="quick-view-btn" onClick={() => handleQuickView(p, hasDiscount ? salePrice : p.price)}>Quick View</button>

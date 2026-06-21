@@ -1,7 +1,8 @@
+import OptimizedImage from '../components/OptimizedImage';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useProducts } from '../context/ProductContext';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import SocialMedia from '../components/SocialMedia';
 import QuickViewModal from '../components/QuickViewModal';
 
@@ -298,7 +299,7 @@ const SubCategoryProductCarousel = ({ category, products, navigate, handleQuickV
                                             {discountPercent}% OFF
                                         </span>
                                     )}
-                                    <img src={p.img} alt={p.name} className="product-img" style={{ maxWidth: '90%', maxHeight: '90%', objectFit: 'contain' }} />
+                                    <OptimizedImage src={p.img} alt={p.name} className="product-img" aspectRatio="4/3" style={{ maxWidth: '90%', maxHeight: '90%', objectFit: 'contain' }} />
                                 </div>
                                 <div className="card-info-box" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                                     <h3 className="product-name" style={{ fontSize: '14px', fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', margin: 0, color: 'var(--color-text-dark)' }}>{p.name}</h3>
@@ -359,7 +360,8 @@ const SubCategoryProductCarousel = ({ category, products, navigate, handleQuickV
 const LandingPage = () => {
     const { user } = useAuth();
     const { products, homepageCategories } = useProducts();
-    const navigate = useNavigate();
+    const router = useRouter();
+    const navigate = (url) => router.push(url);
 
     const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);
@@ -584,7 +586,7 @@ const LandingPage = () => {
                                     >
                                         <div className="card-image-box">
                                             <span className="badge badge-special" style={{ backgroundColor: 'var(--color-gold)', color: 'var(--color-primary)' }}>SPECIAL</span>
-                                            <img src={p.img} alt={p.name} className="product-img" />
+                                            <OptimizedImage src={p.img} alt={p.name} className="product-img" aspectRatio="4/3" />
                                             <div className="card-overlay-actions">
                                                 <button className="quick-view-btn specials-action-btn">View Special</button>
                                             </div>

@@ -1,3 +1,4 @@
+import OptimizedImage from './OptimizedImage';
 import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 
@@ -804,7 +805,7 @@ const CartDrawer = () => {
                                 cart.map((item) => (
                                     <div className="cart-item" key={`${item.id}-${item.size}`}>
                                         <div className="cart-item-img-box">
-                                            <img src={item.img} alt={item.name} className="cart-item-img" />
+                                            <OptimizedImage src={item.img} alt={item.name} className="cart-item-img" aspectRatio="4/3" />
                                         </div>
                                         <div className="cart-item-details">
                                             <div className="cart-item-header">

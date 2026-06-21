@@ -2,19 +2,20 @@ import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useTheme } from '../context/ThemeContext';
-import { useNavigate, Link } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 const Header = () => {
     const { user } = useAuth();
     const { cartCount, setCartOpen } = useCart();
     const { theme, toggleTheme } = useTheme();
-    const navigate = useNavigate();
+    const router = useRouter();
 
     const handleAuthClick = () => {
         if (user) {
-            navigate('/admin');
+            router.push('/admin');
         } else {
-            navigate('/login');
+            router.push('/login');
         }
     };
 
@@ -24,7 +25,7 @@ const Header = () => {
         if (aboutSection) {
             aboutSection.scrollIntoView({ behavior: 'smooth' });
         } else {
-            navigate('/');
+            router.push('/');
             setTimeout(() => {
                 const sec = document.getElementById('about');
                 if (sec) {
@@ -70,7 +71,7 @@ const Header = () => {
                 </div>
 
                 {/* Center Brand Logo (Perfectly balanced) */}
-                <Link to={isAdmin ? '/admin' : '/'} className="brand-logo" id="logo">
+                <Link href={isAdmin ? '/admin' : '/'} className="brand-logo" id="logo">
                     <svg className="brand-logo-svg" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
                         {/* Shorter center-to-center distance to bring circles closer together */}
                         <circle cx="60" cy="39" r="22" stroke="#FFFFFF" strokeWidth="5" fill="rgba(255, 255, 255, 0.05)" />
@@ -123,15 +124,15 @@ const Header = () => {
             {!isAdmin && (
                 <div className="header-nav-row">
                     <nav className="desktop-nav-centered">
-                        <Link to="/" className="nav-link nav-home-link" aria-label="Home" title="Home">
+                        <Link href="/" className="nav-link nav-home-link" aria-label="Home" title="Home">
                             <svg className="icon home-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ width: '20px', height: '20px' }}>
                                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
                                 <polyline points="9 22 9 12 15 12 15 22"></polyline>
                             </svg>
                         </Link>
-                        <Link to="/men" className="nav-link">Men</Link>
-                        <Link to="/women" className="nav-link">Women</Link>
-                        <Link to="/offers" className="nav-link">Offers</Link>
+                        <Link href="/men" className="nav-link">Men</Link>
+                        <Link href="/women" className="nav-link">Women</Link>
+                        <Link href="/offers" className="nav-link">Offers</Link>
                     </nav>
                 </div>
             )}

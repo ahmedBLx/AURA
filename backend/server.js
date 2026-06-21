@@ -242,8 +242,8 @@ const startServer = async () => {
       }, 1000 * 60 * 30); // 30 minutes
     }
 
-    // Only start HTTP server when NOT running on Vercel
-    if (!process.env.VERCEL) {
+    // Only start HTTP server when NOT running on Vercel and run directly as module entry point
+    if (!process.env.VERCEL && require.main === module) {
       server.listen(PORT, () => {
         logger.info(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
       });

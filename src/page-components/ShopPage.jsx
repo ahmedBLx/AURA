@@ -1,12 +1,15 @@
+import OptimizedImage from '../components/OptimizedImage';
 import React, { useState, useEffect } from 'react';
 import { useProducts } from '../context/ProductContext';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import QuickViewModal from '../components/QuickViewModal';
 import SocialMedia from '../components/SocialMedia';
 
 const ShopPage = () => {
     const { products } = useProducts();
-    const [searchParams, setSearchParams] = useSearchParams();
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const pathname = usePathname();
 
     // UI States
     const [isFilterTrayActive, setIsFilterTrayActive] = useState(false);
@@ -56,9 +59,9 @@ const ShopPage = () => {
         setIsQuickViewOpen(false);
         setSelectedProduct(null);
         // Clear URL search params
-        const newParams = new URLSearchParams(searchParams);
+        const newParams = new URLSearchParams(searchParams.toString());
         newParams.delete('view');
-        setSearchParams(newParams);
+        router.replace(pathname + '?' + newParams.toString(), { scroll: false });
     };
 
     // Toggle Favorite state
@@ -317,7 +320,7 @@ const ShopPage = () => {
                             <div className="product-card item-card" key={p.id} data-id={p.id} onClick={() => handleOpenQuickView(p)}>
                                 <div className="card-image-box">
                                     <span className="badge badge-new">NEW</span>
-                                    <img src={p.img} alt={p.name} className="product-img" />
+                                    <OptimizedImage src={p.img} alt={p.name} className="product-img" aspectRatio="4/3" />
                                     <div className="card-overlay-actions">
                                         <button className="quick-view-btn" onClick={() => handleOpenQuickView(p)}>Quick View</button>
                                     </div>
