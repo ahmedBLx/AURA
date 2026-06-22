@@ -408,12 +408,14 @@ const LoginPage = () => {
                 {/* Auth Tabs */}
                 <div className="auth-tabs">
                     <button 
+                        suppressHydrationWarning
                         className={`auth-tab-btn ${activeTab === 'login' ? 'active' : ''}`}
                         onClick={() => { setActiveTab('login'); setErrors({}); }}
                     >
                         Sign In
                     </button>
                     <button 
+                        suppressHydrationWarning
                         className={`auth-tab-btn ${activeTab === 'signup' ? 'active' : ''}`}
                         onClick={() => { setActiveTab('signup'); setErrors({}); }}
                     >
@@ -428,6 +430,7 @@ const LoginPage = () => {
                             <div className={`form-group ${errors.loginEmail ? 'invalid' : ''}`}>
                                 <label htmlFor="login-email">Admin Email Address</label>
                                 <input 
+                                    suppressHydrationWarning
                                     type="email" 
                                     id="login-email" 
                                     required 
@@ -441,6 +444,7 @@ const LoginPage = () => {
                                 <label htmlFor="login-password">Password</label>
                                 <div className="input-with-icon">
                                     <input 
+                                        suppressHydrationWarning
                                         type={showLoginPassword ? "text" : "password"} 
                                         id="login-password" 
                                         required 
@@ -449,6 +453,7 @@ const LoginPage = () => {
                                         onChange={(e) => setLoginPassword(e.target.value)}
                                     />
                                     <button 
+                                        suppressHydrationWarning
                                         type="button" 
                                         className="toggle-password" 
                                         onClick={() => setShowLoginPassword(!showLoginPassword)}
@@ -463,7 +468,7 @@ const LoginPage = () => {
                                 </div>
                                 <span className="error-text">{errors.loginPassText || "Password is required."}</span>
                             </div>
-                            <button type="submit" className="auth-submit-btn">SIGN IN TO ADMIN</button>
+                            <button suppressHydrationWarning type="submit" className="auth-submit-btn">SIGN IN TO ADMIN</button>
                         </form>
                     )}
 
@@ -473,6 +478,7 @@ const LoginPage = () => {
                             <div className={`form-group ${errors.signupName ? 'invalid' : ''}`}>
                                 <label htmlFor="signup-name">Full Name</label>
                                 <input 
+                                    suppressHydrationWarning
                                     type="text" 
                                     id="signup-name" 
                                     required 
@@ -485,6 +491,7 @@ const LoginPage = () => {
                             <div className={`form-group ${errors.signupEmail ? 'invalid' : ''}`}>
                                 <label htmlFor="signup-email">Email Address</label>
                                 <input 
+                                    suppressHydrationWarning
                                     type="email" 
                                     id="signup-email" 
                                     required 
@@ -498,6 +505,7 @@ const LoginPage = () => {
                                 <label htmlFor="signup-password">Password</label>
                                 <div className="input-with-icon">
                                     <input 
+                                        suppressHydrationWarning
                                         type={showSignupPassword ? "text" : "password"} 
                                         id="signup-password" 
                                         required 
@@ -506,6 +514,7 @@ const LoginPage = () => {
                                         onChange={(e) => setSignupPassword(e.target.value)}
                                     />
                                     <button 
+                                        suppressHydrationWarning
                                         type="button" 
                                         className="toggle-password" 
                                         onClick={() => setShowSignupPassword(!showSignupPassword)}
@@ -524,6 +533,7 @@ const LoginPage = () => {
                             <div className={`form-group ${errors.signupAdminCode ? 'invalid' : ''}`} id="signup-admin-code-group">
                                 <label htmlFor="signup-admin-code">Admin Verification Code</label>
                                 <input 
+                                    suppressHydrationWarning
                                     type="password" 
                                     id="signup-admin-code" 
                                     required
@@ -537,6 +547,7 @@ const LoginPage = () => {
                             <div className="form-options">
                                 <label className="checkbox-container">
                                     <input 
+                                        suppressHydrationWarning
                                         type="checkbox" 
                                         id="signup-terms" 
                                         required 
@@ -547,7 +558,7 @@ const LoginPage = () => {
                                     <span className="checkbox-label">I agree to the Terms of Service & Privacy Policy</span>
                                 </label>
                             </div>
-                            <button type="submit" className="auth-submit-btn">CREATE ADMIN ACCOUNT</button>
+                            <button suppressHydrationWarning type="submit" className="auth-submit-btn">CREATE ADMIN ACCOUNT</button>
                         </form>
                     )}
                 </div>

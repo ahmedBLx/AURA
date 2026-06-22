@@ -1,17 +1,15 @@
-const productService = require('../services/productService');
-const { uploadToCloudinary } = require('../config/cloudinary');
+const productService = require('./product.service');
+const { uploadToCloudinary } = require('../../core/cloudinary');
 
 class ProductController {
   async getProducts(req, res, next) {
     try {
       const { search, categories, minPrice, maxPrice, sort, page, limit } = req.query;
 
-      // Pagination calculation
       const currentPage = parseInt(page, 10) || 1;
       const currentLimit = parseInt(limit, 10) || 20;
       const skip = (currentPage - 1) * currentLimit;
 
-      // Categories parsing (e.g. comma-separated string)
       let parsedCategories;
       if (categories) {
         parsedCategories = categories.split(',').map(c => c.trim());
@@ -73,7 +71,7 @@ class ProductController {
       const timestamp = Math.round(new Date().getTime() / 1000);
       const folder = 'aura/products';
       
-      const { cloudinary } = require('../config/cloudinary');
+      const { cloudinary } = require('../../core/cloudinary');
       const signature = cloudinary.utils.api_sign_request(
         {
           timestamp,
@@ -102,18 +100,14 @@ class ProductController {
     try {
       const data = { ...req.body };
 
-      // Handle primary image
       if (req.files && req.files['img'] && req.files['img'][0]) {
         data.img = await uploadToCloudinary(req.files['img'][0].buffer);
       }
 
-      // Handle secondary images
       if (req.files && req.files['images'] && req.files['images'].length > 0) {
-        const uploadedImages = [];
-        for (const f of req.files['images']) {
-          const url = await uploadToCloudinary(f.buffer);
-          uploadedImages.push(url);
-        }
+        const uploadedImages = await Promise.all(
+          req.files['images'].map(f => uploadToCloudinary(f.buffer))
+        );
         let bodyImages = [];
         if (data.images) {
           if (Array.isArray(data.images)) {
@@ -137,12 +131,10 @@ class ProductController {
         }
       }
 
-      // Convert prices and stocks to numbers
       if (data.price) data.price = Number(data.price);
       if (data.stock) data.stock = Number(data.stock);
       if (data.discountPercent) data.discountPercent = Number(data.discountPercent);
 
-      // Parse categories if sent as JSON string or array
       if (typeof data.categories === 'string') {
         try {
           data.categories = JSON.parse(data.categories);
@@ -151,7 +143,6 @@ class ProductController {
         }
       }
 
-      // Parse sizes if sent as JSON string or array
       if (typeof data.sizes === 'string') {
         try {
           data.sizes = JSON.parse(data.sizes);
@@ -175,12 +166,10 @@ class ProductController {
     try {
       const data = { ...req.body };
 
-      // Upload new primary image to Cloudinary if provided
       if (req.files && req.files['img'] && req.files['img'][0]) {
         data.img = await uploadToCloudinary(req.files['img'][0].buffer);
       }
 
-      // Handle secondary images: keep existing URLs + upload new files to Cloudinary
       if (data.existingImages !== undefined || (req.files && req.files['images']) || data.images !== undefined) {
         let existingImages = [];
         if (data.existingImages) {
@@ -207,20 +196,17 @@ class ProductController {
 
         let newImages = [];
         if (req.files && req.files['images']) {
-          for (const f of req.files['images']) {
-            const url = await uploadToCloudinary(f.buffer);
-            newImages.push(url);
-          }
+          newImages = await Promise.all(
+            req.files['images'].map(f => uploadToCloudinary(f.buffer))
+          );
         }
         data.images = [...existingImages, ...newImages];
       }
 
-      // Type conversion
       if (data.price) data.price = Number(data.price);
       if (data.stock) data.stock = Number(data.stock);
       if (data.discountPercent !== undefined) data.discountPercent = Number(data.discountPercent);
 
-      // Parse categories
       if (typeof data.categories === 'string') {
         try {
           data.categories = JSON.parse(data.categories);
@@ -229,7 +215,6 @@ class ProductController {
         }
       }
 
-      // Parse sizes
       if (typeof data.sizes === 'string') {
         try {
           data.sizes = JSON.parse(data.sizes);

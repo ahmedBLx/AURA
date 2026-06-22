@@ -1,0 +1,24 @@
+const mongoose = require('mongoose');
+
+const CategorySchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: [true, 'Please provide category name'],
+      unique: true,
+      trim: true,
+    },
+    parent: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Category',
+      default: null,
+    },
+    showOnHomepage: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  { timestamps: true }
+);
+
+module.exports = mongoose.models.Category || mongoose.model('Category', CategorySchema);

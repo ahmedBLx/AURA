@@ -8,6 +8,7 @@ const CartContext = createContext();
 export const CartProvider = ({ children }) => {
     const [cart, setCart] = useState([]);
     const [cartOpen, setCartOpen] = useState(false);
+    const [isLoaded, setIsLoaded] = useState(false);
 
     // Load cart on mount
     const loadCart = useCallback(() => {
@@ -17,6 +18,7 @@ export const CartProvider = ({ children }) => {
                 const parsed = JSON.parse(storedCart);
                 if (Array.isArray(parsed)) {
                     setCart(parsed);
+                    setIsLoaded(true);
                     return;
                 }
             }
@@ -24,16 +26,19 @@ export const CartProvider = ({ children }) => {
             console.error("Error loading cart from localStorage:", err);
         }
         setCart([]);
+        setIsLoaded(true);
     }, []);
 
     useEffect(() => {
         loadCart();
     }, [loadCart]);
 
-    // Sync counts whenever cart state changes
+    // Sync counts whenever cart state changes, but ONLY after it is loaded from storage
     useEffect(() => {
-        localStorage.setItem('aura_cart', JSON.stringify(cart));
-    }, [cart]);
+        if (isLoaded) {
+            localStorage.setItem('aura_cart', JSON.stringify(cart));
+        }
+    }, [cart, isLoaded]);
 
     const cartCount = useMemo(() => cart.reduce((sum, item) => sum + item.quantity, 0), [cart]);
     const cartSubtotal = useMemo(() => cart.reduce((sum, item) => sum + item.price * item.quantity, 0), [cart]);

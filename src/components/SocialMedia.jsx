@@ -33,6 +33,7 @@ const SocialMedia = () => {
         <div className="floating-social-container" ref={containerRef}>
             {/* Social Media Toggle Button */}
             <button 
+                suppressHydrationWarning
                 className={`social-toggle-btn ${isOpen ? 'active' : ''}`}
                 id="social-toggle"
                 onClick={() => setIsOpen(!isOpen)}

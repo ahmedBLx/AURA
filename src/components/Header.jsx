@@ -57,6 +57,7 @@ const Header = () => {
                 {/* Left Side Content: Theme Toggle Button */}
                 <div className="header-left">
                     <button 
+                        suppressHydrationWarning
                         className="icon-btn theme-toggle-btn"
                         id="theme-toggle-btn"
                         onClick={toggleTheme}
@@ -102,6 +103,7 @@ const Header = () => {
                 <div className="header-right">
                     {/* Simplified Account Icon */}
                     <button 
+                        suppressHydrationWarning
                         className={`icon-btn account-btn ${user ? 'logged-in' : ''}`} 
                         id="header-login-btn"
                         onClick={handleAuthClick}
@@ -117,6 +119,7 @@ const Header = () => {
                     {/* Cart Button */}
                     {!isAdmin && (
                         <button 
+                            suppressHydrationWarning
                             className="icon-btn cart-btn" 
                             id="cart-btn"
                             onClick={() => setCartOpen(true)}

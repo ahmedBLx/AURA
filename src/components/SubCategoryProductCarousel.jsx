@@ -46,15 +46,18 @@ export default function SubCategoryProductCarousel({
         if (totalSlides <= 1 || isPaused || layout === 'list') return;
 
         const timer = setInterval(() => {
-            setCurrentSlide((prevSlide) => {
-                const nextSlide = (prevSlide + 1) % totalSlides;
-                scrollToSlide(nextSlide);
-                return nextSlide;
-            });
+            setCurrentSlide((prevSlide) => (prevSlide + 1) % totalSlides);
         }, 3000);
 
         return () => clearInterval(timer);
-    }, [totalSlides, isPaused, layout, scrollToSlide]);
+    }, [totalSlides, isPaused, layout]);
+
+    // Trigger visual scroll whenever currentSlide updates
+    useEffect(() => {
+        if (layout !== 'list' && totalSlides > 0) {
+            scrollToSlide(currentSlide);
+        }
+    }, [currentSlide, layout, totalSlides, scrollToSlide]);
 
     const handleScrollStart = useCallback(() => {
         setIsPaused(true);

@@ -120,13 +120,19 @@ export const AuthProvider = ({ children }) => {
                 if (err.name === 'AbortError') return;
                 if (signal.aborted) return;
                 console.error('Session verification error:', err);
-                // Fallback to offline/cached user if available
-                const sessionUser = localStorage.getItem('aura_username');
-                const sessionRole = localStorage.getItem('aura_user_role');
-                if (sessionUser && sessionRole) {
-                    setUser({ name: sessionUser, role: sessionRole });
-                } else {
+                
+                // If it is an explicit authentication error (401), clear stale credentials
+                if (err.status === 401 || err.message?.includes('401') || err.message?.includes('token')) {
                     logout();
+                } else {
+                    // Fallback to offline/cached user ONLY for transient network/server-offline errors
+                    const sessionUser = localStorage.getItem('aura_username');
+                    const sessionRole = localStorage.getItem('aura_user_role');
+                    if (sessionUser && sessionRole) {
+                        setUser({ name: sessionUser, role: sessionRole });
+                    } else {
+                        logout();
+                    }
                 }
             } finally {
                 if (!signal.aborted) {

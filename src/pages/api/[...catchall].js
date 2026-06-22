@@ -20,7 +20,6 @@ export default function handler(req, res) {
       },
     });
     res.socket.server.io = io;
-    app.set('io', io);
     
     io.on('connection', (socket) => {
       console.log(`Socket client connected to Next.js: ${socket.id}`);
@@ -28,6 +27,11 @@ export default function handler(req, res) {
         console.log(`Socket client disconnected from Next.js: ${socket.id}`);
       });
     });
+  }
+
+  // Ensure the current hot-reloaded Express app instance has reference to the active socket server
+  if (res.socket.server.io) {
+    app.set('io', res.socket.server.io);
   }
 
   return new Promise((resolve) => {

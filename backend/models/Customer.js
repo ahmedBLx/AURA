@@ -48,5 +48,7 @@ const CustomerSchema = new mongoose.Schema(
 );
 
 CustomerSchema.index({ totalSpent: -1 });
+CustomerSchema.index({ fullName: 1 });
+CustomerSchema.index({ email: 1 });
 
 module.exports = mongoose.model('Customer', CustomerSchema);

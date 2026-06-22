@@ -332,6 +332,10 @@ export const AdminProvider = ({ children }) => {
             if (realtimeToastTimerRef.current) {
                 clearTimeout(realtimeToastTimerRef.current);
             }
+            if (socketInstance) {
+                socketInstance.disconnect();
+                socketInstance = null;
+            }
         };
     }, [isAdmin, BASE_URL, loadOrders, loadDashboardMetrics]);
 

@@ -56,8 +56,8 @@ const Footer = () => {
                     <h4>Join the Club</h4>
                     <p className="newsletter-text">Subscribe to receive early drops and priority access.</p>
                     <div className="newsletter-form">
-                        <input type="email" placeholder="Your email address" className="newsletter-input" disabled />
-                        <button className="newsletter-btn" disabled style={{ opacity: 0.5, cursor: 'not-allowed' }}>JOIN</button>
+                        <input suppressHydrationWarning type="email" placeholder="Your email address" className="newsletter-input" disabled />
+                        <button suppressHydrationWarning className="newsletter-btn" disabled style={{ opacity: 0.5, cursor: 'not-allowed' }}>JOIN</button>
                     </div>
                 </div>
             </div>
