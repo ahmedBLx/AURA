@@ -115,6 +115,57 @@ const AdminPage = () => {
     const handleSaveShippingRates = saveShippingRates;
     const handleClearCompletedOrders = clearCompletedOrders;
 
+    const handleAddOrEditRate = async (e) => {
+        e.preventDefault();
+        if (!newGovName.trim() || newGovCost === '') return;
+        
+        let updated;
+        if (editingGovIndex !== null) {
+            updated = [...shippingRates];
+            updated[editingGovIndex] = {
+                governorate: newGovName.trim(),
+                cost: Number(newGovCost)
+            };
+            setEditingGovIndex(null);
+        } else {
+            // Check if governorate already exists
+            const exists = shippingRates.some(r => r.governorate.trim().toLowerCase() === newGovName.trim().toLowerCase());
+            if (exists) {
+                alert('This governorate already exists.');
+                return;
+            }
+            updated = [...shippingRates, {
+                governorate: newGovName.trim(),
+                cost: Number(newGovCost)
+            }];
+        }
+        
+        await saveShippingRates(updated);
+        setNewGovName('');
+        setNewGovCost('');
+    };
+
+    const startEditRate = (idx) => {
+        const rate = shippingRates[idx];
+        setNewGovName(rate.governorate);
+        setNewGovCost(rate.cost.toString());
+        setEditingGovIndex(idx);
+    };
+
+    const handleDeleteRate = async (idx) => {
+        if (window.confirm(`Are you sure you want to delete shipping rate for ${shippingRates[idx].governorate}?`)) {
+            const updated = shippingRates.filter((_, i) => i !== idx);
+            await saveShippingRates(updated);
+            if (editingGovIndex === idx) {
+                setNewGovName('');
+                setNewGovCost('');
+                setEditingGovIndex(null);
+            } else if (editingGovIndex > idx) {
+                setEditingGovIndex(prev => prev - 1);
+            }
+        }
+    };
+
     const prodImagesRef = useRef(prodImages);
     useEffect(() => {
         prodImagesRef.current = prodImages;
