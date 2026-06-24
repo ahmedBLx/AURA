@@ -15,14 +15,15 @@ class CategoryRepository extends BaseRepository {
   }
 
   async findAllPopulated(filter = {}, sort = { name: 1 }) {
-    return this.model.find(filter).populate('parent', 'name').sort(sort);
+    return this.model.find(filter).populate('parent', 'name').sort(sort).lean();
   }
 
   async findHomepageCategories() {
     return this.model
       .find({ showOnHomepage: true, parent: { $ne: null } })
       .populate('parent', 'name')
-      .sort({ name: 1 });
+      .sort({ name: 1 })
+      .lean();
   }
 
   async updateById(id, data) {

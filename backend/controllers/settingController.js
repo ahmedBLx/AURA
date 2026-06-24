@@ -1,4 +1,5 @@
 const settingService = require('../services/settingService');
+const { uploadToCloudinary } = require('../config/cloudinary');
 
 class SettingController {
   async getSettings(req, res, next) {
@@ -31,6 +32,31 @@ class SettingController {
     try {
       const { key, value, description } = req.body;
       const setting = await settingService.updateSetting({ key, value, description });
+
+      res.status(200).json({
+        status: 'success',
+        data: { setting },
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async uploadLandingHeroImage(req, res, next) {
+    try {
+      if (!req.file) {
+        return res.status(400).json({
+          status: 'fail',
+          message: 'Please upload an image file',
+        });
+      }
+
+      const imageUrl = await uploadToCloudinary(req.file.buffer, 'aura/settings');
+      const setting = await settingService.updateSetting({
+        key: 'landing_hero_image',
+        value: imageUrl,
+        description: 'Landing page hero background image',
+      });
 
       res.status(200).json({
         status: 'success',

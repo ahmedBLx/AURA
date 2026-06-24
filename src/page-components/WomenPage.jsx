@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import QuickViewModal from '../components/QuickViewModal';
 import SocialMedia from '../components/SocialMedia';
 import SubCategoryProductCarousel from '../components/SubCategoryProductCarousel';
+import { getPublicSettings } from '../services/publicSettings';
 
 const WomenPage = () => {
     const { products, categories } = useProducts();
@@ -118,14 +119,10 @@ const WomenPage = () => {
     useEffect(() => {
         const fetchSettings = async () => {
             try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || ''}/api/v1/settings/public`);
-                if (res.ok) {
-                    const result = await res.json();
-                    const settings = result.data.settings;
-                    const womenSoonSetting = settings.find(s => s.key === 'women_soon');
-                    if (womenSoonSetting) {
-                        setWomenSoon(womenSoonSetting.value === true || womenSoonSetting.value === 'true');
-                    }
+                const settings = await getPublicSettings();
+                const womenSoonSetting = settings.find(s => s.key === 'women_soon');
+                if (womenSoonSetting) {
+                    setWomenSoon(womenSoonSetting.value === true || womenSoonSetting.value === 'true');
                 }
             } catch (err) {
                 console.error('Failed to load settings in WomenPage:', err);

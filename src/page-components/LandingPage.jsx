@@ -1,26 +1,79 @@
 import OptimizedImage from '../components/OptimizedImage';
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { useAuth } from '../context/AuthContext';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useProducts } from '../context/ProductContext';
 import { useRouter } from 'next/navigation';
 import SocialMedia from '../components/SocialMedia';
 import QuickViewModal from '../components/QuickViewModal';
 import SubCategoryProductCarousel from '../components/SubCategoryProductCarousel';
+import { getPublicSettings } from '../services/publicSettings';
 
 const LandingPage = () => {
-    const { user } = useAuth();
     const { products, homepageCategories } = useProducts();
     const router = useRouter();
-    const navigate = (url) => router.push(url);
+    const navigate = useCallback((url) => router.push(url), [router]);
+    const DEFAULT_HERO_IMAGE = '/assets/hero_banner_new.png';
 
     const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
+    const [heroImage, setHeroImage] = useState(DEFAULT_HERO_IMAGE);
+
+    const resolveHeroImageUrl = useCallback((url) => {
+        if (!url || typeof url !== 'string') return DEFAULT_HERO_IMAGE;
+        const trimmed = url.trim();
+        if (!trimmed) return DEFAULT_HERO_IMAGE;
+        if (trimmed.startsWith('http') || trimmed.startsWith('/')) return trimmed;
+        if (trimmed.startsWith('assets/') || trimmed.startsWith('uploads/')) return `/${trimmed}`;
+        return trimmed;
+    }, []);
+
+    useEffect(() => {
+        let isMounted = true;
+
+        const loadLandingHeroImage = async () => {
+            try {
+                const settings = await getPublicSettings();
+                if (!isMounted) return;
+                const heroSetting = settings.find(s => s.key === 'landing_hero_image');
+                if (heroSetting?.value) {
+                    setHeroImage(resolveHeroImageUrl(heroSetting.value));
+                }
+            } catch (err) {
+                console.error('Failed to load landing hero image setting:', err);
+            }
+        };
+
+        loadLandingHeroImage();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [resolveHeroImageUrl]);
 
     // Filter by Special Collection category (memoized)
     const specials = useMemo(() => {
         return products.filter(p => p.categories && p.categories.includes('Special Collection'));
     }, [products]);
+
+    const specialHomepageCarousels = useMemo(() => {
+        const productsByCategory = new Map();
+        products.forEach((product) => {
+            product.categories?.forEach((categoryName) => {
+                if (!productsByCategory.has(categoryName)) {
+                    productsByCategory.set(categoryName, []);
+                }
+                productsByCategory.get(categoryName).push(product);
+            });
+        });
+
+        return homepageCategories
+            .filter(cat => cat.parentName === 'Special Collection')
+            .map(cat => ({
+                category: cat,
+                products: productsByCategory.get(cat.name) || []
+            }))
+            .filter(item => item.products.length > 0);
+    }, [homepageCategories, products]);
 
     const handleHeroCta = () => {
         setIsCategoryModalOpen(prev => !prev);
@@ -47,7 +100,7 @@ const LandingPage = () => {
     return (
         <main style={{ minHeight: '80vh' }}>
             {/* HERO SECTION */}
-            <section className="hero-section" style={{ backgroundImage: "url('/assets/hero_banner_new.png')" }}>
+            <section className="hero-section" style={{ '--landing-hero-image': `url("${heroImage}")` }}>
                 <div className="hero-iridescent-overlay">
                     <svg className="iridescent-svg" viewBox="0 0 800 600" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <defs>
@@ -75,7 +128,7 @@ const LandingPage = () => {
                     <p className="hero-subtitle">Step into comfort, style, and innovation.</p>
                     <div className="hero-ctas">
                         <div className="shop-now-dropdown-container">
-                            <button className="hero-btn shop-btn" onClick={handleHeroCta} id="hero-shop-trigger">
+                            <button className="hero-btn shop-btn" onClick={handleHeroCta} id="hero-shop-trigger" suppressHydrationWarning>
                                 Shop Now
                             </button>
                             
@@ -199,20 +252,16 @@ const LandingPage = () => {
             {/* ============================================
                 PRODUCT CAROUSELS FOR ENABLED SUB-CATEGORIES
                 ============================================ */}
-            {homepageCategories.filter(cat => cat.parentName === 'Special Collection').map(cat => {
-                const catProducts = products.filter(p => p.categories && p.categories.includes(cat.name));
-                if (catProducts.length === 0) return null;
-                return (
-                    <SubCategoryProductCarousel 
-                        key={cat._id} 
-                        category={cat} 
-                        products={catProducts} 
-                        showViewAll={true}
-                        onViewAllClick={() => navigate(`/shop?category=${encodeURIComponent(cat.name)}`)}
-                        handleQuickView={handleQuickView}
-                    />
-                );
-            })}
+            {specialHomepageCarousels.map(({ category, products: catProducts }) => (
+                <SubCategoryProductCarousel 
+                    key={category._id} 
+                    category={category} 
+                    products={catProducts} 
+                    showViewAll={true}
+                    onViewAllClick={() => navigate(`/shop?category=${encodeURIComponent(category.name)}`)}
+                    handleQuickView={handleQuickView}
+                />
+            ))}
 
             {/* SPECIALS SHOWCASE SECTION */}
             {specials.length > 0 && (

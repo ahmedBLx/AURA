@@ -554,6 +554,7 @@ button {
    ========================================== */
 .hero-section {
     height: 450px;
+    background-image: var(--landing-hero-image, url('/assets/hero_banner_new.png'));
     background-size: cover;
     background-position: center 60%;
     position: relative;
@@ -4145,7 +4146,7 @@ body.dark-landing .specials-section {
 
 /* Natural landing page hero background image */
 body.dark-landing .hero-section {
-    background: url('/assets/hero_banner_new.png');
+    background-image: var(--landing-hero-image, url('/assets/hero_banner_new.png'));
     background-size: cover;
     background-position: center 60%;
     background-blend-mode: normal;
@@ -4194,7 +4195,7 @@ body.light-landing {
     color: #111827 !important;
 }
 body.light-landing .hero-section {
-    background: url('/assets/hero_banner_new.png') !important;
+    background-image: var(--landing-hero-image, url('/assets/hero_banner_new.png')) !important;
     background-size: cover !important;
     background-position: center 60% !important;
     background-blend-mode: normal !important;

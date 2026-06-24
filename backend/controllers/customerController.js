@@ -59,7 +59,7 @@ class CustomerController {
       if (sort === 'name-asc') sortOption = { fullName: 1 };
       if (sort === 'name-desc') sortOption = { fullName: -1 };
 
-      const customers = await customerRepository.model.find(query).sort(sortOption);
+      const customers = await customerRepository.model.find(query).sort(sortOption).lean();
 
       res.status(200).json({
         status: 'success',

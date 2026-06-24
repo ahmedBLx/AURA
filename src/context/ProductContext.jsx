@@ -45,7 +45,9 @@ export const ProductProvider = ({ children }) => {
         if (c.parent && typeof c.parent === 'object' && c.parent.name) {
             parentName = c.parent.name;
         } else if (parentId) {
-            const foundParent = allCats.find(cat => cat._id === parentId);
+            const foundParent = allCats instanceof Map
+                ? { name: allCats.get(parentId) }
+                : allCats.find(cat => cat._id === parentId);
             if (foundParent) {
                 parentName = foundParent.name;
             }
@@ -82,7 +84,8 @@ export const ProductProvider = ({ children }) => {
             let mappedCats = [];
             if (catResult.data?.categories?.length > 0) {
                 const rawCats = catResult.data.categories;
-                mappedCats = rawCats.map(c => mapCategory(c, rawCats));
+                const parentNameById = new Map(rawCats.map(c => [c._id, c.name]));
+                mappedCats = rawCats.map(c => mapCategory(c, parentNameById));
             }
             // If no categories from API, seed default main categories as objects
             if (mappedCats.length === 0) {

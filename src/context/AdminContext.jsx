@@ -26,6 +26,7 @@ export const AdminProvider = ({ children }) => {
     const [isFetchingLoyalty, setIsFetchingLoyalty] = useState(false);
     const [womenSoon, setWomenSoon] = useState(true);
     const [shippingRates, setShippingRates] = useState([]);
+    const [landingHeroImage, setLandingHeroImage] = useState('/assets/hero_banner_new.png');
 
     const realtimeToastTimerRef = useRef(null);
     const controllersRef = useRef(new Map());
@@ -112,6 +113,10 @@ export const AdminProvider = ({ children }) => {
             const sr = settings.find(s => s.key === 'shipping_rates');
             if (sr && Array.isArray(sr.value)) {
                 setShippingRates(sr.value);
+            }
+            const hero = settings.find(s => s.key === 'landing_hero_image');
+            if (hero && typeof hero.value === 'string' && hero.value.trim()) {
+                setLandingHeroImage(hero.value.trim());
             }
         } catch (err) {
             if (err.name === 'AbortError') return;
@@ -216,6 +221,25 @@ export const AdminProvider = ({ children }) => {
         } catch (err) {
             console.error('Error saving shipping rates:', err);
             alert('Failed to save shipping rates');
+            return false;
+        }
+    }, []);
+
+    // Upload landing page hero image
+    const saveLandingHeroImage = useCallback(async (file) => {
+        if (!file) return false;
+        try {
+            const formData = new FormData();
+            formData.append('image', file);
+            const result = await apiClient.post('settings/landing-hero-image', formData);
+            const nextImage = result?.data?.setting?.value;
+            if (nextImage) {
+                setLandingHeroImage(nextImage);
+            }
+            return true;
+        } catch (err) {
+            console.error('Error uploading landing hero image:', err);
+            alert(err.message || 'Failed to upload landing page image');
             return false;
         }
     }, []);
@@ -351,6 +375,7 @@ export const AdminProvider = ({ children }) => {
         isFetchingLoyalty,
         womenSoon,
         shippingRates,
+        landingHeroImage,
         loadOrders,
         loadSettings,
         loadDashboardMetrics,
@@ -359,6 +384,7 @@ export const AdminProvider = ({ children }) => {
         deleteOrder,
         toggleWomenSoon,
         saveShippingRates,
+        saveLandingHeroImage,
         clearCompletedOrders
     }), [
         activeTab,
@@ -369,6 +395,7 @@ export const AdminProvider = ({ children }) => {
         isFetchingLoyalty,
         womenSoon,
         shippingRates,
+        landingHeroImage,
         loadOrders,
         loadSettings,
         loadDashboardMetrics,
@@ -377,6 +404,7 @@ export const AdminProvider = ({ children }) => {
         deleteOrder,
         toggleWomenSoon,
         saveShippingRates,
+        saveLandingHeroImage,
         clearCompletedOrders
     ]);
 

@@ -7,5 +7,6 @@ module.exports = [
   'currency',
   'free_shipping_min',
   'women_soon',
+  'landing_hero_image',
   'shipping_rates'
 ];

@@ -27,4 +27,6 @@ const CouponSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+CouponSchema.index({ isActive: 1, expiresAt: 1 });
+
 module.exports = mongoose.model('Coupon', CouponSchema);

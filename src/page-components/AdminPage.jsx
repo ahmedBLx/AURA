@@ -1,5 +1,5 @@
 import OptimizedImage from '../components/OptimizedImage';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useProducts } from '../context/ProductContext';
 import { useAdmin } from '../context/AdminContext';
@@ -21,6 +21,7 @@ const AdminPage = () => {
         isFetchingLoyalty,
         womenSoon,
         shippingRates,
+        landingHeroImage,
         loadOrders,
         loadSettings,
         loadDashboardMetrics,
@@ -29,6 +30,7 @@ const AdminPage = () => {
         deleteOrder,
         toggleWomenSoon,
         saveShippingRates,
+        saveLandingHeroImage,
         clearCompletedOrders
     } = useAdmin();
 
@@ -70,6 +72,9 @@ const AdminPage = () => {
     const [newGovName, setNewGovName] = useState('');
     const [newGovCost, setNewGovCost] = useState('');
     const [editingGovIndex, setEditingGovIndex] = useState(null);
+    const [heroImageFile, setHeroImageFile] = useState(null);
+    const [heroImagePreview, setHeroImagePreview] = useState('');
+    const [isSavingHeroImage, setIsSavingHeroImage] = useState(false);
 
     // Categories Form State
     const [newCatName, setNewCatName] = useState('');
@@ -114,6 +119,47 @@ const AdminPage = () => {
 
     const handleSaveShippingRates = saveShippingRates;
     const handleClearCompletedOrders = clearCompletedOrders;
+
+    const resolveHeroImageUrl = (url) => {
+        if (!url) return '/assets/hero_banner_new.png';
+        if (url.startsWith('http') || url.startsWith('/') || url.startsWith('blob:')) return url;
+        if (url.startsWith('uploads/')) return `${BASE_URL}/${url}`;
+        if (url.startsWith('assets/')) return `/${url}`;
+        return url;
+    };
+
+    const handleHeroImageSelect = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        if (!file.type.startsWith('image/')) {
+            alert('Please choose an image file.');
+            e.target.value = '';
+            return;
+        }
+        if (heroImagePreview && heroImagePreview.startsWith('blob:')) {
+            URL.revokeObjectURL(heroImagePreview);
+        }
+        setHeroImageFile(file);
+        setHeroImagePreview(URL.createObjectURL(file));
+    };
+
+    const handleSaveHeroImage = async () => {
+        if (!heroImageFile) {
+            alert('Please choose an image first.');
+            return;
+        }
+        setIsSavingHeroImage(true);
+        const success = await saveLandingHeroImage(heroImageFile);
+        setIsSavingHeroImage(false);
+        if (success) {
+            if (heroImagePreview && heroImagePreview.startsWith('blob:')) {
+                URL.revokeObjectURL(heroImagePreview);
+            }
+            setHeroImageFile(null);
+            setHeroImagePreview('');
+            await loadSettings();
+        }
+    };
 
     const handleAddOrEditRate = async (e) => {
         e.preventDefault();
@@ -182,6 +228,14 @@ const AdminPage = () => {
             }
         };
     }, []);
+
+    useEffect(() => {
+        return () => {
+            if (heroImagePreview && heroImagePreview.startsWith('blob:')) {
+                URL.revokeObjectURL(heroImagePreview);
+            }
+        };
+    }, [heroImagePreview]);
 
     useEffect(() => {
         loadOrders();
@@ -687,7 +741,7 @@ const AdminPage = () => {
     };
 
     // Calculate unique customers list from orders
-    const getUniqueCustomers = () => {
+    const uniqueCustomers = useMemo(() => {
         const customerList = [];
         orders.forEach(o => {
             const existing = customerList.find(c => 
@@ -708,8 +762,9 @@ const AdminPage = () => {
             }
         });
 
+        const search = custSearch.toLowerCase();
         return customerList.filter(c => 
-            c.name.toLowerCase().includes(custSearch.toLowerCase()) ||
+            c.name.toLowerCase().includes(search) ||
             c.phone.includes(custSearch)
         ).sort((a, b) => {
             if (custSort === 'name-asc') return a.name.localeCompare(b.name);
@@ -717,12 +772,15 @@ const AdminPage = () => {
             if (custSort === 'orders-asc') return a.ordersCount - b.ordersCount;
             return b.ordersCount - a.ordersCount;
         });
-    };
+    }, [orders, custSearch, custSort]);
+
+    const getUniqueCustomers = useCallback(() => uniqueCustomers, [uniqueCustomers]);
 
     // Filtered Products
-    const getFilteredProducts = () => {
+    const filteredProducts = useMemo(() => {
+        const search = prodSearch.toLowerCase();
         return products.filter(p => {
-            const matchesSearch = p.name.toLowerCase().includes(prodSearch.toLowerCase()) || p.desc.toLowerCase().includes(prodSearch.toLowerCase());
+            const matchesSearch = p.name.toLowerCase().includes(search) || p.desc.toLowerCase().includes(search);
             const matchesCategory = prodCatFilter === 'All' || (p.categories && p.categories.includes(prodCatFilter));
             let matchesStock = true;
             if (prodStockFilter === 'Low') matchesStock = (p.stock !== undefined ? p.stock : 10) <= 5 && (p.stock !== undefined ? p.stock : 10) > 0;
@@ -737,15 +795,18 @@ const AdminPage = () => {
             if (prodSort === 'stock-asc') return (a.stock || 0) - (b.stock || 0);
             return (b.stock || 0) - (a.stock || 0);
         });
-    };
+    }, [products, prodSearch, prodCatFilter, prodStockFilter, prodSort]);
+
+    const getFilteredProducts = useCallback(() => filteredProducts, [filteredProducts]);
 
     // Filtered Orders
-    const getFilteredOrders = () => {
+    const filteredOrders = useMemo(() => {
+        const search = orderSearch.toLowerCase();
         return orders.filter(o => {
             const matchesType = o.orderType !== 'Store Reservation';
             const matchesStatus = o.status === activeOrderStatusTab;
-            const matchesSearch = o.id.toLowerCase().includes(orderSearch.toLowerCase()) || 
-                                  o.name.toLowerCase().includes(orderSearch.toLowerCase()) || 
+            const matchesSearch = o.id.toLowerCase().includes(search) || 
+                                  o.name.toLowerCase().includes(search) || 
                                   o.phone.includes(orderSearch);
             const matchesPayment = orderPaymentFilter === 'All' || o.paymentMethod === orderPaymentFilter;
 
@@ -758,15 +819,18 @@ const AdminPage = () => {
             if (orderSort === 'total-asc') return a.total - b.total;
             return b.total - a.total;
         });
-    };
+    }, [orders, activeOrderStatusTab, orderSearch, orderPaymentFilter, orderSort]);
+
+    const getFilteredOrders = useCallback(() => filteredOrders, [filteredOrders]);
 
     // Filtered Reservations
-    const getFilteredReservations = () => {
+    const filteredReservations = useMemo(() => {
+        const search = resSearch.toLowerCase();
         return orders.filter(o => {
             const matchesType = o.orderType === 'Store Reservation';
             const matchesStatus = o.status === activeReservationStatusTab;
-            const matchesSearch = o.id.toLowerCase().includes(resSearch.toLowerCase()) || 
-                                  o.name.toLowerCase().includes(resSearch.toLowerCase()) || 
+            const matchesSearch = o.id.toLowerCase().includes(search) || 
+                                  o.name.toLowerCase().includes(search) || 
                                   o.phone.includes(resSearch) || 
                                   (o.alternativePhone && o.alternativePhone.includes(resSearch));
             return matchesType && matchesStatus && matchesSearch;
@@ -775,15 +839,45 @@ const AdminPage = () => {
             const dateB = new Date(b.date);
             return dateB - dateA;
         });
-    };
+    }, [orders, activeReservationStatusTab, resSearch]);
+
+    const getFilteredReservations = useCallback(() => filteredReservations, [filteredReservations]);
 
     // Metrics calculations
-    const totalOrdersCount = orders.filter(o => o.orderType !== 'Store Reservation').length;
-    const pendingOrdersCount = orders.filter(o => o.status === 'Pending' && o.orderType !== 'Store Reservation').length;
-    const completedOrdersCount = orders.filter(o => o.status === 'Completed' && o.orderType !== 'Store Reservation').length;
-    const lowStockCount = products.filter(p => (p.stock !== undefined ? p.stock : 10) <= 5).length;
-    const totalRevenue = orders.filter(o => o.status === 'Completed' && o.orderType !== 'Store Reservation').reduce((sum, o) => sum + o.total, 0);
-    const lowStockProductsList = products.filter(p => (p.stock !== undefined ? p.stock : 10) <= 5);
+    const {
+        pendingOrdersCount,
+        completedOrdersCount,
+        totalRevenue
+    } = useMemo(() => {
+        return orders.reduce((acc, o) => {
+            if (o.orderType === 'Store Reservation') return acc;
+            if (o.status === 'Pending') acc.pendingOrdersCount += 1;
+            if (o.status === 'Completed') {
+                acc.completedOrdersCount += 1;
+                acc.totalRevenue += o.total;
+            }
+            return acc;
+        }, {
+            pendingOrdersCount: 0,
+            completedOrdersCount: 0,
+            totalRevenue: 0
+        });
+    }, [orders]);
+
+    const lowStockProductsList = useMemo(() => {
+        return products.filter(p => (p.stock !== undefined ? p.stock : 10) <= 5);
+    }, [products]);
+    const lowStockCount = lowStockProductsList.length;
+
+    const productCategoryCounts = useMemo(() => {
+        const counts = new Map();
+        products.forEach((product) => {
+            product.categories?.forEach((categoryName) => {
+                counts.set(categoryName, (counts.get(categoryName) || 0) + 1);
+            });
+        });
+        return counts;
+    }, [products]);
 
     return (
         <div className={`admin-app-wrapper ${theme}-theme`} style={{ display: 'flex', minHeight: '100dvh', backgroundColor: 'transparent', fontFamily: 'var(--font-body)' }}>
@@ -1340,6 +1434,73 @@ const AdminPage = () => {
                             </div>
                         </div>
 
+                        <div style={{
+                            backgroundColor: 'rgba(255, 255, 255, 0.02)',
+                            backdropFilter: 'blur(20px)',
+                            border: '1px solid var(--border-color)',
+                            borderRadius: '16px',
+                            padding: '24px',
+                            marginBottom: '24px',
+                            display: 'grid',
+                            gridTemplateColumns: 'minmax(260px, 1fr) minmax(260px, 420px)',
+                            gap: '20px',
+                            alignItems: 'center'
+                        }}>
+                            <div>
+                                <h3 style={{ fontSize: '15px', color: 'var(--color-gold)', margin: '0 0 4px 0', fontWeight: '600', letterSpacing: '0.05em' }}>
+                                    LANDING PAGE HERO IMAGE
+                                </h3>
+                                <p style={{ fontSize: '12.5px', color: 'var(--color-text-muted)', margin: '0 0 16px 0', lineHeight: '1.5' }}>
+                                    Upload the main background image shown at the top of the landing page.
+                                </p>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center' }}>
+                                    <label
+                                        htmlFor="landing-hero-upload"
+                                        className="action-btn edit-action"
+                                        style={{ height: '42px', padding: '0 18px', borderRadius: '8px', fontWeight: '600', display: 'inline-flex', alignItems: 'center', cursor: 'pointer' }}
+                                    >
+                                        CHOOSE IMAGE
+                                    </label>
+                                    <input
+                                        id="landing-hero-upload"
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleHeroImageSelect}
+                                        style={{ display: 'none' }}
+                                    />
+                                    <button
+                                        type="button"
+                                        className="form-submit-btn"
+                                        disabled={!heroImageFile || isSavingHeroImage}
+                                        onClick={handleSaveHeroImage}
+                                        style={{
+                                            height: '42px',
+                                            padding: '0 20px',
+                                            opacity: !heroImageFile || isSavingHeroImage ? 0.55 : 1,
+                                            cursor: !heroImageFile || isSavingHeroImage ? 'not-allowed' : 'pointer'
+                                        }}
+                                    >
+                                        {isSavingHeroImage ? 'UPLOADING...' : 'SAVE IMAGE'}
+                                    </button>
+                                    {heroImageFile && (
+                                        <span style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>
+                                            {heroImageFile.name}
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                            <div style={{
+                                minHeight: '180px',
+                                borderRadius: '14px',
+                                border: '1px solid var(--border-color)',
+                                overflow: 'hidden',
+                                backgroundColor: 'rgba(255, 255, 255, 0.04)',
+                                backgroundImage: `url("${resolveHeroImageUrl(heroImagePreview || landingHeroImage)}")`,
+                                backgroundSize: 'cover',
+                                backgroundPosition: 'center 60%'
+                            }} />
+                        </div>
+
                         <div className="metrics-grid">
                             <div className="metric-card-premium">
                                 <span className="metric-label-premium">TOTAL REVENUE</span>
@@ -1590,7 +1751,7 @@ const AdminPage = () => {
                                 {mainCategories.map(mainCat => {
                                     const isCore = ['Men', 'Women', 'Offers', 'Special Collection'].includes(mainCat.name);
                                     const subs = getSubcategories(mainCat.name);
-                                    const mainLinkedCount = products.filter(p => p.categories && p.categories.includes(mainCat.name)).length;
+                                    const mainLinkedCount = productCategoryCounts.get(mainCat.name) || 0;
                                     return (
                                         <div key={mainCat._id} style={{ marginBottom: '24px' }}>
                                             {/* Main Category Header */}
@@ -1629,7 +1790,7 @@ const AdminPage = () => {
                                                     </thead>
                                                     <tbody>
                                                         {subs.map(sub => {
-                                                            const subLinkedCount = products.filter(p => p.categories && p.categories.includes(sub.name)).length;
+                                                            const subLinkedCount = productCategoryCounts.get(sub.name) || 0;
                                                             return (
                                                                 <tr key={sub._id}>
                                                                     <td>

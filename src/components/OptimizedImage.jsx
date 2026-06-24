@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 
 const OptimizedImage = ({
@@ -13,17 +13,22 @@ const OptimizedImage = ({
   sizes = '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw',
   ...props
 }) => {
-  if (!src) return null;
-
   let normalizedSrc = src;
-  if (typeof normalizedSrc === 'string') {
-    // Standardize local paths to match public folder references
-    if (normalizedSrc.startsWith('assets/')) {
-      normalizedSrc = '/' + normalizedSrc;
-    } else if (normalizedSrc.startsWith('uploads/')) {
-      normalizedSrc = '/' + normalizedSrc;
+  if (typeof src === 'string') {
+    if (src.startsWith('assets/')) {
+      normalizedSrc = '/' + src;
+    } else if (src.startsWith('uploads/')) {
+      normalizedSrc = '/' + src;
     }
   }
+
+  const [imgSrc, setImgSrc] = useState(normalizedSrc || '/assets/sneaker_white.png');
+
+  useEffect(() => {
+    setImgSrc(normalizedSrc || '/assets/sneaker_white.png');
+  }, [normalizedSrc]);
+
+  if (!src) return null;
 
   // Handle aspectRatio style mapping
   const containerStyle = {
@@ -43,7 +48,7 @@ const OptimizedImage = ({
   return (
     <div className={className} style={containerStyle}>
       <Image
-        src={normalizedSrc}
+        src={imgSrc}
         alt={alt}
         fill
         priority={priority}
@@ -53,6 +58,9 @@ const OptimizedImage = ({
           maxWidth: '100%',
           maxHeight: '100%',
         }}
+        onError={() => {
+          setImgSrc('/assets/sneaker_white.png');
+        }}
         {...props}
       />
     </div>
@@ -60,3 +68,4 @@ const OptimizedImage = ({
 };
 
 export default OptimizedImage;
+

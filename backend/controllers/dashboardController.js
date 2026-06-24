@@ -1,6 +1,5 @@
 const Order = require('../models/Order');
 const Product = require('../models/Product');
-const Admin = require('../models/Admin');
 
 class DashboardController {
   async getMetrics(req, res, next) {
@@ -33,7 +32,8 @@ class DashboardController {
 
       const mostLoyalCustomers = await Customer.find()
         .sort({ totalSpent: -1 })
-        .limit(5);
+        .limit(5)
+        .lean();
 
       // 4. Count Total Products
       const totalProducts = await Product.countDocuments();
@@ -45,10 +45,11 @@ class DashboardController {
         .populate({
           path: 'items',
           populate: { path: 'product' }
-        });
+        })
+        .lean();
 
       // 6. Retrieve Low Stock Products (stock <= 5)
-      const lowStockProducts = await Product.find({ stock: { $lte: 5 } });
+      const lowStockProducts = await Product.find({ stock: { $lte: 5 } }).lean();
 
       res.status(200).json({
         status: 'success',

@@ -48,6 +48,8 @@ const CustomerSchema = new mongoose.Schema(
 );
 
 CustomerSchema.index({ totalSpent: -1 });
+CustomerSchema.index({ loyaltyPoints: -1 });
+CustomerSchema.index({ totalOrders: -1 });
 CustomerSchema.index({ fullName: 1 });
 CustomerSchema.index({ email: 1 });
 

@@ -21,4 +21,7 @@ const CategorySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+CategorySchema.index({ parent: 1, name: 1 });
+CategorySchema.index({ showOnHomepage: 1, parent: 1, name: 1 });
+
 module.exports = mongoose.model('Category', CategorySchema);

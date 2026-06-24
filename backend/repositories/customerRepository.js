@@ -7,7 +7,7 @@ class CustomerRepository extends BaseRepository {
   }
 
   async findByPhone(phoneNumber) {
-    return this.model.findOne({ phoneNumber });
+    return this.model.findOne({ phoneNumber }).lean();
   }
 }
 

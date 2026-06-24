@@ -9,6 +9,20 @@ const nextConfig = {
         protocol: 'https',
         hostname: '**',
       },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '5003',
+      },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '5002',
+      },
+      {
+        protocol: 'http',
+        hostname: '127.0.0.1',
+      },
     ],
   },
   eslint: {

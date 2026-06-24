@@ -36,7 +36,7 @@ class ProductRepository extends BaseRepository {
       sortOption.createdAt = -1;
     }
 
-    const query = this.model.find(filter).sort(sortOption);
+    const query = this.model.find(filter).sort(sortOption).lean();
 
     if (skip !== undefined) {
       query.skip(Number(skip));
@@ -45,8 +45,10 @@ class ProductRepository extends BaseRepository {
       query.limit(Number(limit));
     }
 
-    const items = await query;
-    const total = await this.model.countDocuments(filter);
+    const [items, total] = await Promise.all([
+      query,
+      this.model.countDocuments(filter),
+    ]);
 
     return { items, total };
   }

@@ -1,5 +1,5 @@
 import OptimizedImage from './OptimizedImage';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useCart } from '../context/CartContext';
 
 const QuickViewModal = ({ product, isOpen, onClose }) => {
@@ -9,19 +9,24 @@ const QuickViewModal = ({ product, isOpen, onClose }) => {
     const [activeImg, setActiveImg] = useState('');
     const openTimeRef = useRef(0);
 
-    const productSizes = (product && product.sizes && product.sizes.length > 0)
-        ? product.sizes
-        : ['38', '39', '40', '41', '42', '43', '44', '45', '46', '47'];
+    const productSizes = useMemo(() => (
+        (product && product.sizes && product.sizes.length > 0)
+            ? product.sizes
+            : ['38', '39', '40', '41', '42', '43', '44', '45', '46', '47']
+    ), [product]);
 
     // Combine main image and secondary images
-    const allImages = product ? [product.img] : [];
-    if (product && product.images && product.images.length > 0) {
-        product.images.forEach(img => {
-            if (img && img !== product.img && !allImages.includes(img)) {
-                allImages.push(img);
-            }
-        });
-    }
+    const allImages = useMemo(() => {
+        const images = product ? [product.img] : [];
+        if (product && product.images && product.images.length > 0) {
+            product.images.forEach(img => {
+                if (img && img !== product.img && !images.includes(img)) {
+                    images.push(img);
+                }
+            });
+        }
+        return images;
+    }, [product]);
 
     // Reset button status and active image on close or product change
     useEffect(() => {

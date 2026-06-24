@@ -1,6 +1,7 @@
 import OptimizedImage from './OptimizedImage';
 import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
+import { getPublicSettings } from '../services/publicSettings';
 
 const CartDrawer = () => {
     const { 
@@ -38,24 +39,26 @@ const CartDrawer = () => {
     const API_URL = `${(process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '')}/api/v1`;
 
     useEffect(() => {
+        let isMounted = true;
+
         const fetchShippingRates = async () => {
             try {
-                const res = await fetch(`${API_URL}/settings/public`);
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data && data.status === 'success' && data.data.settings) {
-                        const ratesSetting = data.data.settings.find(s => s.key === 'shipping_rates');
-                        if (ratesSetting && Array.isArray(ratesSetting.value)) {
-                            setShippingRates(ratesSetting.value);
-                        }
-                    }
+                const settings = await getPublicSettings();
+                if (!isMounted) return;
+                const ratesSetting = settings.find(s => s.key === 'shipping_rates');
+                if (ratesSetting && Array.isArray(ratesSetting.value)) {
+                    setShippingRates(ratesSetting.value);
                 }
             } catch (err) {
                 console.error("Error fetching shipping rates:", err);
             }
         };
         fetchShippingRates();
-    }, [API_URL]);
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
 
     // Reset checkout states when cart opens or closes
     useEffect(() => {
@@ -637,8 +640,11 @@ const CartDrawer = () => {
 
                             {/* Order Summary box */}
                             {(() => {
-                                const selectedRate = shippingRates.find(r => r.governorate.trim().toLowerCase() === governorate.trim().toLowerCase());
-                                const shippingCost = selectedRate ? Number(selectedRate.cost) : 0;
+                                const isStoreReservation = orderType === 'Store Reservation';
+                                const selectedRate = isStoreReservation
+                                    ? null
+                                    : shippingRates.find(r => r.governorate.trim().toLowerCase() === governorate.trim().toLowerCase());
+                                const shippingCost = isStoreReservation ? 0 : (selectedRate ? Number(selectedRate.cost) : 0);
                                 
                                 const discountApplied = (usePoints && loyaltyDetails) ? loyaltyDetails.maxDiscount : 0;
                                 const finalTotal = Math.max(0, cartSubtotal - discountApplied) + shippingCost;
@@ -658,7 +664,7 @@ const CartDrawer = () => {
                                         )}
                                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: 'var(--color-text-muted)', marginBottom: '8px' }}>
                                             <span>Shipping</span>
-                                            <span>{selectedRate ? `${shippingCost.toLocaleString()} EGP` : 'Select governorate'}</span>
+                                            <span>{isStoreReservation ? '0 EGP (In-store pickup)' : (selectedRate ? `${shippingCost.toLocaleString()} EGP` : 'Select governorate')}</span>
                                         </div>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '15px', fontWeight: '600', borderTop: '1px solid var(--border-color)', paddingTop: '8px', marginTop: '8px', marginBottom: '8px' }}>
                                             <span>Total Price</span>
