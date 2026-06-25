@@ -57,14 +57,15 @@ button {
    HEADER / NAVBAR (~115px Mobile, ~125px Desktop Height)
    ========================================== */
 .main-header {
-    height: 115px; /* taller on mobile to support double-row layout */
+    min-height: 115px; /* taller on mobile to support double-row layout */
+    height: auto;
     background-color: #000000 !important; /* solid pure black */
     color: #FFFFFF;
     position: sticky;
     top: 0;
     z-index: 100;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    transition: height 0.3s ease;
+    transition: min-height 0.3s ease;
 }
 
 .header-container {
@@ -116,15 +117,20 @@ button {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 40px;
+    min-height: 40px;
+    height: auto;
+    padding: 4px 12px;
     border-top: 1px solid rgba(255, 255, 255, 0.05);
     margin-top: 0;
     width: 100%;
+    box-sizing: border-box;
 }
 
 .desktop-nav-centered {
     display: flex;
     align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
     gap: 24px; /* compact layout spacing for mobile */
 }
 
@@ -177,7 +183,8 @@ button {
 /* Desktop screen sizing rules */
 @media (min-width: 1025px) {
     .main-header {
-        height: 130px; /* slightly taller on desktop */
+        min-height: 130px; /* slightly taller on desktop */
+        height: auto;
     }
     
     .header-container {
@@ -185,7 +192,9 @@ button {
     }
     
     .header-nav-row {
-        height: 45px;
+        min-height: 45px;
+        height: auto;
+        padding: 0;
     }
     
     .desktop-nav-centered {
