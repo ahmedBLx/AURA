@@ -82,7 +82,35 @@ const QuickViewModal = ({ product, isOpen, onClose }) => {
                 }
             }}
         >
-            <div className="modal-content">
+            <div className="modal-content" style={{ position: 'relative' }}>
+                <button 
+                    type="button"
+                    className="modal-back-arrow-btn" 
+                    onClick={onClose} 
+                    aria-label="Go back"
+                    style={{
+                        position: 'absolute',
+                        top: '20px',
+                        left: '20px',
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--color-text-muted)',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '4px',
+                        transition: 'color 0.2s',
+                        zIndex: 11
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = 'var(--color-gold)'}
+                    onMouseLeave={(e) => e.currentTarget.style.color = 'var(--color-text-muted)'}
+                >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                </button>
                 <button className="modal-close-btn" onClick={onClose} aria-label="Close modal">
                     <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -169,6 +197,44 @@ const QuickViewModal = ({ product, isOpen, onClose }) => {
                             }}
                         >
                             {addedStatus ? 'ADDED TO BAG ✓' : 'ADD TO BAG'}
+                        </button>
+                        
+                        <button 
+                            type="button"
+                            className="modal-back-catalog-btn" 
+                            onClick={onClose}
+                            style={{
+                                width: '100%',
+                                marginTop: '12px',
+                                padding: '12px',
+                                background: 'transparent',
+                                border: '1px solid rgba(255, 255, 255, 0.1)',
+                                color: 'var(--color-text-muted)',
+                                fontWeight: '600',
+                                borderRadius: 'var(--border-radius-pill)',
+                                fontSize: '13px',
+                                letterSpacing: '0.05em',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '8px',
+                                transition: 'all 0.3s'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.borderColor = 'var(--color-gold)';
+                                e.currentTarget.style.color = 'var(--color-gold)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                                e.currentTarget.style.color = 'var(--color-text-muted)';
+                            }}
+                        >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <line x1="19" y1="12" x2="5" y2="12"></line>
+                                <polyline points="12 19 5 12 12 5"></polyline>
+                            </svg>
+                            CONTINUE SHOPPING / رجوع للمتجر
                         </button>
                     </div>
                 </div>

@@ -1,5 +1,6 @@
 import OptimizedImage from '../components/OptimizedImage';
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { useProducts } from '../context/ProductContext';
 import { useAuth } from '../context/AuthContext';
 import QuickViewModal from '../components/QuickViewModal';
@@ -9,6 +10,7 @@ import { getPublicSettings } from '../services/publicSettings';
 
 const WomenPage = () => {
     const { products, categories } = useProducts();
+    const router = useRouter();
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
     const [favorites, setFavorites] = useState({});
@@ -152,6 +154,41 @@ const WomenPage = () => {
     if (!womenSoon) {
         return (
             <main style={{ minHeight: '85vh', padding: '60px 80px', position: 'relative' }}>
+                {/* BREADCRUMB */}
+                <div className="breadcrumb-container" style={{ maxWidth: '1440px', margin: '0 auto 20px auto', padding: '0 0 20px 0', borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                    <div className="breadcrumb-inner" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <button 
+                            type="button"
+                            onClick={() => router.push('/')}
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                background: 'none',
+                                border: 'none',
+                                cursor: 'pointer',
+                                color: 'var(--color-text-muted)',
+                                fontSize: '12px',
+                                fontWeight: '600',
+                                textTransform: 'uppercase',
+                                marginRight: '12px',
+                                transition: 'color 0.2s',
+                                padding: 0
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.color = 'var(--color-gold)'}
+                            onMouseLeave={(e) => e.currentTarget.style.color = 'var(--color-text-muted)'}
+                        >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <line x1="19" y1="12" x2="5" y2="12"></line>
+                                <polyline points="12 19 5 12 12 5"></polyline>
+                            </svg>
+                            Back
+                        </button>
+                        <span className="breadcrumb-item" onClick={() => router.push('/')} style={{ cursor: 'pointer' }}>AURA</span>
+                        <span className="breadcrumb-slash">/</span>
+                        <span className="breadcrumb-item active">Women Collection</span>
+                    </div>
+                </div>
                 <style>{`
                     .women-header {
                         max-width: 1440px;
@@ -335,6 +372,41 @@ const WomenPage = () => {
     // Fallback: Coming Soon Newsletter state when collection is empty
     return (
         <main className="women-page-container" style={{ minHeight: '85vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 20px', position: 'relative' }}>
+            {/* BREADCRUMB */}
+            <div className="breadcrumb-container" style={{ width: '100%', maxWidth: '1440px', margin: '0 auto 20px auto', padding: '0 0 20px 0', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', position: 'absolute', top: '20px', left: '20px' }}>
+                <div className="breadcrumb-inner" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <button 
+                        type="button"
+                        onClick={() => router.push('/')}
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            color: 'var(--color-text-muted)',
+                            fontSize: '12px',
+                            fontWeight: '600',
+                            textTransform: 'uppercase',
+                            marginRight: '12px',
+                            transition: 'color 0.2s',
+                            padding: 0
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.color = 'var(--color-gold)'}
+                        onMouseLeave={(e) => e.currentTarget.style.color = 'var(--color-text-muted)'}
+                    >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="19" y1="12" x2="5" y2="12"></line>
+                            <polyline points="12 19 5 12 12 5"></polyline>
+                        </svg>
+                        Back
+                    </button>
+                    <span className="breadcrumb-item" onClick={() => router.push('/')} style={{ cursor: 'pointer' }}>AURA</span>
+                    <span className="breadcrumb-slash">/</span>
+                    <span className="breadcrumb-item active">Women Collection</span>
+                </div>
+            </div>
             <style>{`
                 .soon-card {
                     --border-color: rgba(255, 255, 255, 0.08);

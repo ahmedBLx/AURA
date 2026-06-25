@@ -189,9 +189,45 @@ const CartDrawer = () => {
     return (
         <div className="cart-backdrop active" onClick={(e) => e.target.classList.contains('cart-backdrop') && setCartOpen(false)}>
             <div className="cart-sidebar">
-                <div className="cart-sidebar-header">
-                    <h3>{successOrderId ? 'THANK YOU' : (isCheckingOut ? 'CHECKOUT' : 'YOUR BAG')}</h3>
-                    <button className="close-cart-btn" onClick={() => setCartOpen(false)} aria-label="Close cart drawer">
+                <div className="cart-sidebar-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        {isCheckingOut && !successOrderId && (
+                            <button 
+                                type="button"
+                                className="cart-back-header-btn"
+                                onClick={() => {
+                                    if (checkoutStep === 'details') {
+                                        setCheckoutStep('phone');
+                                    } else {
+                                        setIsCheckingOut(false);
+                                    }
+                                }}
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    color: 'var(--color-gold)',
+                                    cursor: 'pointer',
+                                    padding: '4px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    borderRadius: '50%',
+                                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                                    transition: 'all 0.2s',
+                                    width: '32px',
+                                    height: '32px'
+                                }}
+                                title="Go back"
+                            >
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                                    <polyline points="12 19 5 12 12 5"></polyline>
+                                </svg>
+                            </button>
+                        )}
+                        <h3 style={{ margin: 0 }}>{successOrderId ? 'THANK YOU' : (isCheckingOut ? 'CHECKOUT' : 'YOUR BAG')}</h3>
+                    </div>
+                    <button className="close-cart-btn" onClick={() => setCartOpen(false)} aria-label="Close cart drawer" style={{ position: 'static' }}>
                         <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <line x1="18" y1="6" x2="6" y2="18"></line>
                             <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -723,14 +759,39 @@ const CartDrawer = () => {
                     <>
                         <div className="cart-items-list" id="cart-items-container">
                             {cart.length === 0 ? (
-                                <div className="cart-empty-state" id="cart-empty">
+                                <div className="cart-empty-state" id="cart-empty" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
                                     <svg className="icon empty-bag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
                                         <circle cx="9" cy="21" r="1"></circle>
                                         <circle cx="20" cy="21" r="1"></circle>
                                         <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
                                     </svg>
                                     <p>YOUR BAG IS EMPTY</p>
-                                    <span style={{ fontSize: '12px' }}>Start adding styles to see them display here.</span>
+                                    <span style={{ fontSize: '12px', marginBottom: '20px' }}>Start adding styles to see them display here.</span>
+                                    <button 
+                                        type="button"
+                                        onClick={() => setCartOpen(false)}
+                                        style={{
+                                            padding: '10px 24px',
+                                            borderRadius: 'var(--border-radius-pill)',
+                                            border: '1px solid var(--color-gold)',
+                                            backgroundColor: 'transparent',
+                                            color: 'var(--color-gold)',
+                                            fontWeight: '600',
+                                            fontSize: '13px',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.3s'
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.backgroundColor = 'var(--color-gold)';
+                                            e.currentTarget.style.color = '#000000';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.backgroundColor = 'transparent';
+                                            e.currentTarget.style.color = 'var(--color-gold)';
+                                        }}
+                                    >
+                                        CONTINUE SHOPPING
+                                    </button>
                                 </div>
                             ) : (
                                 cart.map((item) => (

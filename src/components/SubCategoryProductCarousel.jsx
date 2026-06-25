@@ -22,6 +22,8 @@ export default function SubCategoryProductCarousel({
     const [visibleRatio, setVisibleRatio] = useState(0.2);
     const resumeTimerRef = useRef(null);
     const scrollTimeoutRef = useRef(null);
+    const isScrollingProgrammaticallyRef = useRef(false);
+    const rafRef = useRef(null);
 
     useEffect(() => {
         return () => {
@@ -30,6 +32,9 @@ export default function SubCategoryProductCarousel({
             }
             if (scrollTimeoutRef.current) {
                 clearTimeout(scrollTimeoutRef.current);
+            }
+            if (rafRef.current) {
+                cancelAnimationFrame(rafRef.current);
             }
         };
     }, []);
@@ -42,16 +47,17 @@ export default function SubCategoryProductCarousel({
         const card = container.querySelector('.product-card');
         if (!card) return;
         const cardWidth = card.offsetWidth + 24; // width + gap
+        isScrollingProgrammaticallyRef.current = true;
         container.scrollTo({ left: cardWidth * index, behavior: 'smooth' });
     }, [totalSlides]);
 
-    // Auto-scroll every 3 seconds if not paused
+    // Auto-scroll every 4 seconds if not paused
     useEffect(() => {
         if (totalSlides <= 1 || isPaused || layout === 'list') return;
 
         const timer = setInterval(() => {
             setCurrentSlide((prevSlide) => (prevSlide + 1) % totalSlides);
-        }, 3000);
+        }, 4000);
 
         return () => clearInterval(timer);
     }, [totalSlides, isPaused, layout]);
@@ -76,28 +82,53 @@ export default function SubCategoryProductCarousel({
     }, []);
 
     const handleScroll = (e) => {
+        // Capture the DOM node immediately — e.currentTarget is nullified
+        // by React's synthetic event pooling before the rAF callback fires.
         const container = e.currentTarget;
-        const scrollLeft = container.scrollLeft;
-        const scrollWidth = container.scrollWidth;
-        const clientWidth = container.clientWidth;
-        
-        if (!scrollTimeoutRef.current) {
+
+        // Cancel any already-scheduled frame so we only process the latest
+        // scroll position, preventing stale reads on fast scrolls.
+        if (rafRef.current) {
+            cancelAnimationFrame(rafRef.current);
+        }
+
+        rafRef.current = requestAnimationFrame(() => {
+            rafRef.current = null;
+
+            // --- Progress bar update (throttled to rAF, ~60fps max) ---
+            const scrollLeft = container.scrollLeft;
+            const scrollWidth = container.scrollWidth;
+            const clientWidth = container.clientWidth;
+            const maxScroll = scrollWidth - clientWidth;
+
+            if (maxScroll > 0) {
+                setScrollProgress(scrollLeft / maxScroll);
+                setVisibleRatio(clientWidth / scrollWidth);
+            }
+
+            // --- Snap-index detection (debounced, unchanged) ---
+            if (scrollTimeoutRef.current) {
+                clearTimeout(scrollTimeoutRef.current);
+            }
+
             scrollTimeoutRef.current = setTimeout(() => {
                 scrollTimeoutRef.current = null;
-                const maxScroll = scrollWidth - clientWidth;
-                if (maxScroll > 0) {
-                    setScrollProgress(scrollLeft / maxScroll);
-                    setVisibleRatio(clientWidth / scrollWidth);
+
+                if (isScrollingProgrammaticallyRef.current) {
+                    isScrollingProgrammaticallyRef.current = false;
+                    return;
                 }
-                
+
                 const card = container.querySelector('.product-card');
                 if (card) {
                     const cardWidth = card.offsetWidth + 24;
                     const newIndex = Math.round(scrollLeft / cardWidth);
-                    setCurrentSlide(newIndex);
+                    if (newIndex !== currentSlide) {
+                        setCurrentSlide(newIndex);
+                    }
                 }
-            }, 60); // Throttle scroll to ~16fps to prevent React render layout thrashing
-        }
+            }, 150);
+        });
     };
 
     useEffect(() => {

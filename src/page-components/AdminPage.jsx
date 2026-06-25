@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { useAuth } from '../context/AuthContext';
 import { useProducts } from '../context/ProductContext';
 import { useAdmin } from '../context/AdminContext';
+import { useTheme } from '../context/ThemeContext';
 
 const AdminPage = () => {
     const { user, logout } = useAuth();
@@ -35,7 +36,7 @@ const AdminPage = () => {
     } = useAdmin();
 
     // UI & Layout States
-    const theme = 'dark';
+    const { theme } = useTheme();
 
     // Local Search & Sort states
     const [loyaltySearch, setLoyaltySearch] = useState('');
@@ -876,7 +877,7 @@ const AdminPage = () => {
     }, [products]);
 
     return (
-        <div className={`admin-app-wrapper ${theme}-theme`} style={{ display: 'flex', minHeight: '100dvh', backgroundColor: 'transparent', fontFamily: 'var(--font-body)' }}>
+        <div className={`admin-app-wrapper ${theme}-theme`} style={{ display: 'flex', minHeight: '100dvh', backgroundColor: 'var(--color-primary-light)', fontFamily: 'var(--font-body)' }}>
             <style>{`
                 /* CSS Dynamic Theme Variables */
                 .dark-theme {

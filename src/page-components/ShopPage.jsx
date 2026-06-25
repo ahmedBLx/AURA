@@ -157,8 +157,35 @@ const ShopPage = () => {
 
             {/* BREADCRUMB */}
             <div className="breadcrumb-container">
-                <div className="breadcrumb-inner">
-                    <span className="breadcrumb-item">AURA</span>
+                <div className="breadcrumb-inner" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <button 
+                        type="button"
+                        onClick={() => router.push('/')}
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            color: 'var(--color-text-muted)',
+                            fontSize: '12px',
+                            fontWeight: '600',
+                            textTransform: 'uppercase',
+                            marginRight: '12px',
+                            transition: 'color 0.2s',
+                            padding: 0
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.color = 'var(--color-gold)'}
+                        onMouseLeave={(e) => e.currentTarget.style.color = 'var(--color-text-muted)'}
+                    >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="19" y1="12" x2="5" y2="12"></line>
+                            <polyline points="12 19 5 12 12 5"></polyline>
+                        </svg>
+                        Back
+                    </button>
+                    <span className="breadcrumb-item" onClick={() => router.push('/')} style={{ cursor: 'pointer' }}>AURA</span>
                     <span className="breadcrumb-slash">/</span>
                     <span className="breadcrumb-item active">Shop Collection</span>
                 </div>
