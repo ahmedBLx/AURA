@@ -23,10 +23,12 @@ const OptimizedImage = ({
   }
 
   const [imgSrc, setImgSrc] = useState(normalizedSrc || '/assets/sneaker_white.png');
+  const [prevSrc, setPrevSrc] = useState(normalizedSrc);
 
-  useEffect(() => {
+  if (normalizedSrc !== prevSrc) {
     setImgSrc(normalizedSrc || '/assets/sneaker_white.png');
-  }, [normalizedSrc]);
+    setPrevSrc(normalizedSrc);
+  }
 
   if (!src) return null;
 

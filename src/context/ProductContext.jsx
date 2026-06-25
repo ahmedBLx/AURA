@@ -107,13 +107,27 @@ export const ProductProvider = ({ children }) => {
             if (err.name === 'AbortError') return;
             console.error('Failed to load catalog:', err);
             // Fallback to offline localStorage
-            const storedProducts = JSON.parse(localStorage.getItem('aura_products'));
-            if (storedProducts) {
-                setProducts(storedProducts);
+            try {
+                const storedProductsStr = localStorage.getItem('aura_products');
+                if (storedProductsStr) {
+                    const storedProducts = JSON.parse(storedProductsStr);
+                    if (Array.isArray(storedProducts)) {
+                        setProducts(storedProducts);
+                    }
+                }
+            } catch (pErr) {
+                console.warn('Failed to load products from localStorage:', pErr);
             }
-            const storedCategories = JSON.parse(localStorage.getItem('aura_categories'));
-            if (storedCategories) {
-                setCategories(storedCategories);
+            try {
+                const storedCategoriesStr = localStorage.getItem('aura_categories');
+                if (storedCategoriesStr) {
+                    const storedCategories = JSON.parse(storedCategoriesStr);
+                    if (Array.isArray(storedCategories)) {
+                        setCategories(storedCategories);
+                    }
+                }
+            } catch (cErr) {
+                console.warn('Failed to load categories from localStorage:', cErr);
             }
         } finally {
             if (!signal?.aborted) {
@@ -132,13 +146,21 @@ export const ProductProvider = ({ children }) => {
 
     useEffect(() => {
         if (products && products.length > 0) {
-            localStorage.setItem('aura_products', JSON.stringify(products));
+            try {
+                localStorage.setItem('aura_products', JSON.stringify(products));
+            } catch (err) {
+                console.warn('Failed to save products to localStorage:', err);
+            }
         }
     }, [products]);
 
     useEffect(() => {
         if (categories && categories.length > 0) {
-            localStorage.setItem('aura_categories', JSON.stringify(categories));
+            try {
+                localStorage.setItem('aura_categories', JSON.stringify(categories));
+            } catch (err) {
+                console.warn('Failed to save categories to localStorage:', err);
+            }
         }
     }, [categories]);
 

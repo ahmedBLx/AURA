@@ -42,9 +42,10 @@ export const AdminProvider = ({ children }) => {
 
     // Clean up all controllers on unmount
     useEffect(() => {
+        const controllers = controllersRef.current;
         return () => {
-            controllersRef.current.forEach(c => c.abort());
-            controllersRef.current.clear();
+            controllers.forEach(c => c.abort());
+            controllers.clear();
         };
     }, []);
 
@@ -87,13 +88,24 @@ export const AdminProvider = ({ children }) => {
                 status: o.status
             }));
             setOrders(mappedOrders);
-            localStorage.setItem('aura_orders', JSON.stringify(mappedOrders));
+            try {
+                localStorage.setItem('aura_orders', JSON.stringify(mappedOrders));
+            } catch (storageErr) {
+                console.warn('Failed to cache orders to localStorage:', storageErr);
+            }
         } catch (err) {
             if (err.name === 'AbortError') return;
             console.error('Failed to load orders from API:', err);
-            const storedOrders = localStorage.getItem('aura_orders');
-            if (storedOrders) {
-                setOrders(JSON.parse(storedOrders));
+            try {
+                const storedOrders = localStorage.getItem('aura_orders');
+                if (storedOrders) {
+                    const parsedOrders = JSON.parse(storedOrders);
+                    if (Array.isArray(parsedOrders)) {
+                        setOrders(parsedOrders);
+                    }
+                }
+            } catch (storageErr) {
+                console.warn('Failed to parse cached orders:', storageErr);
             }
         }
     }, [isAdmin, BASE_URL, getCancelSignal]);
@@ -262,6 +274,18 @@ export const AdminProvider = ({ children }) => {
         }
     }, [loadOrders, loadDashboardMetrics, loadCatalog]);
 
+    // Stable references to prevent Socket reconnection loop when functions change
+    const loadOrdersRef = useRef(loadOrders);
+    const loadDashboardMetricsRef = useRef(loadDashboardMetrics);
+
+    useEffect(() => {
+        loadOrdersRef.current = loadOrders;
+    }, [loadOrders]);
+
+    useEffect(() => {
+        loadDashboardMetricsRef.current = loadDashboardMetrics;
+    }, [loadDashboardMetrics]);
+
     // Sync Socket.IO connection and poll fallbacks safely only when logged in as Admin
     useEffect(() => {
         if (!isAdmin) {
@@ -278,8 +302,8 @@ export const AdminProvider = ({ children }) => {
         if (isVercel) {
             console.log('Detected Vercel environment. Falling back to active REST polling every 30s for metrics.');
             pollInterval = setInterval(() => {
-                loadOrders();
-                loadDashboardMetrics();
+                loadOrdersRef.current();
+                loadDashboardMetricsRef.current();
             }, 30000);
             return () => {
                 if (pollInterval) clearInterval(pollInterval);
@@ -312,16 +336,16 @@ export const AdminProvider = ({ children }) => {
             console.log('Socket.IO connection failed, falling back to rest polling');
             if (!pollInterval) {
                 pollInterval = setInterval(() => {
-                    loadOrders();
-                    loadDashboardMetrics();
+                    loadOrdersRef.current();
+                    loadDashboardMetricsRef.current();
                 }, 30000);
             }
         };
 
         const handleNewOrder = (data) => {
             console.log('New Order Socket Event:', data);
-            loadOrders();
-            loadDashboardMetrics();
+            loadOrdersRef.current();
+            loadDashboardMetricsRef.current();
             setRealtimeToast({
                 orderId: data.orderId,
                 customerName: data.customerName,
@@ -361,7 +385,7 @@ export const AdminProvider = ({ children }) => {
                 socketInstance = null;
             }
         };
-    }, [isAdmin, BASE_URL, loadOrders, loadDashboardMetrics]);
+    }, [isAdmin, BASE_URL]);
 
     const value = useMemo(() => ({
         activeTab,

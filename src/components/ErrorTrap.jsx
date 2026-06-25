@@ -23,23 +23,35 @@ export default function ErrorTrap() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const on = params.get('debug') === '1' || localStorage.getItem('aura_debug') === '1';
-    if (on) localStorage.setItem('aura_debug', '1');
+    let on = false;
+    try {
+      on = params.get('debug') === '1' || localStorage.getItem('aura_debug') === '1';
+      if (on) localStorage.setItem('aura_debug', '1');
+    } catch (err) {
+      console.warn('localStorage is not accessible:', err);
+    }
     setEnabled(on);
     if (!on) return;
 
     // Restore any errors captured right before a reload.
     try {
-      const saved = JSON.parse(sessionStorage.getItem(STORAGE_KEY) || '[]');
-      if (Array.isArray(saved) && saved.length) setLog(saved);
-    } catch {}
+      const savedStr = sessionStorage.getItem(STORAGE_KEY);
+      if (savedStr) {
+        const saved = JSON.parse(savedStr);
+        if (Array.isArray(saved) && saved.length) setLog(saved);
+      }
+    } catch (err) {
+      console.warn('Failed to load error log from sessionStorage:', err);
+    }
 
     const push = (entry) => {
       setLog((prev) => {
         const next = [...prev.slice(-9), { ...entry, t: new Date().toISOString().slice(11, 19) }];
         try {
           sessionStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-        } catch {}
+        } catch (err) {
+          console.warn('Failed to save error log to sessionStorage:', err);
+        }
         return next;
       });
     };
@@ -78,11 +90,17 @@ export default function ErrorTrap() {
     setLog([]);
     try {
       sessionStorage.removeItem(STORAGE_KEY);
-    } catch {}
+    } catch (err) {
+      console.warn('Failed to remove item from sessionStorage:', err);
+    }
   };
 
   const disable = () => {
-    localStorage.removeItem('aura_debug');
+    try {
+      localStorage.removeItem('aura_debug');
+    } catch (err) {
+      console.warn('Failed to clear debug key from localStorage:', err);
+    }
     clear();
     setEnabled(false);
   };

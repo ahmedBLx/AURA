@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useTheme } from '../context/ThemeContext';
@@ -11,40 +11,11 @@ const Header = () => {
     const { theme, toggleTheme } = useTheme();
     const router = useRouter();
 
-    const aboutTimeoutRef = useRef(null);
-
-    useEffect(() => {
-        return () => {
-            if (aboutTimeoutRef.current) {
-                clearTimeout(aboutTimeoutRef.current);
-            }
-        };
-    }, []);
-
     const handleAuthClick = () => {
         if (user) {
             router.push('/admin');
         } else {
             router.push('/login');
-        }
-    };
-
-    const handleAboutClick = (e) => {
-        e.preventDefault();
-        const aboutSection = document.getElementById('about');
-        if (aboutSection) {
-            aboutSection.scrollIntoView({ behavior: 'smooth' });
-        } else {
-            router.push('/');
-            if (aboutTimeoutRef.current) {
-                clearTimeout(aboutTimeoutRef.current);
-            }
-            aboutTimeoutRef.current = setTimeout(() => {
-                const sec = document.getElementById('about');
-                if (sec) {
-                    sec.scrollIntoView({ behavior: 'smooth' });
-                }
-            }, 150);
         }
     };
 

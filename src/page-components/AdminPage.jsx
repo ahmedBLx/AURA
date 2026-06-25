@@ -5,8 +5,8 @@ import { useProducts } from '../context/ProductContext';
 import { useAdmin } from '../context/AdminContext';
 
 const AdminPage = () => {
-    const { user, users, logout } = useAuth();
-    const { products, categories, categoryNames, mainCategories, getSubcategories, homepageCategories, addProduct, updateProduct, deleteProduct, addCategory, updateCategory, deleteCategory, loadCatalog } = useProducts();
+    const { user, logout } = useAuth();
+    const { products, categories, categoryNames, mainCategories, getSubcategories, addProduct, updateProduct, deleteProduct, addCategory, updateCategory, deleteCategory } = useProducts();
     const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '';
 
     // Consume AdminContext
@@ -63,7 +63,6 @@ const AdminPage = () => {
     const [imageFile, setImageFile] = useState(null);
     const [prodImages, setProdImages] = useState([]); // Array of { id, url, file }
     const [prodDesc, setProdDesc] = useState('');
-    const [selectedCats, setSelectedCats] = useState([]);
     const [discountPercent, setDiscountPercent] = useState(0);
     const [prodStock, setProdStock] = useState(10);
     const [selectedSizes, setSelectedSizes] = useState(['39', '40', '41', '42', '43', '44', '45']);
@@ -117,7 +116,6 @@ const AdminPage = () => {
         toggleWomenSoon(!womenSoon);
     };
 
-    const handleSaveShippingRates = saveShippingRates;
     const handleClearCompletedOrders = clearCompletedOrders;
 
     const resolveHeroImageUrl = (url) => {
@@ -500,7 +498,6 @@ const AdminPage = () => {
         setProdImage(p.img);
         setImageFile(null);
         setProdDesc(p.desc);
-        setSelectedCats(p.categories || []);
         
         // Reconstruct categories wizard state
         const mains = p.categories ? p.categories.filter(c => ['Men', 'Women', 'Offers', 'Special Collection'].includes(c)) : [];
@@ -557,7 +554,6 @@ const AdminPage = () => {
         setProdImage('assets/sneaker_white.png');
         setImageFile(null);
         setProdDesc('');
-        setSelectedCats([]);
         setWizardStep(1);
         setWizardMainCats([]);
         setWizardSubCats({});

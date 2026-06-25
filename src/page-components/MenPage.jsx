@@ -1,7 +1,5 @@
-import OptimizedImage from '../components/OptimizedImage';
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useProducts } from '../context/ProductContext';
-import { useAuth } from '../context/AuthContext';
 import QuickViewModal from '../components/QuickViewModal';
 import SocialMedia from '../components/SocialMedia';
 import SubCategoryProductCarousel from '../components/SubCategoryProductCarousel';
@@ -11,7 +9,7 @@ const MenPage = () => {
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
     const [favorites, setFavorites] = useState({});
-    const [layout, setLayout] = useState('grid'); // 'grid' | 'list'
+    const [layout, setLayout] = useState('grid');
     const [isFilterTrayActive, setIsFilterTrayActive] = useState(false);
     const [isSearchOverlayActive, setIsSearchOverlayActive] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
@@ -19,22 +17,6 @@ const MenPage = () => {
         under200: false,
         over200: false
     });
-
-    const handlePriceChange = (key) => {
-        setSelectedPrices((prev) => ({
-            ...prev,
-            [key]: !prev[key]
-        }));
-    };
-
-    const resetFilters = () => {
-        setSearchQuery('');
-        setSelectedPrices({
-            under200: false,
-            over200: false
-        });
-        setIsFilterTrayActive(false);
-    };
 
     const handleQuickView = (p) => {
         setSelectedProduct(p);
@@ -47,11 +29,6 @@ const MenPage = () => {
             ...prev,
             [prodId]: !prev[prodId]
         }));
-    };
-
-    const handleSearchSubmit = (e) => {
-        e.preventDefault();
-        setIsSearchOverlayActive(false);
     };
 
     // Filter enabled subcategories for Men (memoized)

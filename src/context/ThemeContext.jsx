@@ -13,9 +13,13 @@ export const ThemeProvider = ({ children }) => {
     const [theme, setTheme] = useState('dark');
 
     useEffect(() => {
-        const saved = localStorage.getItem('aura_theme');
-        if (saved) {
-            setTheme(saved === 'light' ? 'light' : 'dark');
+        try {
+            const saved = localStorage.getItem('aura_theme');
+            if (saved) {
+                setTheme(saved === 'light' ? 'light' : 'dark');
+            }
+        } catch (err) {
+            console.warn('Failed to access localStorage for loading theme:', err);
         }
     }, []);
 
@@ -24,7 +28,11 @@ export const ThemeProvider = ({ children }) => {
     }, []);
 
     useEffect(() => {
-        localStorage.setItem('aura_theme', theme);
+        try {
+            localStorage.setItem('aura_theme', theme);
+        } catch (err) {
+            console.warn('Failed to access localStorage for saving theme:', err);
+        }
         const root = document.documentElement;
         if (theme === 'light') {
             root.classList.add('light-theme');

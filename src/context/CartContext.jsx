@@ -36,7 +36,11 @@ export const CartProvider = ({ children }) => {
     // Sync counts whenever cart state changes, but ONLY after it is loaded from storage
     useEffect(() => {
         if (isLoaded) {
-            localStorage.setItem('aura_cart', JSON.stringify(cart));
+            try {
+                localStorage.setItem('aura_cart', JSON.stringify(cart));
+            } catch (err) {
+                console.warn('Failed to save cart to localStorage:', err);
+            }
         }
     }, [cart, isLoaded]);
 
@@ -88,7 +92,11 @@ export const CartProvider = ({ children }) => {
 
     const clearCart = useCallback(() => {
         setCart([]);
-        localStorage.removeItem('aura_cart');
+        try {
+            localStorage.removeItem('aura_cart');
+        } catch (err) {
+            console.warn('Failed to remove cart from localStorage:', err);
+        }
     }, []);
 
     const placeOrder = useCallback(async (customerDetails) => {
@@ -120,10 +128,25 @@ export const CartProvider = ({ children }) => {
             clearCart();
             
             // Keep local copy of order history for offline accessibility
-            const existingOrders = JSON.parse(localStorage.getItem('aura_orders')) || [];
-            const updatedOrders = [createdOrder, ...existingOrders];
-            localStorage.setItem('aura_orders', JSON.stringify(updatedOrders));
-            localStorage.setItem('aura_orders_count', updatedOrders.length.toString());
+            try {
+                const storedOrders = localStorage.getItem('aura_orders');
+                let existingOrders = [];
+                if (storedOrders) {
+                    try {
+                        existingOrders = JSON.parse(storedOrders);
+                        if (!Array.isArray(existingOrders)) {
+                            existingOrders = [];
+                        }
+                    } catch (parseErr) {
+                        console.warn('Failed to parse local order history:', parseErr);
+                    }
+                }
+                const updatedOrders = [createdOrder, ...existingOrders];
+                localStorage.setItem('aura_orders', JSON.stringify(updatedOrders));
+                localStorage.setItem('aura_orders_count', updatedOrders.length.toString());
+            } catch (storageErr) {
+                console.warn('Failed to cache order offline:', storageErr);
+            }
 
             return createdOrder.orderId;
         } catch (err) {

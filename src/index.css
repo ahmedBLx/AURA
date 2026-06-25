@@ -16,8 +16,8 @@
     /* Standard dark text */
     --color-text-muted: #6B7280;
     /* Muted text */
-    --font-heading: 'Montserrat', sans-serif;
-    --font-body: 'Outfit', sans-serif;
+    --font-heading: var(--font-montserrat), 'Montserrat', sans-serif;
+    --font-body: var(--font-outfit), 'Outfit', sans-serif;
     --transition-smooth: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
     --border-radius-lg: 20px;
     --border-radius-pill: 50px;

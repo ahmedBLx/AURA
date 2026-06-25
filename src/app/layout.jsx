@@ -1,4 +1,5 @@
 import React from 'react';
+import { Montserrat, Outfit } from 'next/font/google';
 import '../index.css';
 import { ThemeProvider } from '../context/ThemeContext';
 import { AuthProvider } from '../context/AuthContext';
@@ -8,6 +9,18 @@ import { AdminProvider } from '../context/AdminContext';
 import ClientLayout from '../components/ClientLayout';
 import ErrorBoundary from '../components/ErrorBoundary';
 
+const montserrat = Montserrat({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-montserrat',
+});
+
+const outfit = Outfit({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-outfit',
+});
+
 export const metadata = {
   title: 'AURA - Dare To Dream',
   description: 'Production-ready e-commerce platform for AURA',
@@ -15,12 +28,10 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${montserrat.variable} ${outfit.variable}`}>
       <head>
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+        <link rel="preload" as="image" href="/assets/hero_banner_new.png" fetchPriority="high" />
       </head>
       <body>
         <ErrorBoundary>

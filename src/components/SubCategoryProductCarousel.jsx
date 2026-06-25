@@ -21,11 +21,15 @@ export default function SubCategoryProductCarousel({
     const [scrollProgress, setScrollProgress] = useState(0);
     const [visibleRatio, setVisibleRatio] = useState(0.2);
     const resumeTimerRef = useRef(null);
+    const scrollTimeoutRef = useRef(null);
 
     useEffect(() => {
         return () => {
             if (resumeTimerRef.current) {
                 clearTimeout(resumeTimerRef.current);
+            }
+            if (scrollTimeoutRef.current) {
+                clearTimeout(scrollTimeoutRef.current);
             }
         };
     }, []);
@@ -73,17 +77,26 @@ export default function SubCategoryProductCarousel({
 
     const handleScroll = (e) => {
         const container = e.currentTarget;
-        const maxScroll = container.scrollWidth - container.clientWidth;
-        if (maxScroll > 0) {
-            setScrollProgress(container.scrollLeft / maxScroll);
-            setVisibleRatio(container.clientWidth / container.scrollWidth);
-        }
+        const scrollLeft = container.scrollLeft;
+        const scrollWidth = container.scrollWidth;
+        const clientWidth = container.clientWidth;
         
-        const card = container.querySelector('.product-card');
-        if (card) {
-            const cardWidth = card.offsetWidth + 24;
-            const newIndex = Math.round(container.scrollLeft / cardWidth);
-            setCurrentSlide(newIndex);
+        if (!scrollTimeoutRef.current) {
+            scrollTimeoutRef.current = setTimeout(() => {
+                scrollTimeoutRef.current = null;
+                const maxScroll = scrollWidth - clientWidth;
+                if (maxScroll > 0) {
+                    setScrollProgress(scrollLeft / maxScroll);
+                    setVisibleRatio(clientWidth / scrollWidth);
+                }
+                
+                const card = container.querySelector('.product-card');
+                if (card) {
+                    const cardWidth = card.offsetWidth + 24;
+                    const newIndex = Math.round(scrollLeft / cardWidth);
+                    setCurrentSlide(newIndex);
+                }
+            }, 60); // Throttle scroll to ~16fps to prevent React render layout thrashing
         }
     };
 
@@ -166,11 +179,7 @@ export default function SubCategoryProductCarousel({
         };
     }, [layout, products, handleScrollStart, handleScrollEnd]);
 
-    useEffect(() => {
-        return () => {
-            if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
-        };
-    }, []);
+    // Consolidating cleanup on unmount at the top effect
 
     return (
         <section className="category-carousel-section" style={{ padding: '20px 0' }}>

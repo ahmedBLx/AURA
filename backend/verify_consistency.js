@@ -36,14 +36,46 @@ async function runConsistencyCheck() {
   const itemsToDelete = [];
   const reviewsToDelete = [];
   const notificationsToDelete = [];
+  const ordersToClean = [];
+
+  // Fetch all collections in parallel to optimize remote database performance (avoiding N+1 queries)
+  console.log('Fetching database collections...');
+  const [
+    categories,
+    products,
+    customers,
+    orders,
+    orderItems,
+    reviews,
+    notifications,
+    settings,
+    admins
+  ] = await Promise.all([
+    Category.find(),
+    Product.find(),
+    Customer.find(),
+    Order.find(),
+    OrderItem.find(),
+    Review.find(),
+    Notification.find(),
+    Setting.find(),
+    Admin.find()
+  ]);
+
+  // Create lookups for O(1) in-memory checks
+  const categoryIds = new Set(categories.map(c => c._id.toString()));
+  const categoryNames = new Set(categories.map(c => c.name));
+  const productIds = new Set(products.map(p => p._id.toString()));
+  const customerIds = new Set(customers.map(c => c._id.toString()));
+  const orderIds = new Set(orders.map(o => o._id.toString()));
+  const orderItemIds = new Set(orderItems.map(oi => oi._id.toString()));
+  const adminIds = new Set(admins.map(a => a._id.toString()));
 
   // 1. Audit Categories
   console.log('\nAuditing Categories...');
-  const categories = await Category.find();
   for (const cat of categories) {
     if (cat.parent) {
-      const parentExists = await Category.findById(cat.parent);
-      if (!parentExists) {
+      if (!categoryIds.has(cat.parent.toString())) {
         report.categories.push(`Category "${cat.name}" has invalid parent ID: ${cat.parent}`);
         report.totalErrors++;
       }
@@ -53,7 +85,6 @@ async function runConsistencyCheck() {
 
   // 2. Audit Products
   console.log('\nAuditing Products...');
-  const products = await Product.find();
   for (const prod of products) {
     if (prod.stock < 0) {
       report.products.push(`Product "${prod.name}" (ID: ${prod._id}) has negative stock: ${prod.stock}`);
@@ -64,8 +95,7 @@ async function runConsistencyCheck() {
       report.totalErrors++;
     }
     for (const catName of prod.categories) {
-      const catExists = await Category.findOne({ name: catName });
-      if (!catExists) {
+      if (!categoryNames.has(catName)) {
         report.products.push(`Product "${prod.name}" points to non-existent category: "${catName}"`);
         report.totalErrors++;
       }
@@ -75,7 +105,6 @@ async function runConsistencyCheck() {
 
   // 3. Audit Customers
   console.log('\nAuditing Customers...');
-  const customers = await Customer.find();
   for (const cust of customers) {
     if (cust.loyaltyPoints < 0) {
       report.customers.push(`Customer "${cust.fullName}" (Phone: ${cust.phoneNumber}) has negative loyalty points: ${cust.loyaltyPoints}`);
@@ -90,7 +119,6 @@ async function runConsistencyCheck() {
 
   // 4. Audit Orders
   console.log('\nAuditing Orders...');
-  const orders = await Order.find();
   const seenOrderIds = new Set();
   for (const order of orders) {
     if (seenOrderIds.has(order.orderId)) {
@@ -100,36 +128,39 @@ async function runConsistencyCheck() {
     seenOrderIds.add(order.orderId);
 
     if (order.customerId) {
-      const customerExists = await Customer.findById(order.customerId);
-      if (!customerExists) {
+      if (!customerIds.has(order.customerId.toString())) {
         report.orders.push(`Order "${order.orderId}" has invalid customerId reference: ${order.customerId}`);
         report.totalErrors++;
       }
     }
 
+    const validItems = [];
+    let orderChanged = false;
     for (const itemId of order.items) {
-      const itemExists = await OrderItem.findById(itemId);
-      if (!itemExists) {
+      if (!orderItemIds.has(itemId.toString())) {
         report.orders.push(`Order "${order.orderId}" contains invalid item reference: ${itemId}`);
         report.totalErrors++;
+        orderChanged = true;
+      } else {
+        validItems.push(itemId);
       }
+    }
+    if (orderChanged && shouldRepair) {
+      ordersToClean.push({ orderId: order._id, validItems });
     }
   }
   console.log(`Audited ${orders.length} orders.`);
 
   // 5. Audit OrderItems
   console.log('\nAuditing OrderItems...');
-  const orderItems = await OrderItem.find();
   for (const item of orderItems) {
-    const orderExists = await Order.findById(item.order);
     let isOrphan = false;
-    if (!orderExists) {
+    if (!item.order || !orderIds.has(item.order.toString())) {
       report.orderItems.push(`OrderItem "${item._id}" (Product: ${item.productName}) has invalid order reference: ${item.order}`);
       report.totalErrors++;
       isOrphan = true;
     }
-    const productExists = await Product.findById(item.product);
-    if (!productExists) {
+    if (!item.product || !productIds.has(item.product.toString())) {
       report.orderItems.push(`OrderItem "${item._id}" (Product: ${item.productName}) points to missing Product ID: ${item.product}`);
       report.totalErrors++;
       isOrphan = true;
@@ -143,17 +174,14 @@ async function runConsistencyCheck() {
 
   // 6. Audit Reviews
   console.log('\nAuditing Reviews...');
-  const reviews = await Review.find();
   for (const rev of reviews) {
     let isOrphan = false;
-    const productExists = await Product.findById(rev.product);
-    if (!productExists) {
+    if (!rev.product || !productIds.has(rev.product.toString())) {
       report.reviews.push(`Review "${rev._id}" has invalid product reference: ${rev.product}`);
       report.totalErrors++;
       isOrphan = true;
     }
-    const adminExists = await Admin.findById(rev.user);
-    if (!adminExists) {
+    if (!rev.user || !adminIds.has(rev.user.toString())) {
       report.reviews.push(`Review "${rev._id}" has invalid admin reference: ${rev.user}`);
       report.totalErrors++;
       isOrphan = true;
@@ -167,10 +195,8 @@ async function runConsistencyCheck() {
 
   // 7. Audit Notifications
   console.log('\nAuditing Notifications...');
-  const notifications = await Notification.find();
   for (const notif of notifications) {
-    const recipientExists = await Admin.findById(notif.recipient);
-    if (!recipientExists) {
+    if (notif.recipient && !adminIds.has(notif.recipient.toString())) {
       report.notifications.push(`Notification "${notif._id}" points to missing Admin recipient: ${notif.recipient}`);
       report.totalErrors++;
       notificationsToDelete.push(notif._id);
@@ -180,7 +206,6 @@ async function runConsistencyCheck() {
 
   // 8. Audit Settings
   console.log('\nAuditing Settings...');
-  const settings = await Setting.find();
   for (const set of settings) {
     if (!set.key) {
       report.settings.push(`Setting "${set._id}" is missing key field.`);
@@ -214,6 +239,12 @@ async function runConsistencyCheck() {
       if (notificationsToDelete.length > 0) {
         const delNotifs = await Notification.deleteMany({ _id: { $in: notificationsToDelete } });
         console.log(`[REPAIR] Deleted ${delNotifs.deletedCount} orphan Notifications.`);
+      }
+      if (ordersToClean.length > 0) {
+        for (const clean of ordersToClean) {
+          await Order.findByIdAndUpdate(clean.orderId, { items: clean.validItems });
+        }
+        console.log(`[REPAIR] Cleaned up invalid item references from ${ordersToClean.length} Orders.`);
       }
       console.log('✅ REPAIR COMPLETE: Database inconsistencies resolved.');
       process.exit(0);
