@@ -408,8 +408,8 @@ button {
     transform: translateX(-50%) translateY(10px);
     width: 210px;
     background-color: rgba(10, 10, 10, 0.95);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
     padding: 8px;
@@ -1056,7 +1056,7 @@ button {
 .badge-new {
     background-color: rgba(255, 255, 255, 0.15);
     color: #FFFFFF;
-    backdrop-filter: blur(8px);
+    backdrop-filter: blur(4px);
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -1508,8 +1508,8 @@ button {
     left: auto;
     width: 320px;
     background-color: rgba(10, 10, 10, 0.95);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 16px;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
@@ -3788,12 +3788,12 @@ body.dark-shop .breadcrumb-slash {
 /* Sneaker Cards styling in Dark shop - Glassmorphic Blur Frame */
 body.dark-shop .product-card {
     background-color: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--border-radius-lg);
     overflow: hidden;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4), 0 0 20px 2px rgba(255, 255, 255, 0.03);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
     /* Soft ambient blur frame */
     transition: var(--transition-smooth);
 }
@@ -3801,7 +3801,7 @@ body.dark-shop .product-card {
 body.dark-shop .product-card:hover {
     transform: translateY(-8px);
     border-color: rgba(255, 255, 255, 0.25);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 30px 4px rgba(255, 255, 255, 0.08);
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.55);
     /* Glowing blur frame expands */
     background-color: rgba(255, 255, 255, 0.06);
 }
@@ -3825,10 +3825,10 @@ body.dark-shop .card-info-box {
 /* List view overrides in Dark shop */
 body.dark-shop .product-grid.list-layout .product-card {
     background-color: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4), 0 0 20px 2px rgba(255, 255, 255, 0.03);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
 }
 
 body.dark-shop .product-grid.list-layout .card-image-box {
@@ -4018,12 +4018,12 @@ body.dark-shop::before {
 /* Glassmorphic Specials Cards */
 .specials-card {
     background-color: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--border-radius-lg);
     overflow: hidden;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4), 0 0 20px 2px rgba(255, 255, 255, 0.03);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
     transition: var(--transition-smooth);
     cursor: pointer;
 }
@@ -4031,7 +4031,7 @@ body.dark-shop::before {
 .specials-card:hover {
     transform: translateY(-8px);
     border-color: rgba(255, 255, 255, 0.25);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 30px 4px rgba(255, 255, 255, 0.08);
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.55);
     background-color: rgba(255, 255, 255, 0.06);
 }
 
@@ -4062,7 +4062,7 @@ body.dark-shop::before {
 .badge-special {
     background-color: rgba(197, 168, 128, 0.2);
     color: var(--color-gold);
-    backdrop-filter: blur(8px);
+    backdrop-filter: blur(4px);
     border: 1px solid rgba(197, 168, 128, 0.3);
 }
 
@@ -4319,8 +4319,8 @@ body.light-shop .breadcrumb-slash {
 /* Sneaker Cards in Light Shop */
 body.light-shop .product-card {
     background-color: rgba(255, 255, 255, 0.75) !important;
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     border: 1px solid rgba(0, 0, 0, 0.08) !important;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04) !important;
     color: #111827 !important;
@@ -4679,8 +4679,8 @@ body.dark-shop .card-image-box,
 body.dark-landing .card-image-box {
     background-color: rgba(255, 255, 255, 0.03) !important;
     border: 1px solid rgba(255, 255, 255, 0.08) !important;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
 }
 
 body.dark-shop .item-card:hover .card-image-box,
@@ -4695,8 +4695,8 @@ body.dark-shop .product-grid.list-layout .product-card,
 body.dark-landing .product-grid.list-layout .product-card {
     background-color: rgba(255, 255, 255, 0.03) !important;
     border: 1px solid rgba(255, 255, 255, 0.08) !important;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3) !important;
     color: #FFFFFF !important;
 }
@@ -4716,8 +4716,8 @@ body.dark-landing .product-grid.list-layout .product-name {
 html.light-theme .product-grid.list-layout .product-card {
     background-color: rgba(255, 255, 255, 0.8) !important;
     border: 1px solid rgba(0, 0, 0, 0.06) !important;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03) !important;
     color: #111827 !important;
 }
@@ -4775,8 +4775,8 @@ html.light-theme .product-grid.list-layout .product-name {
     width: 280px;
     height: calc(100dvh - 80px);
     background-color: rgba(10, 10, 10, 0.95);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border-right: 1px solid rgba(255, 255, 255, 0.08);
     z-index: 999;
     padding: 40px 30px;
@@ -4884,8 +4884,8 @@ html.light-theme .product-grid.list-layout .product-name {
     width: 100vw;
     height: calc(100dvh - 80px);
     background-color: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
     z-index: 998;
     animation: fadeIn 0.3s ease;
 }
@@ -5249,7 +5249,7 @@ html.light-theme .product-grid.list-layout .product-name {
     transform: translateX(-50%);
     background: #ffffff !important;
     border: 1px solid rgba(0, 0, 0, 0.08) !important;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1), 0 4px 10px rgba(0, 0, 0, 0.05) !important;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12) !important;
     border-radius: 12px !important;
     padding: 8px !important;
     width: 240px;
@@ -5677,8 +5677,8 @@ html.light-theme .carousel-dot.active {
 /* Item Card Base Glassmorphic Layout */
 .product-card.item-card {
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0) 100%) !important;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     border: 1px solid rgba(255, 255, 255, 0.07) !important;
     border-radius: 20px !important;
     transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
@@ -5689,7 +5689,7 @@ html.light-theme .carousel-dot.active {
 .product-card.item-card:hover {
     transform: translateY(-10px) !important;
     border-color: rgba(197, 168, 128, 0.4) !important;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45), 0 0 25px rgba(197, 168, 128, 0.12) !important;
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.4) !important;
 }
 
 /* Card Image Box with Sneaker Glow Background */
@@ -5755,7 +5755,7 @@ body.light-landing .product-card.item-card:hover,
 body.light-shop .product-card.item-card:hover {
     background: #FFFFFF !important;
     border-color: rgba(197, 168, 128, 0.5) !important;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08), 0 0 25px rgba(197, 168, 128, 0.08) !important;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1) !important;
 }
 
 html.light-theme .product-card.item-card .card-image-box,
@@ -6136,8 +6136,8 @@ html.light-theme .lock-icon-wrapper {
     width: 100%;
     max-width: 580px;
     background: rgba(10, 10, 10, 0.45);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: var(--border-radius-lg, 20px);
     overflow: hidden;
@@ -6670,7 +6670,37 @@ html.light-theme .toolbar-search-wrapper.expanded .search-btn {
     * {
         backdrop-filter: none !important;
         -webkit-backdrop-filter: none !important;
-        
+    }
+}
+
+/* Mobile GPU relief — disable backdrop-filter on all screens ≤768px.
+   Replaces the iOS-only @supports rule with a broader mobile guard.
+   Cards already have opaque/semi-opaque backgrounds so glass effect
+   is not needed for readability on small screens. */
+@media (max-width: 768px) {
+    .product-card,
+    .product-card.item-card,
+    .specials-card,
+    .badge-new,
+    .badge-special,
+    .card-image-box {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+    }
+    /* Simplify card hover shadows on mobile — hover is not a real interaction */
+    body.dark-shop .product-card:hover,
+    .specials-card:hover,
+    .product-card.item-card:hover {
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+    }
+    /* Mobile nav drawer — keep backdrop-filter but at minimal cost */
+    .mobile-nav-drawer {
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+    }
+    .mobile-nav-backdrop {
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
     }
 }
 
