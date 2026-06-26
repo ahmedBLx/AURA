@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 
 const OptimizedImage = ({
@@ -22,17 +22,16 @@ const OptimizedImage = ({
     }
   }
 
-  const [imgSrc, setImgSrc] = useState(normalizedSrc || '/assets/sneaker_white.png');
+  const [imgSrc, setImgSrc] = useState(normalizedSrc);
   const [prevSrc, setPrevSrc] = useState(normalizedSrc);
+  const [hasError, setHasError] = useState(false);
 
   if (normalizedSrc !== prevSrc) {
-    setImgSrc(normalizedSrc || '/assets/sneaker_white.png');
+    setImgSrc(normalizedSrc);
     setPrevSrc(normalizedSrc);
+    setHasError(false);
   }
 
-  if (!src) return null;
-
-  // Handle aspectRatio style mapping
   const containerStyle = {
     position: 'relative',
     width: '100%',
@@ -45,6 +44,12 @@ const OptimizedImage = ({
 
   if (aspectRatio) {
     containerStyle.aspectRatio = aspectRatio;
+  }
+
+  if (!src || hasError) {
+    return (
+      <div className={className} style={{ ...containerStyle, background: '#f5f5f5' }} />
+    );
   }
 
   return (
@@ -60,9 +65,7 @@ const OptimizedImage = ({
           maxWidth: '100%',
           maxHeight: '100%',
         }}
-        onError={() => {
-          setImgSrc('/assets/sneaker_white.png');
-        }}
+        onError={() => setHasError(true)}
         {...props}
       />
     </div>
@@ -70,4 +73,3 @@ const OptimizedImage = ({
 };
 
 export default OptimizedImage;
-

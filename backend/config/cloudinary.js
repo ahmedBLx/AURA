@@ -57,7 +57,13 @@ const uploadToCloudinary = (buffer, folder = 'aura/products') => {
     const hasMissingKeys = !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET;
 
     if (hasInvalidName || hasMissingKeys) {
-      console.warn('Cloudinary is not configured or holds a placeholder name. Routing to local storage directly.');
+      // Vercel filesystem is read-only — local fallback cannot work there.
+      if (process.env.VERCEL) {
+        reject(new Error('Cloudinary credentials are required for image uploads on Vercel. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET in your Vercel environment variables.'));
+        return;
+      }
+      // Local dev only — writable filesystem, acceptable for development without Cloudinary.
+      console.warn('Cloudinary not configured — saving to local uploads/ for development only.');
       try {
         const localPath = saveToLocalStorage(buffer);
         resolve(localPath);
@@ -68,7 +74,6 @@ const uploadToCloudinary = (buffer, folder = 'aura/products') => {
     }
 
     try {
-      // Attempt Cloudinary upload
       const stream = cloudinary.uploader.upload_stream(
         {
           folder,
@@ -77,13 +82,7 @@ const uploadToCloudinary = (buffer, folder = 'aura/products') => {
         },
         (error, result) => {
           if (error) {
-            console.warn('Cloudinary upload callback failed, falling back to local file storage:', error.message);
-            try {
-              const localPath = saveToLocalStorage(buffer);
-              resolve(localPath);
-            } catch (localErr) {
-              reject(new Error(`Cloudinary upload failed (${error.message}) and local fallback failed (${localErr.message})`));
-            }
+            reject(new Error(`Cloudinary upload failed: ${error.message}`));
             return;
           }
           resolve(result.secure_url);
@@ -91,13 +90,7 @@ const uploadToCloudinary = (buffer, folder = 'aura/products') => {
       );
       stream.end(buffer);
     } catch (syncError) {
-      console.warn('Cloudinary stream creation failed synchronously, falling back to local file storage:', syncError.message);
-      try {
-        const localPath = saveToLocalStorage(buffer);
-        resolve(localPath);
-      } catch (localErr) {
-        reject(new Error(`Cloudinary sync error (${syncError.message}) and local fallback failed (${localErr.message})`));
-      }
+      reject(new Error(`Cloudinary upload error: ${syncError.message}`));
     }
   });
 };

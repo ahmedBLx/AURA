@@ -73,7 +73,7 @@ export const AdminProvider = ({ children }) => {
                     const prod = item.product;
                     const imgUrl = prod && prod.img 
                         ? (prod.img.startsWith('http') || prod.img.startsWith('assets') || prod.img.startsWith('data:') ? prod.img : `${BASE_URL}/${prod.img}`)
-                        : 'assets/sneaker_white.png';
+                        : null;
                     return {
                         id: prod ? (prod._id || prod.id) : item._id,
                         name: item.productName,
