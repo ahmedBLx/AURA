@@ -33,7 +33,7 @@
 
 body {
     font-family: var(--font-body);
-    background-color: #FFFFFF;
+    background-color: transparent;
     color: var(--color-text-dark);
     line-height: 1.5;
     overflow-x: hidden;
@@ -3749,7 +3749,7 @@ html.light-theme .whatsapp-number-item:hover .number-value {
    ========================================== */
 body.dark-shop,
 body.dark-admin {
-    background-color: #000000;
+    background-color: transparent;
     color: #FFFFFF;
 }
 
@@ -4089,7 +4089,7 @@ body.dark-shop::before {
    DYNAMIC DISSOLVING IRIDESCENT BACKGROUND (index.html)
    ========================================== */
 body.dark-landing {
-    background-color: #000000;
+    background-color: transparent;
     color: #FFFFFF;
 }
 
@@ -4108,7 +4108,7 @@ body.dark-landing .specials-section {
     left: 0;
     width: 100vw;
     height: 100dvh;
-    z-index: -2;
+    z-index: -1;
     background: radial-gradient(circle at 50% 50%, #0d0b14 0%, #000000 100%);
     overflow: hidden;
     pointer-events: none;
@@ -4219,7 +4219,7 @@ body[class^="light-"] .badge-new {
 
 /* Landing Page Hero and Body */
 body.light-landing {
-    background-color: #FFFFFF !important;
+    background-color: transparent !important;
     color: #111827 !important;
 }
 body.light-landing .hero-section {
@@ -4294,7 +4294,7 @@ body.light-landing .locked-glass-card h2 {
 
 /* Shop Page in Light Theme */
 body.light-shop {
-    background-color: #F9FAFB !important;
+    background-color: transparent !important;
     color: #111827 !important;
 }
 body.light-shop .discover-section,
@@ -4516,7 +4516,7 @@ html.light-theme .cart-sidebar-footer {
 
 /* Admin Dashboard in Light Theme */
 body.light-admin {
-    background-color: #F3F4F6 !important;
+    background-color: transparent !important;
     color: #111827 !important;
 }
 body.light-admin .admin-sidebar {
