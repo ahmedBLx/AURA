@@ -10,12 +10,19 @@ const mongoose = require('mongoose');
  */
 const runInTransaction = async (callback) => {
   let session = null;
-  try {
-    session = await mongoose.startSession();
-    session.startTransaction();
-  } catch (err) {
-    console.warn('[TRANSACTION WARNING] standalone database deployment detected. Sessions/transactions are not supported. Falling back to non-transactional execution.');
-    session = null;
+  const client = mongoose.connection.client;
+  const isStandalone = !client || client.topology?.description?.type === 'Single';
+
+  if (!isStandalone) {
+    try {
+      session = await mongoose.startSession();
+      session.startTransaction();
+    } catch (err) {
+      console.warn('[TRANSACTION WARNING] Failed to start session. Falling back to non-transactional execution.');
+      session = null;
+    }
+  } else {
+    console.info('[TRANSACTION INFO] Standalone database deployment detected. Running non-transactionally.');
   }
 
   try {

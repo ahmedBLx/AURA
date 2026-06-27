@@ -4109,7 +4109,7 @@ body.dark-landing .specials-section {
     width: 100vw;
     height: 100dvh;
     z-index: -2;
-    background-color: #000000;
+    background: radial-gradient(circle at 50% 50%, #0d0b14 0%, #000000 100%);
     overflow: hidden;
     pointer-events: none;
 }
@@ -4118,6 +4118,12 @@ body.dark-landing .specials-section {
     width: 100%;
     height: 100%;
     opacity: 0.8;
+}
+
+@media (max-width: 768px) {
+    .iridescent-bg-svg {
+        display: none !important;
+    }
 }
 
 /* Ribbons pulsing and swirling animations */
@@ -4195,7 +4201,7 @@ html.light-theme {
 
 /* Global Background in Light Theme */
 html.light-theme .iridescent-bg-container {
-    background-color: #F9FAFB !important;
+    background: radial-gradient(circle at 50% 50%, #f6f3fa 0%, #f9fafb 100%) !important;
 }
 html.light-theme .iridescent-bg-svg {
     opacity: 0.85 !important;

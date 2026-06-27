@@ -52,11 +52,15 @@ if (!isVercel) {
       filename: path.join(logDir, 'error.log'),
       level: 'error',
       format: winston.format.combine(winston.format.uncolorize(), format),
+      maxsize: 5242880, // 5MB
+      maxFiles: 5,
     }),
     // Output all logs to access.log
     new winston.transports.File({
       filename: path.join(logDir, 'access.log'),
       format: winston.format.combine(winston.format.uncolorize(), format),
+      maxsize: 5242880, // 5MB
+      maxFiles: 5,
     })
   );
 }

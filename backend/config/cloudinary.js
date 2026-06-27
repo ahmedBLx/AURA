@@ -25,13 +25,21 @@ const getExtension = (buffer) => {
   return '.jpg'; // default fallback
 };
 
+const getUploadsDir = () => {
+  const cwd = process.cwd();
+  if (cwd.endsWith('backend') || cwd.endsWith('backend\\') || cwd.endsWith('backend/')) {
+    return path.join(cwd, 'uploads');
+  }
+  return path.join(cwd, 'backend', 'uploads');
+};
+
 /**
  * Helper to save image buffer directly to local storage
  * @param {Buffer} buffer 
  * @returns {string} - relative file path
  */
 const saveToLocalStorage = (buffer) => {
-  const uploadsDir = path.join(__dirname, '..', 'uploads');
+  const uploadsDir = getUploadsDir();
   if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
   }
