@@ -191,15 +191,19 @@ const CartDrawer = () => {
             <div className="cart-sidebar">
                 <div className="cart-sidebar-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        {isCheckingOut && !successOrderId && (
+                        {!successOrderId && (
                             <button 
                                 type="button"
                                 className="cart-back-header-btn"
                                 onClick={() => {
-                                    if (checkoutStep === 'details') {
-                                        setCheckoutStep('phone');
+                                    if (isCheckingOut) {
+                                        if (checkoutStep === 'details') {
+                                            setCheckoutStep('phone');
+                                        } else {
+                                            setIsCheckingOut(false);
+                                        }
                                     } else {
-                                        setIsCheckingOut(false);
+                                        setCartOpen(false);
                                     }
                                 }}
                                 style={{
@@ -854,6 +858,26 @@ const CartDrawer = () => {
                                     }}
                                 >
                                     PROCEED TO CHECKOUT
+                                </button>
+                                <button 
+                                    type="button"
+                                    className="form-cancel-btn" 
+                                    onClick={() => setCartOpen(false)}
+                                    style={{ 
+                                        width: '100%', 
+                                        padding: '14px', 
+                                        borderRadius: 'var(--border-radius-pill)', 
+                                        border: '1px solid var(--btn-cancel-border)', 
+                                        backgroundColor: 'transparent', 
+                                        color: 'var(--btn-cancel-color)', 
+                                        fontWeight: '600', 
+                                        cursor: 'pointer',
+                                        marginTop: '10px',
+                                        textAlign: 'center',
+                                        fontSize: '13px'
+                                    }}
+                                >
+                                    CONTINUE SHOPPING
                                 </button>
                             </div>
                         )}
