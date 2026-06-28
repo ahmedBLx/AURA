@@ -683,7 +683,11 @@ const CartDrawer = () => {
                                 const isStoreReservation = orderType === 'Store Reservation';
                                 const selectedRate = isStoreReservation
                                     ? null
-                                    : shippingRates.find(r => r.governorate.trim().toLowerCase() === governorate.trim().toLowerCase());
+                                    : shippingRates.find(r => {
+                                        const rGov = typeof r?.governorate === 'string' ? r.governorate.trim().toLowerCase() : '';
+                                        const gGov = typeof governorate === 'string' ? governorate.trim().toLowerCase() : '';
+                                        return rGov && gGov && rGov === gGov;
+                                    });
                                 const shippingCost = isStoreReservation ? 0 : (selectedRate ? Number(selectedRate.cost) : 0);
                                 
                                 const discountApplied = (usePoints && loyaltyDetails) ? loyaltyDetails.maxDiscount : 0;

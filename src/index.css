@@ -231,6 +231,12 @@ button {
     animation: logoBehindGlow 9s infinite ease-in-out;
 }
 
+@media (max-width: 768px) {
+    .brand-logo-svg {
+        animation: none !important;
+    }
+}
+
 @media (min-width: 1025px) {
     .brand-logo-svg {
         height: 82px; /* desktop logo size */
@@ -299,16 +305,12 @@ button {
 }
 
 @keyframes logoBehindGlow {
-    /* Pulsing White - Diffuse cloud of light */
+    /* Pulsing White - Single-layer light glow */
     0%, 100% {
-        filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8)) 
-                drop-shadow(0 0 22px rgba(255, 255, 255, 0.5))
-                drop-shadow(0 0 45px rgba(255, 255, 255, 0.25));
+        filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.35));
     }
     50% {
-        filter: drop-shadow(0 0 14px rgba(255, 255, 255, 0.95)) 
-                drop-shadow(0 0 28px rgba(255, 255, 255, 0.65))
-                drop-shadow(0 0 55px rgba(255, 255, 255, 0.35));
+        filter: drop-shadow(0 0 16px rgba(255, 255, 255, 0.55));
     }
 }
 
@@ -6213,7 +6215,7 @@ html.light-theme .lock-icon-wrapper {
     content: '';
     position: absolute;
     top: 0;
-    left: -150%;
+    left: 0;
     width: 60%;
     height: 100%;
     background: linear-gradient(
@@ -6222,8 +6224,9 @@ html.light-theme .lock-icon-wrapper {
         rgba(255, 255, 255, 0.06) 50%,
         rgba(255, 255, 255, 0) 100%
     );
-    transform: skewX(-20deg);
+    transform: translateX(-150%) skewX(-20deg);
     animation: loyalty-banner-shimmer 7s infinite ease-in-out;
+    will-change: transform;
     pointer-events: none;
 }
 
@@ -6238,13 +6241,13 @@ html.light-theme .lock-icon-wrapper {
 
 @keyframes loyalty-banner-shimmer {
     0% {
-        left: -150%;
+        transform: translateX(-150%) skewX(-20deg);
     }
     25% {
-        left: 150%;
+        transform: translateX(250%) skewX(-20deg);
     }
     100% {
-        left: 150%;
+        transform: translateX(250%) skewX(-20deg);
     }
 }
 
