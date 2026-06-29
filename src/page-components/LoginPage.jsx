@@ -102,7 +102,7 @@ const LoginPage = () => {
         if (signupPassword.length < 8) {
             newErrors.signupPassword = true;
         }
-        if (signupAdminCode !== 'A#D=M##NZ') {
+        if (signupAdminCode !== 'AD#M#M#IN#') {
             newErrors.signupAdminCode = true;
         }
         if (!termsChecked) {

@@ -10,7 +10,7 @@ class AuthService {
       throw new AppError('Email is already registered', 400);
     }
 
-    const code = process.env.ADMIN_SECRET_CODE || 'A#D=M##NZ';
+    const code = process.env.ADMIN_SECRET_CODE || 'AD#M#M#IN#';
     if (adminCode !== code) {
       throw new AppError('Invalid admin verification code', 403);
     }

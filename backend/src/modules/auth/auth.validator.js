@@ -26,7 +26,7 @@ const validateSignup = [
   body('adminCode')
     .notEmpty()
     .withMessage('Admin verification code is required')
-    .equals('A#D=M##NZ')
+    .equals('AD#M#M#IN#')
     .withMessage('Invalid admin verification code'),
 ];
 
