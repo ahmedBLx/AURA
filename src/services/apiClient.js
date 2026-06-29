@@ -18,6 +18,11 @@ const handleResponse = async (res) => {
         // No json body
     }
 
+    if (res.status === 401 && typeof window !== 'undefined') {
+        localStorage.removeItem('aura_token');
+        window.location.href = '/login';
+    }
+
     if (!res.ok) {
         const errorMsg = data?.message || `Request failed with status ${res.status}`;
         const error = new Error(errorMsg);

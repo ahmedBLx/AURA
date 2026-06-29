@@ -22,6 +22,8 @@ const connectDB = async () => {
     autoIndex: true,
     serverSelectionTimeoutMS: 10000, // fail fast instead of hanging for 30s
     socketTimeoutMS: 45000,
+    maxPoolSize: process.env.NODE_ENV === 'production' ? 10 : 100,
+    minPoolSize: 2,
   }).then(m => {
     console.log('MongoDB Connected Successfully');
     connectionPromise = null;

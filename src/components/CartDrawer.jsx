@@ -1,3 +1,5 @@
+'use client';
+
 import OptimizedImage from './OptimizedImage';
 import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
