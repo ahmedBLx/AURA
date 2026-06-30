@@ -88,41 +88,37 @@ const Header = () => {
                     </button>
 
                     {/* Cart Button */}
-                    {!isAdmin && (
-                        <button 
-                            suppressHydrationWarning
-                            className="icon-btn cart-btn" 
-                            id="cart-btn"
-                            onClick={() => setCartOpen(true)}
-                            aria-label="Open Cart Bag"
-                        >
-                            <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
-                                <line x1="3" y1="6" x2="21" y2="6"></line>
-                                <path d="M16 10a4 4 0 0 1-8 0"></path>
-                            </svg>
-                            <span className="cart-badge">{cartCount}</span>
-                        </button>
-                    )}
+                    <button 
+                        suppressHydrationWarning
+                        className="icon-btn cart-btn" 
+                        id="cart-btn"
+                        onClick={() => setCartOpen(true)}
+                        aria-label="Open Cart Bag"
+                    >
+                        <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <path d="M16 10a4 4 0 0 1-8 0"></path>
+                        </svg>
+                        <span className="cart-badge">{cartCount}</span>
+                    </button>
                 </div>
             </div>
 
             {/* Navigation Centered Row Under Brand Logo */}
-            {!isAdmin && (
-                <div className="header-nav-row">
-                    <nav className="desktop-nav-centered">
-                        <Link href="/" className="nav-link nav-home-link" aria-label="Home" title="Home">
-                            <svg className="icon home-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ width: '20px', height: '20px' }}>
-                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                                <polyline points="9 22 9 12 15 12 15 22"></polyline>
-                            </svg>
-                        </Link>
-                        <Link href="/men" className="nav-link">Men</Link>
-                        <Link href="/women" className="nav-link">Women</Link>
-                        <Link href="/offers" className="nav-link">Offers</Link>
-                    </nav>
-                </div>
-            )}
+            <div className="header-nav-row">
+                <nav className="desktop-nav-centered">
+                    <Link href="/" className="nav-link nav-home-link" aria-label="Home" title="Home">
+                        <svg className="icon home-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ width: '20px', height: '20px' }}>
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                        </svg>
+                    </Link>
+                    <Link href="/men" className="nav-link">Men</Link>
+                    <Link href="/women" className="nav-link">Women</Link>
+                    <Link href="/offers" className="nav-link">Offers</Link>
+                </nav>
+            </div>
         </header>
     );
 };

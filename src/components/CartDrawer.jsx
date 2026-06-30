@@ -340,7 +340,7 @@ const CartDrawer = () => {
                             )}
 
                             <div className="checkout-group">
-                                <label htmlFor="chk-lookup-phone">Mobile Phone Number *</label>
+                                <label htmlFor="chk-lookup-phone">Mobile Phone Number / الهاتف *</label>
                                 <input 
                                     type="tel" 
                                     id="chk-lookup-phone" 
@@ -466,7 +466,7 @@ const CartDrawer = () => {
                             </div>
 
                             <div className="checkout-group">
-                                <label htmlFor="chk-name">Full Name *</label>
+                                <label htmlFor="chk-name">Full Name / الاسم *</label>
                                 <input 
                                     type="text" 
                                     id="chk-name" 
@@ -479,7 +479,7 @@ const CartDrawer = () => {
                             </div>
 
                             <div className="checkout-group">
-                                <label htmlFor="chk-alt-phone">Alternative Phone {orderType === 'Store Reservation' ? '*' : '(Optional)'}</label>
+                                <label htmlFor="chk-alt-phone">Alternative Phone / بديل {orderType === 'Store Reservation' ? '*' : '(Optional)'}</label>
                                 <input 
                                     type="tel" 
                                     id="chk-alt-phone" 
@@ -495,7 +495,7 @@ const CartDrawer = () => {
                                 <>
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                                         <div className="checkout-group">
-                                            <label htmlFor="chk-gov">Governorate *</label>
+                                            <label htmlFor="chk-gov">Governorate / المحافظة *</label>
                                             <select 
                                                 id="chk-gov" 
                                                 className="checkout-input" 
@@ -513,7 +513,7 @@ const CartDrawer = () => {
                                             </select>
                                         </div>
                                         <div className="checkout-group">
-                                            <label htmlFor="chk-city">City *</label>
+                                            <label htmlFor="chk-city">City / المدينة *</label>
                                             <input 
                                                 type="text" 
                                                 id="chk-city" 
@@ -527,7 +527,7 @@ const CartDrawer = () => {
                                     </div>
 
                                     <div className="checkout-group">
-                                        <label htmlFor="chk-address">Detailed Shipping Address *</label>
+                                        <label htmlFor="chk-address">Detailed Shipping Address / العنوان *</label>
                                         <textarea 
                                             id="chk-address" 
                                             className="checkout-input" 
@@ -543,7 +543,7 @@ const CartDrawer = () => {
                             )}
 
                             <div className="checkout-group">
-                                <label htmlFor="chk-notes">Additional Notes (Optional)</label>
+                                <label htmlFor="chk-notes">Additional Notes / ملاحظات (Optional)</label>
                                 <textarea 
                                     id="chk-notes" 
                                     className="checkout-input" 
@@ -572,7 +572,7 @@ const CartDrawer = () => {
                             ) : (
                                 <>
                                     <div className="checkout-group">
-                                        <label htmlFor="chk-payment">Payment Method</label>
+                                        <label htmlFor="chk-payment">Payment Method / الدفع</label>
                                         <select
                                             id="chk-payment"
                                             className="checkout-input"
