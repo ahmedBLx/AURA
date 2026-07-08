@@ -36,11 +36,11 @@ backendProcess.stdout.on('data', (data) => log('Backend', BACKEND_COLOR, data));
 backendProcess.stderr.on('data', (data) => log('Backend Error', BACKEND_COLOR, data));
 
 // 2. Start Frontend Server
-console.log(`${SYSTEM_COLOR}[System] Starting Frontend Server on port 5002...${RESET}`);
+console.log(`${SYSTEM_COLOR}[System] Starting Frontend Server on port 5004...${RESET}`);
 const frontendProcess = spawn('npm', ['run', 'dev'], {
   cwd: __dirname,
   shell: true,
-  env: { ...process.env, PORT: '5002' }
+  env: { ...process.env, PORT: '5004' }
 });
 
 frontendProcess.stdout.on('data', (data) => log('Frontend', FRONTEND_COLOR, data));

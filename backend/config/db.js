@@ -5,7 +5,10 @@ const mongoose = require('mongoose');
 let connectionPromise = null;
 
 const connectDB = async () => {
-  const uri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/aura_store';
+  const uri = process.env.MONGODB_URI;
+  if (!uri) {
+    throw new Error('MONGODB_URI environment variable is not defined');
+  }
 
   // 0 = disconnected, 1 = connected, 2 = connecting, 3 = disconnecting
   if (mongoose.connection.readyState === 1) {
@@ -25,7 +28,9 @@ const connectDB = async () => {
     maxPoolSize: process.env.NODE_ENV === 'production' ? 10 : 100,
     minPoolSize: 2,
   }).then(m => {
-    console.log('MongoDB Connected Successfully');
+    console.log('MongoDB Connected');
+    console.log(`Host: ${m.connection.host}`);
+    console.log(`Database Name: ${m.connection.name}`);
     connectionPromise = null;
     return m.connection;
   }).catch(err => {
