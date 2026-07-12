@@ -6801,10 +6801,17 @@ html.light-theme .checkout-input:focus {
     border-top: 1px solid rgba(197, 168, 128, 0.12);
     border-bottom: 1px solid rgba(197, 168, 128, 0.12);
     padding: 16px 0;
-    position: relative;
+    position: sticky;
+    top: 115px;
     user-select: none;
-    z-index: 10;
-    transition: background-color 0.3s ease, border-color 0.3s ease;
+    z-index: 99;
+    transition: background-color 0.3s ease, border-color 0.3s ease, top 0.3s ease;
+}
+
+@media (min-width: 1025px) {
+    .brand-ticker-container {
+        top: 130px;
+    }
 }
 
 /* Light Theme overrides using the body classes set by BodySync */
@@ -6845,7 +6852,7 @@ body[class*="light-"] .brand-ticker-container::after {
 .brand-ticker-track {
     display: flex;
     width: max-content;
-    animation: brand-ticker-scroll 35s linear infinite;
+    animation: brand-ticker-scroll 22s linear infinite;
 }
 
 .brand-ticker-track:hover {
@@ -6871,7 +6878,7 @@ body[class*="light-"] .brand-ticker-container::after {
 .brand-logo-img {
     height: 24px;
     width: auto;
-    max-width: 140px;
+    max-width: 220px;
     opacity: 0.4;
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     /* Default dark theme: invert black SVG logos to white */
