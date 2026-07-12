@@ -6788,3 +6788,132 @@ html.light-theme .checkout-input:focus {
     color: var(--color-gold);
     letter-spacing: 0.05em;
 }
+
+/* ==========================================
+   BRAND LOGO TICKER / MARQUEE STYLES
+   ========================================== */
+.brand-ticker-container {
+    width: 100%;
+    overflow: hidden;
+    background: rgba(10, 10, 10, 0.7);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border-top: 1px solid rgba(197, 168, 128, 0.12);
+    border-bottom: 1px solid rgba(197, 168, 128, 0.12);
+    padding: 16px 0;
+    position: relative;
+    user-select: none;
+    z-index: 10;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Light Theme overrides using the body classes set by BodySync */
+body[class*="light-"] .brand-ticker-container {
+    background: rgba(245, 245, 245, 0.85);
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+/* Side fading gradients for luxury smooth edges */
+.brand-ticker-container::before,
+.brand-ticker-container::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    width: 150px;
+    height: 100%;
+    z-index: 5;
+    pointer-events: none;
+    transition: background 0.3s ease;
+}
+.brand-ticker-container::before {
+    left: 0;
+    background: linear-gradient(to right, #000000, transparent);
+}
+.brand-ticker-container::after {
+    right: 0;
+    background: linear-gradient(to left, #000000, transparent);
+}
+
+body[class*="light-"] .brand-ticker-container::before {
+    background: linear-gradient(to right, #F9FAFB, transparent);
+}
+body[class*="light-"] .brand-ticker-container::after {
+    background: linear-gradient(to left, #F9FAFB, transparent);
+}
+
+.brand-ticker-track {
+    display: flex;
+    width: max-content;
+    animation: brand-ticker-scroll 35s linear infinite;
+}
+
+.brand-ticker-track:hover {
+    animation-play-state: paused;
+}
+
+.brand-ticker-group {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    gap: 70px;
+    padding-right: 70px;
+}
+
+.brand-logo-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.brand-logo-img {
+    height: 24px;
+    width: auto;
+    max-width: 140px;
+    opacity: 0.4;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    /* Default dark theme: invert black SVG logos to white */
+    filter: invert(1) brightness(0.9);
+}
+
+body[class*="light-"] .brand-logo-img {
+    /* Light theme: keep logos dark/black */
+    filter: invert(0) brightness(0.15);
+    opacity: 0.45;
+}
+
+.brand-logo-item:hover .brand-logo-img {
+    opacity: 1;
+    transform: scale(1.08) translateY(-1px);
+    /* Hover: turn logos to luxury gold (#C5A880) */
+    filter: invert(72%) sepia(17%) saturate(735%) hue-rotate(352deg) brightness(88%) contrast(85%);
+}
+
+@keyframes brand-ticker-scroll {
+    0% {
+        transform: translate3d(0, 0, 0);
+    }
+    100% {
+        transform: translate3d(-50%, 0, 0);
+    }
+}
+
+@media (max-width: 768px) {
+    .brand-ticker-container {
+        padding: 12px 0;
+    }
+    .brand-ticker-container::before,
+    .brand-ticker-container::after {
+        width: 60px;
+    }
+    .brand-ticker-group {
+        gap: 40px;
+        padding-right: 40px;
+    }
+    .brand-logo-img {
+        height: 18px;
+    }
+}
+

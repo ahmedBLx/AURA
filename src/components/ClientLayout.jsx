@@ -4,6 +4,7 @@ import React from 'react';
 import { usePathname } from 'next/navigation';
 import Header from './Header';
 import Footer from './Footer';
+import BrandTicker from './BrandTicker';
 import CartDrawer from './CartDrawer';
 import GlobalBackground from './GlobalBackground';
 import BodySync from './BodySync';
@@ -26,6 +27,9 @@ export default function ClientLayout({ children }) {
 
       {/* Show header except on admin page */}
       {!isAdminPage && <Header />}
+      
+      {/* Show Brand Ticker except on admin page */}
+      {!isAdminPage && <BrandTicker />}
       
       {children}
 
