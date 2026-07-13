@@ -18,6 +18,7 @@ export default function SubCategoryProductCarousel({
     const carouselRef = useRef(null);
     const [currentSlide, setCurrentSlide] = useState(0);
     const [isPaused, setIsPaused] = useState(false);
+    const [isHovered, setIsHovered] = useState(false);
     const [scrollProgress, setScrollProgress] = useState(0);
     const [visibleRatio, setVisibleRatio] = useState(0.2);
     const resumeTimerRef = useRef(null);
@@ -51,16 +52,16 @@ export default function SubCategoryProductCarousel({
         container.scrollTo({ left: cardWidth * index, behavior: 'smooth' });
     }, [totalSlides]);
 
-    // Auto-scroll every 4 seconds if not paused
+    // Auto-scroll every 3.5 seconds if not paused and not hovered
     useEffect(() => {
-        if (totalSlides <= 1 || isPaused || layout === 'list') return;
+        if (totalSlides <= 1 || isPaused || isHovered || layout === 'list') return;
 
         const timer = setInterval(() => {
             setCurrentSlide((prevSlide) => (prevSlide + 1) % totalSlides);
-        }, 4000);
+        }, 3500);
 
         return () => clearInterval(timer);
-    }, [totalSlides, isPaused, layout]);
+    }, [totalSlides, isPaused, isHovered, layout]);
 
     // Trigger visual scroll whenever currentSlide updates
     useEffect(() => {
@@ -365,7 +366,14 @@ export default function SubCategoryProductCarousel({
                 }
                 `}</style>
 
-                <div className="category-carousel-wrapper" style={{ maxWidth: '100%', position: 'relative' }}>
+                <div 
+                    className="category-carousel-wrapper" 
+                    style={{ maxWidth: '100%', position: 'relative' }}
+                    onMouseEnter={() => setIsHovered(true)}
+                    onMouseLeave={() => setIsHovered(false)}
+                    onTouchStart={() => setIsHovered(true)}
+                    onTouchEnd={() => setIsHovered(false)}
+                >
                     {/* Navigation Buttons */}
                     {totalSlides > 1 && layout !== 'list' && (
                         <>
