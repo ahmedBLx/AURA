@@ -101,7 +101,7 @@ const QuickViewModal = ({ product, isOpen, onClose }) => {
                         justifyContent: 'center',
                         padding: '4px',
                         transition: 'color 0.2s',
-                        zIndex: 11
+                        zIndex: 25
                     }}
                     onMouseEnter={(e) => e.currentTarget.style.color = 'var(--color-gold)'}
                     onMouseLeave={(e) => e.currentTarget.style.color = 'var(--color-text-muted)'}
@@ -119,8 +119,8 @@ const QuickViewModal = ({ product, isOpen, onClose }) => {
                 </button>
                 <div className="modal-body">
                     {/* Left Column Image & Gallery */}
-                    <div className="modal-image-col" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                        <div className="modal-main-image-container" style={{ width: '100%', height: '320px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.05)', backgroundColor: 'rgba(0, 0, 0, 0.2)' }}>
+                    <div className="modal-image-col">
+                        <div className="modal-main-image-container">
                             <OptimizedImage src={activeImg || product.img} alt={product.name} className="object-contain" aspectRatio="4/3" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', transition: 'all 0.3s ease' }} />
                         </div>
                         

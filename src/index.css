@@ -1311,9 +1311,27 @@ button {
     flex: 1;
     background-color: var(--color-card-dark);
     display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 40px;
+}
+
+.modal-main-image-container {
+    width: 100%;
+    height: 320px;
+    display: flex;
     align-items: center;
     justify-content: center;
-    padding: 40px;
+    overflow: hidden;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    background-color: rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+html.light-theme .modal-main-image-container {
+    background-color: rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .modal-image-col img {
@@ -5145,16 +5163,75 @@ html.light-theme .product-grid.list-layout .product-name {
     }
 
     /* Quick View Modal columns stack */
+    .modal-content {
+        max-width: 95% !important;
+        width: 95% !important;
+        max-height: 90vh !important;
+        display: flex !important;
+        flex-direction: column !important;
+        overflow: hidden !important;
+    }
+
     .modal-body {
         flex-direction: column !important;
+        overflow-y: auto !important;
+        max-height: calc(90vh - 20px) !important;
+        display: flex !important;
+        flex: 1 !important;
+        -webkit-overflow-scrolling: touch;
     }
     
     .modal-image-col {
-        padding: 24px !important;
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 15 !important;
+        padding: 16px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 12px !important;
+        background-color: var(--color-card-dark) !important;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2) !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+    }
+
+    html.light-theme .modal-image-col {
+        background-color: #F3F4F6 !important;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+    }
+
+    .modal-main-image-container {
+        height: 220px !important;
     }
     
     .modal-info-col {
-        padding: 24px !important;
+        padding: 20px 16px 24px !important;
+        background-color: #FFFFFF !important;
+    }
+
+    html.light-theme .modal-info-col {
+        background-color: #FFFFFF !important;
+    }
+
+    .modal-close-btn {
+        top: 16px !important;
+        right: 16px !important;
+        z-index: 25 !important;
+        color: #FFFFFF !important;
+    }
+    
+    html.light-theme .modal-close-btn {
+        color: #111827 !important;
+    }
+
+    .modal-back-arrow-btn {
+        top: 16px !important;
+        left: 16px !important;
+        z-index: 25 !important;
+        color: #FFFFFF !important;
+    }
+    
+    html.light-theme .modal-back-arrow-btn {
+        color: #111827 !important;
     }
     
     /* Footer Layout columns stack */
