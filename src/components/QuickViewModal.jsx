@@ -263,14 +263,13 @@ const QuickViewModal = ({ product, isOpen, onClose }) => {
                     </svg>
                 </button>
                 <div className="fullscreen-image-container" onClick={(e) => e.stopPropagation()}>
-                    <OptimizedImage 
-                        src={activeImg || product.img} 
+                    <img 
+                        src={
+                            (activeImg || product.img || '').startsWith('assets/') || (activeImg || product.img || '').startsWith('uploads/')
+                                ? '/' + (activeImg || product.img)
+                                : (activeImg || product.img)
+                        } 
                         alt={product.name} 
-                        style={{ 
-                            maxWidth: '100%', 
-                            maxHeight: '100%', 
-                            objectFit: 'contain'
-                        }} 
                     />
                 </div>
             </div>
