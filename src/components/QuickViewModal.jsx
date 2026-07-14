@@ -7,6 +7,7 @@ const QuickViewModal = ({ product, isOpen, onClose }) => {
     const [selectedSize, setSelectedSize] = useState('42');
     const [addedStatus, setAddedStatus] = useState(false);
     const [activeImg, setActiveImg] = useState('');
+    const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
     const openTimeRef = useRef(0);
 
     const productSizes = useMemo(() => (
@@ -34,6 +35,7 @@ const QuickViewModal = ({ product, isOpen, onClose }) => {
             setAddedStatus(false);
             setSelectedSize('42');
             setActiveImg('');
+            setIsFullscreenOpen(false);
         } else if (product) {
             openTimeRef.current = Date.now();
             const sizes = (product.sizes && product.sizes.length > 0)
@@ -41,6 +43,7 @@ const QuickViewModal = ({ product, isOpen, onClose }) => {
                 : ['38', '39', '40', '41', '42', '43', '44', '45', '46', '47'];
             setSelectedSize(sizes.includes('42') ? '42' : sizes[0]);
             setActiveImg(product.img);
+            setIsFullscreenOpen(false);
         }
     }, [isOpen, product]);
 
@@ -74,6 +77,7 @@ const QuickViewModal = ({ product, isOpen, onClose }) => {
     };
 
     return (
+        <>
         <div 
             className="modal-backdrop active" 
             onClick={(e) => {
@@ -120,7 +124,7 @@ const QuickViewModal = ({ product, isOpen, onClose }) => {
                 <div className="modal-body">
                     {/* Left Column Image & Gallery */}
                     <div className="modal-image-col">
-                        <div className="modal-main-image-container">
+                        <div className="modal-main-image-container" onClick={() => setIsFullscreenOpen(true)}>
                             <OptimizedImage src={activeImg || product.img} alt={product.name} className="object-contain" aspectRatio="4/3" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', transition: 'all 0.3s ease' }} />
                         </div>
                         
@@ -240,6 +244,38 @@ const QuickViewModal = ({ product, isOpen, onClose }) => {
                 </div>
             </div>
         </div>
+        {isFullscreenOpen && (
+            <div 
+                className="image-fullscreen-overlay"
+                onClick={() => setIsFullscreenOpen(false)}
+            >
+                <button 
+                    className="fullscreen-close-btn"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        setIsFullscreenOpen(false);
+                    }}
+                    aria-label="Close fullscreen view"
+                >
+                    <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ width: '24px', height: '24px' }}>
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+                <div className="fullscreen-image-container" onClick={(e) => e.stopPropagation()}>
+                    <OptimizedImage 
+                        src={activeImg || product.img} 
+                        alt={product.name} 
+                        style={{ 
+                            maxWidth: '100%', 
+                            maxHeight: '100%', 
+                            objectFit: 'contain'
+                        }} 
+                    />
+                </div>
+            </div>
+        )}
+        </>
     );
 };
 

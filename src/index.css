@@ -1327,6 +1327,7 @@ button {
     border: 1px solid rgba(255, 255, 255, 0.05);
     background-color: rgba(0, 0, 0, 0.2);
     transition: all 0.3s ease;
+    cursor: zoom-in;
 }
 
 html.light-theme .modal-main-image-container {
@@ -7000,4 +7001,85 @@ body[class*="light-"] .brand-logo-img {
         height: 18px;
     }
 }
+
+/* ==========================================
+   FULLSCREEN IMAGE PREVIEW (LIGHTBOX)
+   ========================================== */
+.image-fullscreen-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.95);
+    z-index: 200; /* overlay headers and other modals */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    cursor: zoom-out;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.fullscreen-image-container {
+    max-width: 90%;
+    max-height: 90%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: scaleIn 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.fullscreen-image-container img {
+    max-width: 100vw;
+    max-height: 100vh;
+    object-fit: contain;
+    filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.8));
+}
+
+.fullscreen-close-btn {
+    position: absolute;
+    top: 30px;
+    right: 30px;
+    color: #FFFFFF;
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    z-index: 210;
+}
+
+.fullscreen-close-btn:hover {
+    background-color: rgba(255, 255, 255, 0.25);
+    color: var(--color-gold);
+    transform: rotate(90deg) scale(1.05);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
 
