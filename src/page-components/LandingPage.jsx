@@ -124,7 +124,7 @@ const LandingPage = () => {
 
                 <div className="hero-content">
                     <span className="hero-brand-tagline">AURA</span>
-                    <h1 className="hero-heading">Dare to dream</h1>
+                    <h1 className="hero-heading">Dare To Dream</h1>
                     <p className="hero-subtitle">Step into comfort, style, and innovation.</p>
                     <div className="hero-ctas">
                         <div className="shop-now-dropdown-container">
