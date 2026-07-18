@@ -424,7 +424,7 @@ export default function SubCategoryProductCarousel({
                                         margin: 0,
                                         backgroundColor: 'var(--color-card-dark)',
                                         border: '1px solid var(--border-color)',
-                                        borderRadius: '20px',
+                                        borderRadius: '12px',
                                         overflow: 'hidden'
                                     }}
                                 >
