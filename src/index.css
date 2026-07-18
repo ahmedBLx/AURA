@@ -5790,6 +5790,7 @@ html.light-theme .carousel-dot.active {
     overflow: hidden;
     position: relative;
     height: 280px !important; /* Square image box to maximize image space */
+    padding: 15px !important;
 }
 
 .product-card.item-card:hover .card-image-box {

@@ -439,7 +439,7 @@ export default function SubCategoryProductCarousel({
                                                 {badgeLabel}
                                             </span>
                                         )}
-                                        <OptimizedImage src={p.img} alt={p.name} className="product-img" aspectRatio="4/3" style={{ maxWidth: '90%', maxHeight: '90%', objectFit: 'contain', transition: 'transform 0.4s ease' }} />
+                                        <OptimizedImage src={p.img} alt={p.name} className="product-img" aspectRatio="4/3" style={{ maxWidth: '96%', maxHeight: '96%', objectFit: 'contain', transition: 'transform 0.4s ease' }} />
                                         {layout !== 'list' && (
                                             <div className="card-overlay-actions">
                                                 <button className="quick-view-btn" onClick={(e) => { e.stopPropagation(); handleQuickView(p, finalPrice); }}>Quick View</button>
