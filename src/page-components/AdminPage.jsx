@@ -1214,20 +1214,20 @@ const AdminPage = () => {
                 
                 /* Sidebar Light Overrides */
                 .light-theme .admin-sidebar {
-                    background-color: #111827 !important;
-                    color: #FFFFFF;
-                    border-right-color: rgba(255,255,255,0.05);
+                    background-color: #FFFFFF !important;
+                    color: #111827 !important;
+                    border-right-color: rgba(0,0,0,0.08) !important;
                 }
                 .light-theme .admin-sidebar .sidebar-link {
-                    color: rgba(255,255,255,0.7);
+                    color: rgba(17, 24, 39, 0.7) !important;
                 }
                 .light-theme .admin-sidebar .sidebar-link.active,
                 .light-theme .admin-sidebar .sidebar-link:hover {
-                    background-color: rgba(197, 168, 128, 0.15);
-                    color: var(--color-gold);
+                    background-color: rgba(197, 168, 128, 0.12) !important;
+                    color: var(--color-gold-hover, #b0916a) !important;
                 }
                 .light-theme .admin-sidebar .sidebar-footer {
-                    border-top-color: rgba(255,255,255,0.08);
+                    border-top-color: rgba(0,0,0,0.08) !important;
                 }
 
                 /* Buttons & Actions Styling */
@@ -1365,9 +1365,9 @@ const AdminPage = () => {
 
                 <div className="sidebar-footer">
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>Admin: {user ? user.name : 'AURA'}</span>
+                        <span style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>Admin: {user ? user.name : 'AURA'}</span>
                     </div>
-                    <button className="admin-logout-btn" onClick={handleLogout} style={{ width: '100%', padding: '12px', borderRadius: '30px', border: '1px solid rgba(255,255,255,0.2)', color: '#FFFFFF', cursor: 'pointer', transition: 'all 0.2s', backgroundColor: 'transparent' }}>
+                    <button className="admin-logout-btn" onClick={handleLogout} style={{ width: '100%', padding: '12px', borderRadius: '30px', border: '1px solid var(--border-color)', color: 'var(--color-text-dark)', cursor: 'pointer', transition: 'all 0.2s', backgroundColor: 'transparent' }}>
                         Logout
                     </button>
                 </div>
@@ -1750,7 +1750,7 @@ const AdminPage = () => {
                                     const subs = getSubcategories(mainCat.name);
                                     const mainLinkedCount = productCategoryCounts.get(mainCat.name) || 0;
                                     return (
-                                        <div key={mainCat._id} style={{ marginBottom: '24px' }}>
+                                        <div key={mainCat._id} style={{ marginBottom: '12px' }}>
                                             <div style={{
                                                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                                                 padding: '12px 16px',

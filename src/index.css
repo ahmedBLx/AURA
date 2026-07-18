@@ -4545,16 +4545,16 @@ body.light-admin .admin-sidebar {
     background-color: #FFFFFF !important;
     border-right: 1px solid rgba(0, 0, 0, 0.08) !important;
 }
-body.light-admin .sidebar-nav-item {
+body.light-admin .sidebar-link {
     color: rgba(17, 24, 39, 0.7) !important;
 }
-body.light-admin .sidebar-nav-item:hover {
+body.light-admin .sidebar-link:hover {
     background-color: rgba(17, 24, 39, 0.03) !important;
     color: #111827 !important;
 }
-body.light-admin .sidebar-nav-item.active {
+body.light-admin .sidebar-link.active {
     background-color: rgba(197, 168, 128, 0.08) !important;
-    color: var(--color-gold) !important;
+    color: var(--color-gold-hover, #b0916a) !important;
 }
 body.light-admin .admin-dashboard-container {
     background-color: transparent !important;
