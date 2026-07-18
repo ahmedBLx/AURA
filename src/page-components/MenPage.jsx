@@ -4,6 +4,7 @@ import { useProducts } from '../context/ProductContext';
 import QuickViewModal from '../components/QuickViewModal';
 import SocialMedia from '../components/SocialMedia';
 import SubCategoryProductCarousel from '../components/SubCategoryProductCarousel';
+import OptimizedImage from '../components/OptimizedImage';
 
 const MenPage = () => {
     const { products, categories } = useProducts();

@@ -1751,10 +1751,9 @@ const AdminPage = () => {
                                     const mainLinkedCount = productCategoryCounts.get(mainCat.name) || 0;
                                     return (
                                         <div key={mainCat._id} style={{ marginBottom: '24px' }}>
-                                            {/* Main Category Header */}
                                             <div style={{
                                                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                                padding: '12px 16px', borderRadius: '12px 12px 0 0',
+                                                padding: '12px 16px',
                                                 background: 'linear-gradient(135deg, rgba(197, 168, 128, 0.12), rgba(197, 168, 128, 0.04))',
                                                 border: '1px solid var(--border-color)', borderBottom: subs.length > 0 ? 'none' : '1px solid var(--border-color)',
                                                 borderRadius: subs.length > 0 ? '12px 12px 0 0' : '12px'
