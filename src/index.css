@@ -5767,7 +5767,7 @@ html.light-theme .carousel-dot.active {
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     border: 1px solid rgba(255, 255, 255, 0.07) !important;
-    border-radius: 12px !important;
+    border-radius: 8px !important;
     transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25) !important;
 }
@@ -5782,7 +5782,7 @@ html.light-theme .carousel-dot.active {
 /* Card Image Box with Sneaker Glow Background */
 .product-card.item-card .card-image-box {
     background: radial-gradient(circle, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0) 70%) !important;
-    border-radius: 12px 12px 0 0;
+    border-radius: 8px 8px 0 0;
     transition: background 0.4s ease;
     display: flex;
     align-items: center;
