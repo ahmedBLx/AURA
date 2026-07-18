@@ -214,7 +214,7 @@ export default function SubCategoryProductCarousel({
     // Consolidating cleanup on unmount at the top effect
 
     return (
-        <section className="category-carousel-section" style={{ padding: '20px 0' }}>
+        <section className="category-carousel-section" style={{ padding: '5px 0' }}>
             {showViewAll ? (
                 /* Landing Page Header Layout */
                 <div className="category-carousel-header">
@@ -249,7 +249,7 @@ export default function SubCategoryProductCarousel({
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
-                    margin: '40px 0 20px 0',
+                    margin: '10px 0 10px 0',
                     width: '100%',
                     position: 'relative'
                 }}>

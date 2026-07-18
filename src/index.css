@@ -4598,15 +4598,39 @@ body.light-admin .admin-modal-content {
 }
 body.light-admin .admin-input,
 body.light-admin .admin-select,
-body.light-admin .admin-textarea {
+body.light-admin .admin-textarea,
+body.light-admin .form-group input,
+body.light-admin .form-group select,
+body.light-admin .form-group textarea,
+body.light-admin .admin-search-input,
+body.light-admin .admin-select-input {
     background-color: #F3F4F6 !important;
     border: 1px solid rgba(0, 0, 0, 0.08) !important;
     color: #111827 !important;
 }
 body.light-admin .admin-input:focus,
 body.light-admin .admin-select:focus,
-body.light-admin .admin-textarea:focus {
+body.light-admin .admin-textarea:focus,
+body.light-admin .form-group input:focus,
+body.light-admin .form-group select:focus,
+body.light-admin .form-group textarea:focus,
+body.light-admin .admin-search-input:focus,
+body.light-admin .admin-select-input:focus {
     border-color: var(--color-gold) !important;
+    background-color: #FFFFFF !important;
+}
+body.light-admin .form-group select option,
+body.light-admin .admin-select-input option {
+    background-color: #FFFFFF !important;
+    color: #111827 !important;
+}
+body.light-admin .form-group label {
+    color: #374151 !important;
+}
+body.light-admin .form-group input::placeholder,
+body.light-admin .form-group textarea::placeholder,
+body.light-admin .admin-search-input::placeholder {
+    color: #9CA3AF !important;
 }
 
 /* Footer stays dark in all modes — no light overrides needed */
@@ -5501,7 +5525,7 @@ html.light-theme .product-grid.list-layout .product-name {
    CATEGORY CAROUSEL — HOMEPAGE COLLECTIONS
    ========================================== */
 .category-carousel-section {
-    padding: 60px 40px 50px;
+    padding: 10px 40px 10px;
     position: relative;
     overflow: hidden;
 }
@@ -6627,7 +6651,7 @@ html.light-theme .toolbar-search-wrapper.expanded .search-btn {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin: 40px 0 20px 0;
+    margin: 10px 0 10px 0;
     width: 100%;
     position: relative;
     padding: 0 80px;

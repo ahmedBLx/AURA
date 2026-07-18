@@ -613,6 +613,52 @@ const WomenPage = () => {
                 html.light-theme .soon-desc {
                     color: var(--color-text-muted) !important;
                 }
+
+                @media (max-width: 600px) {
+                    .soon-card {
+                        padding: 30px 16px !important;
+                    }
+                    .main-title {
+                        font-size: 26px !important;
+                        margin-bottom: 16px !important;
+                    }
+                    .soon-glow-box {
+                        width: 120px !important;
+                        height: 120px !important;
+                        margin: 20px auto !important;
+                    }
+                    .soon-text-circle {
+                        width: 80px !important;
+                        height: 80px !important;
+                    }
+                    .soon-label {
+                        font-size: 18px !important;
+                    }
+                    .soon-desc {
+                        font-size: 13px !important;
+                        margin-bottom: 24px !important;
+                        padding: 0 10px !important;
+                    }
+                    .notify-input-group {
+                        flex-direction: column !important;
+                        background: transparent !important;
+                        border: none !important;
+                        gap: 10px !important;
+                        padding: 0 !important;
+                    }
+                    .notify-input {
+                        background-color: var(--input-bg) !important;
+                        border: 1px solid var(--input-border) !important;
+                        border-radius: var(--border-radius-pill) !important;
+                        width: 100% !important;
+                        box-sizing: border-box !important;
+                        text-align: center !important;
+                    }
+                    .notify-btn {
+                        width: 100% !important;
+                        border-radius: var(--border-radius-pill) !important;
+                    }
+                }
             `}</style>
 
             <div className="soon-card">
