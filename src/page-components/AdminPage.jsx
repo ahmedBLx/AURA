@@ -579,8 +579,7 @@ const AdminPage = () => {
         const priceVal = parseInt(prodPrice, 10);
         if (isNaN(priceVal)) return;
 
-        const isSpecialCol = wizardMainCats.includes('Special Collection');
-        const discVal = isSpecialCol ? parseInt(discountPercent, 10) : 0;
+        const discVal = parseInt(discountPercent, 10);
         const finalDiscount = isNaN(discVal) ? 0 : Math.max(0, Math.min(100, discVal));
 
         const stockVal = parseInt(prodStock, 10);
@@ -2525,9 +2524,6 @@ const AdminPage = () => {
                                                         onClick={() => {
                                                             if (isSelected) {
                                                                 setWizardMainCats(wizardMainCats.filter(c => c !== mc.name));
-                                                                if (mc.name === 'Special Collection') {
-                                                                    setDiscountPercent(0);
-                                                                }
                                                                 const newSubs = { ...wizardSubCats };
                                                                 delete newSubs[mc.name];
                                                                 setWizardSubCats(newSubs);
@@ -2545,13 +2541,11 @@ const AdminPage = () => {
                                         </div>
                                     </div>
 
-                                    {wizardMainCats.includes('Special Collection') && (
-                                        <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px', backgroundColor: 'rgba(197, 168, 128, 0.05)', padding: '12px 14px', borderRadius: '10px', border: '1px solid rgba(197, 168, 128, 0.2)' }}>
-                                            <label htmlFor="prod-discount" style={{ color: 'var(--color-gold)', fontWeight: '600' }}>Discount Percentage (%)</label>
-                                            <input type="number" id="prod-discount" min="0" max="100" placeholder="e.g. 20 (optional)" value={discountPercent === 0 ? '' : discountPercent} onChange={e => setDiscountPercent(parseInt(e.target.value, 10) || 0)} />
-                                            <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>This discount will apply to the item in Special Collection.</span>
-                                        </div>
-                                    )}
+                                    <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px', backgroundColor: 'rgba(197, 168, 128, 0.05)', padding: '12px 14px', borderRadius: '10px', border: '1px solid rgba(197, 168, 128, 0.2)' }}>
+                                        <label htmlFor="prod-discount" style={{ color: 'var(--color-gold)', fontWeight: '600' }}>Discount Percentage (%)</label>
+                                        <input type="number" id="prod-discount" min="0" max="100" placeholder="e.g. 20 (optional)" value={discountPercent === 0 ? '' : discountPercent} onChange={e => setDiscountPercent(parseInt(e.target.value, 10) || 0)} />
+                                        <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>Enter discount percentage (e.g. 20 for 20% off). Applies across all categories.</span>
+                                    </div>
 
                                     <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                                         <label>Available Sizes (Select Multiple)</label>

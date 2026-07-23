@@ -232,7 +232,14 @@ const MenPage = () => {
                                         <div className="card-info-box">
                                             <div className="info-left">
                                                 <h3 className="product-name">{p.name}</h3>
-                                                <span className="product-price">{hasDiscount ? salePrice : p.price} EGP</span>
+                                                {hasDiscount ? (
+                                                     <div style={{ display: 'flex', gap: '8px', alignItems: 'baseline' }}>
+                                                         <span className="product-price" style={{ color: '#EF4444', fontWeight: 'bold' }}>{salePrice} EGP</span>
+                                                         <span style={{ textDecoration: 'line-through', fontSize: '11px', color: 'var(--color-text-muted)' }}>{p.price} EGP</span>
+                                                     </div>
+                                                 ) : (
+                                                     <span className="product-price">{p.price} EGP</span>
+                                                 )}
                                             </div>
                                             <div className="info-right">
                                                 {layout === 'list' && (

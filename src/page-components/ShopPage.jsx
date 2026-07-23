@@ -345,35 +345,52 @@ const ShopPage = () => {
                             <p>No items match your active filters or search terms. Try modifying your selections.</p>
                         </div>
                     ) : (
-                        filteredProducts.map((p) => (
-                            <div className="product-card item-card" key={p.id} data-id={p.id} onClick={() => handleOpenQuickView(p)}>
-                                <div className="card-image-box">
-                                    <span className="badge badge-new">NEW</span>
-                                    <OptimizedImage src={p.img} alt={p.name} className="product-img" aspectRatio="4/3" />
-                                    <div className="card-overlay-actions">
-                                        <button className="quick-view-btn" onClick={() => handleOpenQuickView(p)}>Quick View</button>
+                        filteredProducts.map((p) => {
+                            const discountPercent = p.discountPercent || 0;
+                            const hasDiscount = discountPercent > 0;
+                            const salePrice = Math.round(p.price * (1 - discountPercent / 100));
+                            return (
+                                <div className="product-card item-card" key={p.id} data-id={p.id} onClick={() => handleOpenQuickView(p)} style={{ cursor: 'pointer' }}>
+                                    <div className="card-image-box">
+                                        {hasDiscount && (
+                                            <span className="badge badge-special" style={{ backgroundColor: '#EF4444', color: '#FFFFFF', fontWeight: '700' }}>
+                                                {discountPercent}% OFF
+                                            </span>
+                                        )}
+                                        <span className="badge badge-new">NEW</span>
+                                        <OptimizedImage src={p.img} alt={p.name} className="product-img" aspectRatio="4/3" />
+                                        <div className="card-overlay-actions">
+                                            <button className="quick-view-btn" onClick={() => handleOpenQuickView(p)}>Quick View</button>
+                                        </div>
+                                    </div>
+                                    <div className="card-info-box">
+                                        <div className="info-left">
+                                            <h3 className="product-name">{p.name}</h3>
+                                            {hasDiscount ? (
+                                                <div style={{ display: 'flex', gap: '8px', alignItems: 'baseline' }}>
+                                                    <span className="product-price" style={{ color: '#EF4444', fontWeight: 'bold' }}>{salePrice} EGP</span>
+                                                    <span style={{ textDecoration: 'line-through', fontSize: '11px', color: 'var(--color-text-muted)' }}>{p.price} EGP</span>
+                                                </div>
+                                            ) : (
+                                                <span className="product-price">{p.price} EGP</span>
+                                            )}
+                                        </div>
+                                        <div className="info-right">
+                                            <button 
+                                                className={`favorite-action-btn ${favorites[p.id] ? 'liked' : ''}`} 
+                                                onClick={(e) => toggleFavorite(e, p.id)}
+                                                aria-label="Add to Favorites"
+                                            >
+                                                <svg className="heart-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" style={{ transform: favorites[p.id] ? 'scale(1.2)' : 'none' }}>
+                                                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                                </svg>
+                                                <span className="favorite-text">Favorite</span>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="card-info-box">
-                                    <div className="info-left">
-                                        <h3 className="product-name">{p.name}</h3>
-                                        <span className="product-price">{p.price} EGP</span>
-                                    </div>
-                                    <div className="info-right">
-                                        <button 
-                                            className={`favorite-action-btn ${favorites[p.id] ? 'liked' : ''}`} 
-                                            onClick={(e) => toggleFavorite(e, p.id)}
-                                            aria-label="Add to Favorites"
-                                        >
-                                            <svg className="heart-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" style={{ transform: favorites[p.id] ? 'scale(1.2)' : 'none' }}>
-                                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                                            </svg>
-                                            <span className="favorite-text">Favorite</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        ))
+                            );
+                        })
                     )}
                 </div>
             </section>
