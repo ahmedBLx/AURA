@@ -411,13 +411,12 @@ export default function SubCategoryProductCarousel({
                             const discountPercent = p.discountPercent || 0;
                             const hasDiscount = discountPercent > 0;
                             const salePrice = Math.round(p.price * (1 - discountPercent / 100));
-                            const finalPrice = hasDiscount ? salePrice : p.price;
 
                             return (
                                 <div
                                     className="product-card item-card"
                                     key={p.id}
-                                    onClick={() => handleQuickView(p, finalPrice)}
+                                    onClick={() => handleQuickView && handleQuickView(p)}
                                     style={{
                                         flex: layout === 'list' ? '1 1 100%' : '0 0 280px',
                                         scrollSnapAlign: 'start',
@@ -442,7 +441,7 @@ export default function SubCategoryProductCarousel({
                                         <OptimizedImage src={p.img} alt={p.name} className="product-img" aspectRatio="4/3" style={{ maxWidth: '96%', maxHeight: '96%', objectFit: 'contain', transition: 'transform 0.4s ease' }} />
                                         {layout !== 'list' && (
                                             <div className="card-overlay-actions">
-                                                <button className="quick-view-btn" onClick={(e) => { e.stopPropagation(); handleQuickView(p, finalPrice); }}>Quick View</button>
+                                                <button className="quick-view-btn" onClick={(e) => { e.stopPropagation(); handleQuickView && handleQuickView(p); }}>Quick View</button>
                                             </div>
                                         )}
                                     </div>
@@ -467,7 +466,7 @@ export default function SubCategoryProductCarousel({
                                                 {layout === 'list' && (
                                                     <button 
                                                         className="quick-view-btn" 
-                                                        onClick={(e) => { e.stopPropagation(); handleQuickView(p, finalPrice); }}
+                                                        onClick={(e) => { e.stopPropagation(); handleQuickView && handleQuickView(p); }}
                                                         style={{ padding: '8px 18px', fontSize: '12px' }}
                                                     >
                                                         Quick View

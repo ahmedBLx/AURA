@@ -79,21 +79,13 @@ const LandingPage = () => {
         setIsCategoryModalOpen(prev => !prev);
     };
 
-    const handleQuickView = (p, salePrice) => {
-        setSelectedProduct({
-            ...p,
-            price: salePrice
-        });
+    const handleQuickView = (p) => {
+        setSelectedProduct(p);
         setIsQuickViewOpen(true);
     };
 
     const handleSpecialClick = (p) => {
-        const discountPercent = p.discountPercent || 0;
-        const salePrice = Math.round(p.price * (1 - discountPercent / 100));
-        setSelectedProduct({
-            ...p,
-            price: salePrice
-        });
+        setSelectedProduct(p);
         setIsQuickViewOpen(true);
     };
 
