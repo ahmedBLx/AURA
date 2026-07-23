@@ -278,29 +278,47 @@ const LandingPage = () => {
                             </div>
                             
                             <div className="specials-grid" id="specials-grid">
-                                {specials.map((p) => (
-                                    <div 
-                                        className="product-card item-card specials-card" 
-                                        data-id={p.id} 
-                                        key={p.id}
-                                        onClick={() => handleSpecialClick(p)}
-                                        style={{ cursor: 'pointer' }}
-                                    >
-                                        <div className="card-image-box">
-                                            <span className="badge badge-special" style={{ backgroundColor: 'var(--color-gold)', color: 'var(--color-primary)' }}>SPECIAL</span>
-                                            <OptimizedImage src={p.img} alt={p.name} className="product-img" aspectRatio="4/3" />
-                                            <div className="card-overlay-actions">
-                                                <button className="quick-view-btn specials-action-btn">View Special</button>
+                                {specials.map((p) => {
+                                    const discountPercent = p.discountPercent || 0;
+                                    const hasDiscount = discountPercent > 0;
+                                    const salePrice = Math.round(p.price * (1 - discountPercent / 100));
+                                    return (
+                                        <div 
+                                            className="product-card item-card specials-card" 
+                                            data-id={p.id} 
+                                            key={p.id}
+                                            onClick={() => handleSpecialClick(p)}
+                                            style={{ cursor: 'pointer' }}
+                                        >
+                                            <div className="card-image-box">
+                                                {hasDiscount ? (
+                                                    <span className="badge badge-special" style={{ backgroundColor: '#EF4444', color: '#FFFFFF', fontWeight: '700' }}>
+                                                        {discountPercent}% OFF
+                                                    </span>
+                                                ) : (
+                                                    <span className="badge badge-special" style={{ backgroundColor: 'var(--color-gold)', color: 'var(--color-primary)' }}>SPECIAL</span>
+                                                )}
+                                                <OptimizedImage src={p.img} alt={p.name} className="product-img" aspectRatio="4/3" />
+                                                <div className="card-overlay-actions">
+                                                    <button className="quick-view-btn specials-action-btn">View Special</button>
+                                                </div>
+                                            </div>
+                                            <div className="card-info-box">
+                                                <div className="info-left">
+                                                    <h3 className="product-name">{p.name}</h3>
+                                                    {hasDiscount ? (
+                                                        <div style={{ display: 'flex', gap: '8px', alignItems: 'baseline' }}>
+                                                            <span className="product-price" style={{ color: '#EF4444', fontWeight: 'bold' }}>{salePrice} EGP</span>
+                                                            <span style={{ textDecoration: 'line-through', fontSize: '11px', color: 'var(--color-text-muted)' }}>{p.price} EGP</span>
+                                                        </div>
+                                                    ) : (
+                                                        <span className="product-price">{p.price} EGP</span>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
-                                        <div className="card-info-box">
-                                            <div className="info-left">
-                                                <h3 className="product-name">{p.name}</h3>
-                                                <span className="product-price">{p.price} EGP</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         </div>
                     </div>
